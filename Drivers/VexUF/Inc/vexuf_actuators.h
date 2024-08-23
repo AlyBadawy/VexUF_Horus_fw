@@ -40,6 +40,9 @@ typedef struct {
 
 // Function prototypes
 void ACTUATORS_updateShiftReg(void);
+void ACTUATORS_lights(GPIO_PinState state);
+void ACTUATORS_trigegr(ActuatorsValues values);
+
 void ACTUATORS_Test(void); // TODO: Remove before release
 
 #endif /* INC_VEXUF_ACTUATORS_H_ */

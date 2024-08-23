@@ -56,29 +56,28 @@ void base32_encode(const uint8_t *data, size_t length, char *output) {
 void VexUF_GenerateSerialNumber() {
 	char serial[20];
 	uint32_t uid[3];
-    uint8_t uid_bytes[12];
+  uint8_t uid_bytes[12];
 
-    uid[2] = HAL_GetUIDw0();
-    uid[1] = HAL_GetUIDw1();
-    uid[0] = HAL_GetUIDw2();
+  uid[2] = HAL_GetUIDw0();
+  uid[1] = HAL_GetUIDw1();
+  uid[0] = HAL_GetUIDw2();
 
-    for (int i = 0; i < 3; i++) {
-    	uid_bytes[4*i] = (uid[i] >> 24) & 0xFF;
-    	uid_bytes[4*i + 1] = (uid[i] >> 16) & 0xFF;
-    	uid_bytes[4*i + 2] = (uid[i] >> 8) & 0xFF;
-    	uid_bytes[4*i + 3] = uid[i] & 0xFF;
+  for (int i = 0; i < 3; i++) {
+    uid_bytes[4*i] = (uid[i] >> 24) & 0xFF;
+    uid_bytes[4*i + 1] = (uid[i] >> 16) & 0xFF;
+    uid_bytes[4*i + 2] = (uid[i] >> 8) & 0xFF;
+    uid_bytes[4*i + 3] = uid[i] & 0xFF;
 	}
 
-    base32_encode(uid_bytes, 12, serial);
+  base32_encode(uid_bytes, 12, serial);
 
-    int i, j;
-    int length = strlen(serial);
-    for (i = 0, j = 0; i < length; i++) {
-        if (i > 0 && i % 5 == 0) {
-        	serialNumber[j++] = '-';
-        }
-        serialNumber[j++] = serial[i];
-    }
-
-    serialNumber[j] = '\0';
+  int i, j;
+  int length = strlen(serial);
+  for (i = 0, j = 0; i < length; i++) {
+      if (i > 0 && i % 5 == 0) {
+        serialNumber[j++] = '-';
+      }
+      serialNumber[j++] = serial[i];
+  }
+  serialNumber[j] = '\0';
 }

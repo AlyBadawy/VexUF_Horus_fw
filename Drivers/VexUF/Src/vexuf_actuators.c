@@ -9,10 +9,6 @@
 
 void ACTUATORS_setPin(ActuatorPin pin);
 void ACTUATORS_resetPin(ActuatorPin pin);
-void ACTUATORS_lights(GPIO_PinState state);
-void ACTUATORS_trigegr(ActuatorsValues values);
-
-
 
 uint8_t actuatorsData = 0;
 
