@@ -10,25 +10,9 @@
 
 #include "main.h"
 #include "string.h"
-#include "vexuf_actuators.h"
 
 #define SERIAL_NUMBER_LENGTH		24
 #define CALLSIGN_LENGTH				20
-
-typedef enum {NoLCD = 0, LCD2004 = 1, LCD1602 = 2} LcdType;
-typedef enum {NoI2C = 0, AHT20 = 1, AHT21 = 2} I2CType;
-typedef enum {NoSpi = 0, BLUETOOTH} SpiType;
-
-typedef struct {
-    uint16_t lcdAdd;
-    LcdType lcdType;  // Use the enum type for lcdType
-    uint16_t lcdPwm;
-} LcdConfiguration;
-
-typedef struct {
-    uint16_t i2cAdd;
-    I2CType i2cType;  // Use the enum type for lcdType
-} I2CConfiguration;
 
 typedef struct {
 	uint16_t timer_1hz_ticked: 1;

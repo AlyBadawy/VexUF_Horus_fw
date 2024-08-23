@@ -2,6 +2,7 @@
 #define __MAIN_H
 
 #include "stm32f4xx_hal.h"
+#include "vexuf_error.h"
 
 void Error_Handler(void);
 

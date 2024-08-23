@@ -47,8 +47,10 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    "./Drivers/VexUF/Src/vexuf_helpers.c"
     "./Drivers/VexUF/Src/vexuf_actuators.c"
+    "./Drivers/VexUF/Src/vexuf_error.c"
+    "./Drivers/VexUF/Src/vexuf_helpers.c"
+    "./Drivers/VexUF/Src/vexuf_lcd.c"
     "./Drivers/VexUF/Src/vexuf_pwm.c"
 )
 

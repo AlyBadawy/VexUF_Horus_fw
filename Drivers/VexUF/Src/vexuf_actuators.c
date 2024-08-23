@@ -28,15 +28,11 @@ void ACTUATORS_updateShiftReg(void) {
 }
 
 void ACTUATORS_setPin(ActuatorPin pin) {
-    if (pin >= ACT_PIN_A1 && pin <= ACT_PIN_A8) {
     	actuatorsData |= (1 << (pin));
-    }
 }
 
 void ACTUATORS_resetPin(ActuatorPin pin) {
-    if (pin >= ACT_PIN_A1 && pin <= ACT_PIN_A8) {
     	actuatorsData &= ~(1 << (pin));
-    }
 }
 
 void ACTUATORS_lights(GPIO_PinState state) {
