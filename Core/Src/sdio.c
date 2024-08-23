@@ -1,44 +1,10 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file    sdio.c
-  * @brief   This file provides code for the configuration
-  *          of the SDIO instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "sdio.h"
-
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
 
 SD_HandleTypeDef hsd;
 DMA_HandleTypeDef hdma_sdio;
 
-/* SDIO init function */
+void MX_SDIO_SD_Init(void) {
 
-void MX_SDIO_SD_Init(void)
-{
-
-  /* USER CODE BEGIN SDIO_Init 0 */
-
-  /* USER CODE END SDIO_Init 0 */
-
-  /* USER CODE BEGIN SDIO_Init 1 */
-
-  /* USER CODE END SDIO_Init 1 */
   hsd.Instance = SDIO;
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
@@ -46,22 +12,12 @@ void MX_SDIO_SD_Init(void)
   hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
   hsd.Init.ClockDiv = 0;
-  /* USER CODE BEGIN SDIO_Init 2 */
-
-  /* USER CODE END SDIO_Init 2 */
-
 }
 
-void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
-{
-
+void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(sdHandle->Instance==SDIO)
-  {
-  /* USER CODE BEGIN SDIO_MspInit 0 */
 
-  /* USER CODE END SDIO_MspInit 0 */
-    /* SDIO clock enable */
+  if(sdHandle->Instance==SDIO) {
     __HAL_RCC_SDIO_CLK_ENABLE();
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -89,8 +45,6 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    /* SDIO DMA Init */
-    /* SDIO Init */
     hdma_sdio.Instance = DMA2_Stream3;
     hdma_sdio.Init.Channel = DMA_CHANNEL_4;
     hdma_sdio.Init.Direction = DMA_PERIPH_TO_MEMORY;
@@ -104,10 +58,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     hdma_sdio.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
     hdma_sdio.Init.MemBurst = DMA_MBURST_INC4;
     hdma_sdio.Init.PeriphBurst = DMA_PBURST_INC4;
-    if (HAL_DMA_Init(&hdma_sdio) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    if (HAL_DMA_Init(&hdma_sdio) != HAL_OK) Error_Handler();
 
     /* Several peripheral DMA handle pointers point to the same DMA handle.
      Be aware that there is only one stream to perform all the requested DMAs. */
@@ -116,24 +67,13 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     __HAL_LINKDMA(sdHandle,hdmarx,hdma_sdio);
     __HAL_LINKDMA(sdHandle,hdmatx,hdma_sdio);
 
-    /* SDIO interrupt Init */
     HAL_NVIC_SetPriority(SDIO_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(SDIO_IRQn);
-  /* USER CODE BEGIN SDIO_MspInit 1 */
-
-  /* USER CODE END SDIO_MspInit 1 */
   }
 }
 
-void HAL_SD_MspDeInit(SD_HandleTypeDef* sdHandle)
-{
-
-  if(sdHandle->Instance==SDIO)
-  {
-  /* USER CODE BEGIN SDIO_MspDeInit 0 */
-
-  /* USER CODE END SDIO_MspDeInit 0 */
-    /* Peripheral clock disable */
+void HAL_SD_MspDeInit(SD_HandleTypeDef* sdHandle) {
+  if(sdHandle->Instance==SDIO) {
     __HAL_RCC_SDIO_CLK_DISABLE();
 
     /**SDIO GPIO Configuration
@@ -149,18 +89,9 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef* sdHandle)
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
-    /* SDIO DMA DeInit */
     HAL_DMA_DeInit(sdHandle->hdmarx);
     HAL_DMA_DeInit(sdHandle->hdmatx);
 
-    /* SDIO interrupt Deinit */
     HAL_NVIC_DisableIRQ(SDIO_IRQn);
-  /* USER CODE BEGIN SDIO_MspDeInit 1 */
-
-  /* USER CODE END SDIO_MspDeInit 1 */
   }
 }
-
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
