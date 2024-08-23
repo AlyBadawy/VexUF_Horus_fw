@@ -12,8 +12,9 @@
 #include "usb_device.h"
 #include "gpio.h"
 
-#include "vexuf_helpers.h"
 #include "vexuf_actuators.h"
+#include "vexuf_error.h"
+#include "vexuf_helpers.h"
 #include "vexuf_pwm.h"
 
 void SystemClock_Config(void);
@@ -90,7 +91,3 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   }
 }
 
-void Error_Handler(void) {
-  __disable_irq();
-  while(1);
-}

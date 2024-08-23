@@ -5,6 +5,8 @@
 
 extern SPI_HandleTypeDef hspi1;
 
+typedef enum {NoSpi = 0, BLUETOOTH} SpiType;
+
 void MX_SPI1_Init(void);
 
 #endif /* __SPI_H__ */

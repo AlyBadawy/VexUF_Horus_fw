@@ -5,9 +5,11 @@
  *      Author: Aly Badawy
  */
 
-#if !defined(INC_VEXUF_ERROR)
-#define INC_VEXUF_ERROR
+#if !defined(INC_VEXUF_ERROR_H)
+#define INC_VEXUF_ERROR_H
 
+#include "vexuf_helpers.h"
 
+void Error_Handler(void);
 
-#endif // INC_VEXUF_ERROR
+#endif // INC_VEXUF_ERROR_H
