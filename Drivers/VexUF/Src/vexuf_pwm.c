@@ -7,12 +7,13 @@
 
 #include "vexuf_pwm.h"
 
-extern PwmConfiguration pwmConfig;
 extern TIM_HandleTypeDef htim10;	// Servo 2 Timer
 extern TIM_HandleTypeDef htim11;	// Serco 1 Timer
 
 void PWM_Start(PwmChannel channel);
 void PWM_Stop(PwmChannel channel);
+
+PwmConfiguration pwmConfig;
 
 void PWM_init(void) {
 	if (pwmConfig.pwm1Enabled == 1 && pwmConfig.pwm1Value <= 1000) {

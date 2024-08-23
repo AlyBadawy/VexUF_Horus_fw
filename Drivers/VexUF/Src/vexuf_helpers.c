@@ -10,7 +10,9 @@
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 
-extern char serialNumber[25];
+void base32_encode(const uint8_t *data, size_t length, char *output);
+
+char serialNumber[25];
 
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 

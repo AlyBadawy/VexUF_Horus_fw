@@ -45,7 +45,6 @@ typedef struct {
 
 float cToF(float c);
 float fToC(float f);
-void base32_encode(const uint8_t *data, size_t length, char *output);
 // void VexUF_CurrentDateTimeString(char *string);
 void VexUF_GenerateSerialNumber();
 
