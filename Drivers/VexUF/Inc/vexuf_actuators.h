@@ -16,13 +16,13 @@ typedef enum {ActOff = 0, ActOn = 1, ActUnchanged = 2} ActStatus;
 // Define an enum for the shift register pins
 typedef enum {
     ACT_PIN_A1 = 0,
-    ACT_PIN_A2 = 1,
-    ACT_PIN_A3 = 2,
-    ACT_PIN_A4 = 3,
-    ACT_PIN_A5 = 4,
-    ACT_PIN_A6 = 5,
-    ACT_PIN_A7 = 6,
-    ACT_PIN_A8 = 7
+    ACT_PIN_A2,
+    ACT_PIN_A3,
+    ACT_PIN_A4,
+    ACT_PIN_A5,
+    ACT_PIN_A6,
+    ACT_PIN_A7,
+    ACT_PIN_A8
 } ActuatorPin;
 
 //disabled, enabled on, enabled off,
