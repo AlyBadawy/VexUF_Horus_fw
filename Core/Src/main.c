@@ -12,6 +12,9 @@
 #include "usb_device.h"
 #include "gpio.h"
 
+#include "vexuf_helpers.h"
+#include "vexuf_actuators.h"
+
 void SystemClock_Config(void);
 
 int main(void) {
@@ -36,6 +39,9 @@ int main(void) {
   MX_TIM10_Init();
   MX_TIM11_Init();
   MX_IWDG_Init();
+
+  VexUF_GenerateSerialNumber();
+  ACTUATORS_Test(); // TODO: remove before release
 
   while (1);
 }
