@@ -14,5 +14,7 @@ typedef struct {
 
 void MX_I2C1_Init(void);
 
+HAL_StatusTypeDef I2C_Reset();
+
 #endif /* __I2C_H__ */
 
