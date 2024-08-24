@@ -47,6 +47,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    "./Drivers/AHT20/Src/aht20.c"
     "./Drivers/HD44780/Src/hd44780.c"
     "./Drivers/VexUF/Src/vexuf_actuators.c"
     "./Drivers/VexUF/Src/vexuf_error.c"
@@ -57,6 +58,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    "./Drivers/AHT20/Inc"
     "./Drivers/HD44780/Inc"
     "./Drivers/VexUF/Inc"
 )
