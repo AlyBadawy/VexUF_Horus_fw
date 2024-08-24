@@ -19,6 +19,12 @@
 
 void SystemClock_Config(void);
 
+// TODO: Remove before release
+extern UART_HandleTypeDef huart1;
+int _write(int file, char *ptr, int len) {
+  HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 200);
+}
+
 int main(void) {
   HAL_Init();
   SystemClock_Config();
@@ -40,7 +46,7 @@ int main(void) {
   // MX_USB_DEVICE_Init(); // TODO: Enable before release
   MX_TIM10_Init();
   MX_TIM11_Init();
-  MX_IWDG_Init();
+  // MX_IWDG_Init();
 
   VexUF_GenerateSerialNumber();
   ACTUATORS_Test(); // TODO: remove before release
