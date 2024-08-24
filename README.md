@@ -4,11 +4,11 @@
 
 **Status: Active**
 
+<img src="https://github.com/user-attachments/assets/47a59025-102a-46c4-bdac-d45394d3b694" width="400" align="right" />
+
 The "Horus" device is designed to support both Emergency Operations Centers (EOCs) and amateur radio operators in monitoring and managing various power sources and environmental conditions. It is engineered to enhance operational capabilities by ensuring real-time monitoring of critical parameters.
 
 Horus provides detailed insights into power supply statuses and environmental conditions, ensuring operational continuity and situational awareness. Additionally, the device logs data to an SD card for future retrieval and analysis. The VexUF:Horus supports communication with a computer or a stand-alone TNC, utilizing the APRS protocol to transmit vital information to remote locations. This ensures better coordination and response during emergencies and day-to-day operations for amateur radio enthusiasts.
-
-<img src="https://github.com/user-attachments/assets/47a59025-102a-46c4-bdac-d45394d3b694" width="400" align="right" />
 
 ## Features
 
