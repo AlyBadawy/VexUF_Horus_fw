@@ -61,33 +61,33 @@
 /* Register Select Bit */
 #define RS 0x01
 
-void HD44780_Init(I2C_HandleTypeDef *hi2c, uint8_t rows);
-void HD44780_Clear(I2C_HandleTypeDef *hi2c);
-void HD44780_Home(I2C_HandleTypeDef *hi2c);
-void HD44780_NoDisplay(I2C_HandleTypeDef *hi2c);
-void HD44780_Display(I2C_HandleTypeDef *hi2c);
-void HD44780_NoBlink(I2C_HandleTypeDef *hi2c);
-void HD44780_Blink(I2C_HandleTypeDef *hi2c);
-void HD44780_NoCursor(I2C_HandleTypeDef *hi2c);
-void HD44780_Cursor(I2C_HandleTypeDef *hi2c);
-void HD44780_ScrollDisplayLeft(I2C_HandleTypeDef *hi2c);
-void HD44780_ScrollDisplayRight(I2C_HandleTypeDef *hi2c);
-void HD44780_PrintLeft(I2C_HandleTypeDef *hi2c);
-void HD44780_PrintRight(I2C_HandleTypeDef *hi2c);
-void HD44780_LeftToRight(I2C_HandleTypeDef *hi2c);
-void HD44780_RightToLeft(I2C_HandleTypeDef *hi2c);
-void HD44780_ShiftIncrement(I2C_HandleTypeDef *hi2c);
-void HD44780_ShiftDecrement(I2C_HandleTypeDef *hi2c);
-void HD44780_NoBacklight(I2C_HandleTypeDef *hi2c);
-void HD44780_Backlight(I2C_HandleTypeDef *hi2c);
-void HD44780_AutoScroll(I2C_HandleTypeDef *hi2c);
-void HD44780_NoAutoScroll(I2C_HandleTypeDef *hi2c);
-void HD44780_CreateSpecialChar(I2C_HandleTypeDef *hi2c, uint8_t, uint8_t[]);
-void HD44780_PrintSpecialChar(I2C_HandleTypeDef *hi2c, uint8_t);
-void HD44780_SetCursor(I2C_HandleTypeDef *hi2c, uint8_t, uint8_t);
-void HD44780_SetBacklight(I2C_HandleTypeDef *hi2c, uint8_t new_val);
-void HD44780_LoadCustomCharacter(I2C_HandleTypeDef *hi2c, uint8_t char_num, uint8_t *rows);
-void HD44780_PrintStr(I2C_HandleTypeDef *hi2c, const char[]);
+void HD44780_Init(uint8_t rows);
+void HD44780_Clear(void);
+void HD44780_Home(void);
+void HD44780_NoDisplay(void);
+void HD44780_Display(void);
+void HD44780_NoBlink(void);
+void HD44780_Blink(void);
+void HD44780_NoCursor(void);
+void HD44780_Cursor(void);
+void HD44780_ScrollDisplayLeft(void);
+void HD44780_ScrollDisplayRight(void);
+void HD44780_PrintLeft(void);
+void HD44780_PrintRight(void);
+void HD44780_LeftToRight(void);
+void HD44780_RightToLeft(void);
+void HD44780_ShiftIncrement(void);
+void HD44780_ShiftDecrement(void);
+void HD44780_NoBacklight(void);
+void HD44780_Backlight(void);
+void HD44780_AutoScroll(void);
+void HD44780_NoAutoScroll(void);
+void HD44780_CreateSpecialChar(uint8_t, uint8_t[]);
+void HD44780_PrintSpecialChar(uint8_t);
+void HD44780_SetCursor(uint8_t, uint8_t);
+void HD44780_SetBacklight(uint8_t new_val);
+void HD44780_LoadCustomCharacter(uint8_t char_num, uint8_t *rows);
+void HD44780_PrintStr(const char[]);
 
 
 #endif /* HD44780_H_ */
