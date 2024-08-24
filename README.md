@@ -36,3 +36,22 @@ Horus provides detailed insights into power supply statuses and environmental co
 ## Usage
 
 The Horus device continuously monitors and logs data from connected power sources and sensors. It also transmits critical information using the APRS protocol. Use a computer or a TNC to receive and analyze the transmitted data for operational insights.
+
+## Contributing
+
+We welcome contributions from the community. If you would like to contribute, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Commit your changes to the branch.
+4. Submit a pull request with a detailed description of your changes.
+
+Please ensure that your contributions adhere to the coding standards and guidelines outlined in the repository.
+
+## License
+
+This repository is licensed under the [Apache License 2.0](./LICENSE). You may use, modify, and distribute the code under the terms of the license. This includes both non-commercial and commercial purposes, provided that you comply with the terms, including providing proper attribution to the original authors and including a copy of the license in any distributed software.
+
+## Bug Reports and Feature Requests
+
+If you encounter any bugs or have feature requests, please add them to the [issues section](https://github.com/alybadawy/VexUF-Firmwares/issues) of this repository. We appreciate your feedback and will do our best to address issues promptly.
