@@ -49,19 +49,19 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/AHT20/Src/aht20.c"
     "./Drivers/HD44780/Src/hd44780.c"
-    "./Drivers/VexUF/Src/vexuf_actuators.c"
-    "./Drivers/VexUF/Src/vexuf_error.c"
-    "./Drivers/VexUF/Src/vexuf_helpers.c"
-    "./Drivers/VexUF/Src/vexuf_i2c_checker.c"
-    "./Drivers/VexUF/Src/vexuf_lcd.c"
-    "./Drivers/VexUF/Src/vexuf_pwm.c"
+    "./VexUF/Src/vexuf_actuators.c"
+    "./VexUF/Src/vexuf_error.c"
+    "./VexUF/Src/vexuf_helpers.c"
+    "./VexUF/Src/vexuf_i2c_checker.c"
+    "./VexUF/Src/vexuf_lcd.c"
+    "./VexUF/Src/vexuf_pwm.c"
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/AHT20/Inc"
     "./Drivers/HD44780/Inc"
-    "./Drivers/VexUF/Inc"
+    "./VexUF/Inc"
 )
 
 # Add project symbols (macros)
