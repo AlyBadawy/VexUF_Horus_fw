@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "string.h"
+#include <stdio.h>
 
 #define SERIAL_NUMBER_LENGTH		24
 #define CALLSIGN_LENGTH				20
