@@ -47,7 +47,7 @@ typedef struct {
 } IndLevels;
 
 typedef struct {
-  uint16_t globalIndeicatorEnabled : 1;
+  uint16_t globalIndicatorEnabled : 1;
   uint16_t buzzerEnabled : 1;
   uint16_t buzzer1sEnabled : 1;
   uint16_t buzzerHoldOnError : 1;
