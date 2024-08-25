@@ -47,6 +47,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    "./Drivers/74HC595D/Src/74hc595d.c"
     "./Drivers/93C86/Src/93c86.c"
     "./Drivers/AHT20/Src/aht20.c"
     "./Drivers/HD44780/Src/hd44780.c"
@@ -62,6 +63,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    "./Drivers/74HC595D/Inc"
     "./Drivers/93C86/Inc"
     "./Drivers/AHT20/Inc"
     "./Drivers/HD44780/Inc"

@@ -9,40 +9,55 @@
 #define INC_ACTUATORS_H_
 
 #include "main.h"
-#define  NUMBER_OF_Actuators			8
+#define NUMBER_OF_Actuators 8
 
-typedef enum {ActOff = 0, ActOn = 1, ActUnchanged = 2} ActStatus;
+typedef enum { ActOff = 0, ActOn = 1, ActUnchanged = 2 } ActLevel;
+typedef enum { ACT_OK, ACT_DISABLED, ACT_ERROR } ACT_STATUS;
 
 // Define an enum for the shift register pins
 typedef enum {
-    ACT_PIN_A1 = 0,
-    ACT_PIN_A2,
-    ACT_PIN_A3,
-    ACT_PIN_A4,
-    ACT_PIN_A5,
-    ACT_PIN_A6,
-    ACT_PIN_A7,
-    ACT_PIN_A8
+  ACT_PIN_A1 = 0,
+  ACT_PIN_A2,
+  ACT_PIN_A3,
+  ACT_PIN_A4,
+  ACT_PIN_A5,
+  ACT_PIN_A6,
+  ACT_PIN_A7,
+  ACT_PIN_A8
 } ActuatorPin;
 
-//disabled, enabled on, enabled off,
+// disabled, enabled on, enabled off,
 
 typedef struct {
-	uint16_t act1: 2;
-	uint16_t act2: 2;
-	uint16_t act3: 2;
-	uint16_t act4: 2;
-	uint16_t act5: 2;
-	uint16_t act6: 2;
-	uint16_t act7: 2;
-	uint16_t act8: 2;
+  uint16_t act1 : 2;
+  uint16_t act2 : 2;
+  uint16_t act3 : 2;
+  uint16_t act4 : 2;
+  uint16_t act5 : 2;
+  uint16_t act6 : 2;
+  uint16_t act7 : 2;
+  uint16_t act8 : 2;
 } ActuatorsValues;
 
+typedef struct {
+  uint16_t actuators_enabled : 1;
+  uint16_t actuators_lights_enabled : 1;
+  uint16_t reserved : 14;
+} ActuatorsConfiguration;
+
 // Function prototypes
-void ACTUATORS_updateShiftReg(void);
-void ACTUATORS_lights(GPIO_PinState state);
+void ACT_Init(ActuatorsConfiguration* newActConf);
+
+ACT_STATUS ACTUATORS_setPin(ActuatorPin pin);
+ACT_STATUS ACTUATORS_resetPin(ActuatorPin pin);
+ACT_STATUS ACTUATORS_Update(void);
+
+ACT_STATUS ACTUATORS_lights(GPIO_PinState state);
+
 void ACTUATORS_trigegr(ActuatorsValues values);
 
-void ACTUATORS_Test(void); // TODO: Remove before release
+void ACT_DeInit(void);
+
+void ACTUATORS_Test(void);  // TODO: Remove before release
 
 #endif /* INC_VEXUF_ACTUATORS_H_ */
