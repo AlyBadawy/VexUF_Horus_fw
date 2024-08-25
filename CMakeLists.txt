@@ -52,6 +52,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/AHT20/Src/aht20.c"
     "./Drivers/HD44780/Src/hd44780.c"
     "./VexUF/Src/vexuf_actuators.c"
+    "./VexUF/Src/vexuf_adc_avs.c"
     "./VexUF/Src/vexuf_error.c"
     "./VexUF/Src/vexuf_helpers.c"
     "./VexUF/Src/vexuf_i2c_checker.c"

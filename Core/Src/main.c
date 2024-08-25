@@ -14,11 +14,13 @@
 #include "usart.h"
 #include "usb_device.h"
 #include "vexuf_actuators.h"
+#include "vexuf_adc_avs.h"
 #include "vexuf_error.h"
 #include "vexuf_helpers.h"
 #include "vexuf_i2c_checker.h"
 #include "vexuf_indicators.h"
 #include "vexuf_pwm.h"
+#include "vexuf_timers.h"
 
 // TODO: Remove before release
 extern UART_HandleTypeDef huart1;
@@ -28,6 +30,7 @@ int _write(int file, char *ptr, int len) {
   return len;
 }
 
+extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
 
 int main(void) {
@@ -56,12 +59,16 @@ int main(void) {
   PWM_init();
   TIMERS_Start();
 
-  ACTUATORS_Test();  // TODO: remove before release
-  I2C_ScanTest();    // TODO: remove before release
-
-  // MX_IWDG_Init(); // TODO: Enable before release
   HAL_Delay(500);
   IND_BuzzOnStartUp();
+
+  // TODO: remove the following tests before release
+  ADC_Test();
+  ACTUATORS_Test();
+  I2C_ScanTest();
+
+  // TODO: Enable before release
+  // MX_IWDG_Init();
 
   while (1) {
     if (vexufStatus.timer_10hz_ticked == 1) {
@@ -73,5 +80,8 @@ int main(void) {
       IND_toggleIndWithLevelOption(IndSLOW);
       vexufStatus.timer_1hz_ticked = 0;
     }
+
+    // TODO: Enable before release
+    // HAL_IWDG_Refresh(&hiwdg);
   }
 }
