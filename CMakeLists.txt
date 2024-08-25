@@ -54,6 +54,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./VexUF/Src/vexuf_error.c"
     "./VexUF/Src/vexuf_helpers.c"
     "./VexUF/Src/vexuf_i2c_checker.c"
+    "./VexUF/Src/vexuf_indicators.c"
     "./VexUF/Src/vexuf_lcd.c"
     "./VexUF/Src/vexuf_pwm.c"
 )
