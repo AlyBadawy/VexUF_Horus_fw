@@ -146,7 +146,7 @@ IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
   return status;
 }
 
-IND_STATUS IND_toggleIndWithStatusOption(IndLevelOption option) {
+IND_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
   if (option == IndON || option == IndOFF) return IND_ERROR;  // Invalid status
 
   for (Indicator ind = IndError; ind <= IndAv3; ind++) {

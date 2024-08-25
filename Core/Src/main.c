@@ -28,6 +28,8 @@ int _write(int file, char *ptr, int len) {
   return len;
 }
 
+extern VexufStatus vexufStatus;
+
 int main(void) {
   HAL_Init();
   SystemClock_Config();
@@ -52,6 +54,7 @@ int main(void) {
 
   VexUF_GenerateSerialNumber();
   PWM_init();
+  TIMERS_Start();
 
   ACTUATORS_Test();  // TODO: remove before release
   I2C_ScanTest();    // TODO: remove before release
@@ -60,5 +63,15 @@ int main(void) {
   HAL_Delay(500);
   IND_BuzzOnStartUp();
 
-  while (1);
+  while (1) {
+    if (vexufStatus.timer_10hz_ticked == 1) {
+      IND_toggleIndWithLevelOption(IndFAST);
+      vexufStatus.timer_10hz_ticked = 0;
+    }
+
+    if (vexufStatus.timer_1hz_ticked == 1) {
+      IND_toggleIndWithLevelOption(IndSLOW);
+      vexufStatus.timer_1hz_ticked = 0;
+    }
+  }
 }

@@ -5,4 +5,7 @@
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
+void TIMERS_Start(void);
+void TIMERS_Stop(void);
+
 #endif  // INC_VEXUF_TIMERS_H_

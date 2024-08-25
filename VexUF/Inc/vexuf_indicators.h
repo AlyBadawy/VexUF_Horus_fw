@@ -62,7 +62,7 @@ typedef struct {
 
 IndLevelOption IND_getCurrentLevel(Indicator ind);
 IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option);
-IND_STATUS IND_toggleIndWithStatusOption(IndLevelOption option);
+IND_STATUS IND_toggleIndWithLevelOption(IndLevelOption option);
 
 IND_STATUS IND_buzzOnError(void);
 IND_STATUS IND_BuzzOnStartUp(void);
