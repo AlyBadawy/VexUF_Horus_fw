@@ -1,7 +1,9 @@
 #include "main.h"
+
 #include "adc.h"
 #include "dma.h"
 #include "fatfs.h"
+#include "gpio.h"
 #include "i2c.h"
 #include "iwdg.h"
 #include "rtc.h"
@@ -10,11 +12,10 @@
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
-#include "gpio.h"
-
 #include "vexuf_actuators.h"
 #include "vexuf_error.h"
 #include "vexuf_helpers.h"
+#include "vexuf_indicators.h"
 #include "vexuf_pwm.h"
 
 void SystemClock_Config(void);
@@ -22,7 +23,9 @@ void SystemClock_Config(void);
 // TODO: Remove before release
 extern UART_HandleTypeDef huart1;
 int _write(int file, char *ptr, int len) {
-  HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 200);
+  UNUSED(file);
+  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 200);
+  return len;
 }
 
 int main(void) {
@@ -46,16 +49,18 @@ int main(void) {
   // MX_USB_DEVICE_Init(); // TODO: Enable before release
   MX_TIM10_Init();
   MX_TIM11_Init();
-  // MX_IWDG_Init();
+  // MX_IWDG_Init(); // TODO: Enable before release
 
   VexUF_GenerateSerialNumber();
-  ACTUATORS_Test(); // TODO: remove before release
+  ACTUATORS_Test();  // TODO: remove before release
+  I2C_ScanTest();    // TODO: remove before release
 
   PWM_init();
 
+  IND_BuzzOnStartUp();
+
   while (1);
 }
-
 
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -64,8 +69,8 @@ void SystemClock_Config(void) {
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType =
+      RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -76,15 +81,16 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) Error_Handler();
-  
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
+                                RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) Error_Handler();
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+    Error_Handler();
 
   HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
 
@@ -96,4 +102,3 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     HAL_IncTick();
   }
 }
-
