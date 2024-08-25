@@ -39,7 +39,7 @@ void IND_applyOnOffLevelsToGPIO(void) {
 }
 
 IndLevelOption IND_getCurrentLevel(Indicator ind) {
-  if (indConfig.globalIndeicatorEnabled == 0) return IndOFF;
+  if (indConfig.globalIndicatorEnabled == 0) return IndOFF;
 
   if ((ind == IndError || ind == IndWarn || ind == IndInfo) &&
       indConfig.statusIndicatorsEnabled != 1)
@@ -81,7 +81,7 @@ IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
 
   // Return if current status equals new status
   if (IND_getCurrentLevel(ind) == option ||
-      indConfig.globalIndeicatorEnabled != 1)
+      indConfig.globalIndicatorEnabled != 1)
     return IND_DISABLED;
 
   if ((indConfig.statusIndicatorsEnabled != 1) &&
@@ -160,7 +160,7 @@ IND_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
 }
 
 IND_STATUS IND_buzzOnError(void) {
-  if (indConfig.globalIndeicatorEnabled && indConfig.buzzerEnabled &&
+  if (indConfig.globalIndicatorEnabled && indConfig.buzzerEnabled &&
       indConfig.buzzerHoldOnError) {
     IND_setLevel(IndBuzzer, IndON);
     return IND_OK;
@@ -169,7 +169,7 @@ IND_STATUS IND_buzzOnError(void) {
 }
 
 IND_STATUS IND_BuzzOnStartUp(void) {
-  if (indConfig.globalIndeicatorEnabled && indConfig.buzzerEnabled &&
+  if (indConfig.globalIndicatorEnabled && indConfig.buzzerEnabled &&
       indConfig.buzzer1sEnabled) {
     for (uint8_t i = 0; i < 3; i++) {
       if (IND_setLevel(IndBuzzer, IndON) != IND_OK) return IND_ERROR;

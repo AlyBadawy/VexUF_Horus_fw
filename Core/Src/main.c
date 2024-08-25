@@ -32,10 +32,22 @@ int _write(int file, char *ptr, int len) {
 
 extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
+extern IndConfiguration indConfig;
 
 int main(void) {
+  /*
+    Enable indicators for the duration of the startup routine.
+    This makes sure that the initial WARN is turned on, and you
+    can show the NO-CONF error sequence.
+  */
+  indConfig.globalIndicatorEnabled = 1;
+  indConfig.statusIndicatorsEnabled = 1;
+
   HAL_Init();
+
   SystemClock_Config();
+
+  IND_setLevel(IndWarn, IndON);
 
   MX_GPIO_Init();
   MX_DMA_Init();
@@ -53,14 +65,22 @@ int main(void) {
   MX_TIM11_Init();
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
-  // MX_USB_DEVICE_Init(); // TODO: Enable before release
+
+  // TODO: Enable before release
+  // MX_USB_DEVICE_Init();
 
   VexUF_GenerateSerialNumber();
   PWM_init();
   TIMERS_Start();
 
+  // TODO: Start listening to TTL and TNC interrupts.
+
   HAL_Delay(500);
   IND_BuzzOnStartUp();
+
+  IND_setLevel(IndWarn, IndON);
+  // TODO: Apply configurations
+  // TODO: Init the screen with the number of rows as configured.
 
   // TODO: remove the following tests before release
   ADC_Test();
