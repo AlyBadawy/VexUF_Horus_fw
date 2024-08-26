@@ -26,11 +26,10 @@ typedef enum { ADC_OK, ADC_DISABLED, ADC_ERROR } ADC_STATUS;
 
 typedef struct {
   uint16_t enabled : 1;
-  uint16_t indicatorEnabled : 1;
   uint16_t statusSlow : 1;
   uint16_t statusFast : 1;
   uint16_t statusOn : 1;
-  uint16_t reserved : 11;
+  uint16_t reserved : 12;
   uint16_t minSlow;
   uint16_t maxSlow;
   uint16_t minFast;
