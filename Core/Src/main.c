@@ -25,6 +25,7 @@
 
 // TODO: Remove before release
 extern UART_HandleTypeDef huart1;
+
 int _write(int file, char *ptr, int len) {
   UNUSED(file);
   HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 200);
@@ -34,6 +35,7 @@ int _write(int file, char *ptr, int len) {
 extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConfig;
+extern OutputConfiguration outputConfig;
 
 int main(void) {
   /*
@@ -43,6 +45,8 @@ int main(void) {
   */
   indConfig.globalIndicatorEnabled = 1;
   indConfig.statusIndicatorsEnabled = 1;
+  indConfig.sdCardIndicatorEnabled = 1;
+  outputConfig.haltOnSdCardErrors = 1;
 
   HAL_Init();
 
@@ -70,8 +74,10 @@ int main(void) {
   // TODO: Enable before release
   // MX_USB_DEVICE_Init();
 
-  VexUF_GenerateSerialNumber();
+  EEPROM_93C86_init(EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
+  VexUF_GenerateSerialNumber();
+  CONFIG_SetIsConfigured();
   if (CONFIG_IsConfigured() != CONFIG_OK) ERROR_handleNoConfig();
 
   PWM_init();
@@ -97,14 +103,20 @@ int main(void) {
   // MX_IWDG_Init();
 
   while (1) {
+    SDCard_checkCard();
+    ERROR_handleSdError();
+
     if (vexufStatus.timer_10hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndFAST);
       vexufStatus.timer_10hz_ticked = 0;
+      if (vexufStatus.sdCardError == 1 || vexufStatus.sdCardEjected == 1) {
+      }
     }
 
     if (vexufStatus.timer_1hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndSLOW);
       vexufStatus.timer_1hz_ticked = 0;
+      // TODO: toggle SDCARD indicator if full and no halt on error
     }
 
     // TODO: Enable before release

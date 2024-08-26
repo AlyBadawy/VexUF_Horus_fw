@@ -30,7 +30,7 @@ EEPROM_STATUS EEPROM_93C86_Read(uint16_t address, uint16_t* data);
 EEPROM_STATUS EEPROM_93C86_ReadMultipleWords(uint16_t startAddress,
                                              uint16_t* buffer, uint16_t length);
 
-EEPROM_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t* data);
+EEPROM_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t data);
 EEPROM_STATUS EEPROM_93C86_WriteMultipleWords(uint16_t startAddress,
                                               uint16_t* buffer,
                                               uint16_t length);

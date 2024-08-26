@@ -39,20 +39,19 @@ CONFIG_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount) {
 CONFIG_STATUS CONFIG_SetIsConfigured(void) {
   uint16_t confFlag = CONFIG_FLAG;
   uint16_t confVer = CONFIG_VERSION;
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_FLAG_ADDRESS, &confFlag) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_FLAG_ADDRESS, confFlag) != EEPROM_OK)
     return CONFIG_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_VERSION_ADDRESS, &confVer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_VERSION_ADDRESS, confVer) != EEPROM_OK)
     return CONFIG_ERROR;
   if (CONFIG_WriteSerialNumber() != CONFIG_OK) return CONFIG_ERROR;
 
   uint16_t version = 0, confCount = 0;
   CONFIG_STATUS status = CONFIG_GetConfigValues(&version, &confCount);
-  if (status != CONFIG_OK) {
-    return CONFIG_ERROR;
-  }
+  if (status == CONFIG_ERROR) return CONFIG_ERROR;
+
   confCount++;
 
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_COUNT_ADDRESS, &confCount) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_COUNT_ADDRESS, confCount) != EEPROM_OK)
     return CONFIG_ERROR;
 
   vexufStatus.isConfigured = 1;
@@ -85,8 +84,7 @@ CONFIG_STATUS CONFIG_WriteSerialNumber(void) {
                                       EEPROM_SERIAL_NUMBER_LENGTH) != EEPROM_OK)
     return CONFIG_ERROR;
 
-  if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, &vexufSerial) !=
-      EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, vexufSerial) != EEPROM_OK)
     return CONFIG_ERROR;
 
   return CONFIG_OK;
@@ -157,15 +155,13 @@ CONFIG_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig) {
   uint16_t pwm1Value = pwmConfig->pwm1Value;
   uint16_t pwm2Value = pwmConfig->pwm2Value;
 
-  if (EEPROM_93C86_Write(EEPROM_PWM1_ENABLED_ADDRESS, &pwm1Enabled) !=
-      EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM1_ENABLED_ADDRESS, pwm1Enabled) != EEPROM_OK)
     return CONFIG_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_PWM1_DEFAULT_ADDRESS, &pwm1Value) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM1_DEFAULT_ADDRESS, pwm1Value) != EEPROM_OK)
     return CONFIG_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_PWM2_ENABLED_ADDRESS, &pwm2Enabled) !=
-      EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM2_ENABLED_ADDRESS, pwm2Enabled) != EEPROM_OK)
     return CONFIG_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_PWM2_DEFAULT_ADDRESS, &pwm2Value) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM2_DEFAULT_ADDRESS, pwm2Value) != EEPROM_OK)
     return CONFIG_ERROR;
 
   return CONFIG_OK;
@@ -229,7 +225,7 @@ CONFIG_STATUS CONFIG_setSerialConf(const SerialConfiguration* serialConf) {
                     ((serialConf->tnc_enabled & 0x1) << 9) |
                     ((serialConf->tnc__baud & 0xF) << 10);
 
-  if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, &buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, buffer) != EEPROM_OK)
     return CONFIG_ERROR;
   return CONFIG_OK;
 }
@@ -288,7 +284,7 @@ CONFIG_STATUS CONFIG_getSPIType(SpiType* spiType) {
 }
 CONFIG_STATUS CONFIG_setSPIType(const SpiType* spiType) {
   uint16_t buffer = (uint16_t)*spiType;
-  if (EEPROM_93C86_Write(EEPROM_SPI_TYPE_ADDRESS, &buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_SPI_TYPE_ADDRESS, buffer) != EEPROM_OK)
     return CONFIG_ERROR;
   return CONFIG_OK;
 }
@@ -324,7 +320,7 @@ CONFIG_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf) {
                     ((indConf->Av2IndEnabled & 0x1) << 8) |
                     ((indConf->Av3IndEnabled & 0x1) << 9);
 
-  if (EEPROM_93C86_Write(EEPROM_INDICATORS_ADDRESS, &buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_INDICATORS_ADDRESS, buffer) != EEPROM_OK)
     return CONFIG_ERROR;
   return CONFIG_OK;
 }

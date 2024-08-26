@@ -131,7 +131,7 @@ EEPROM_STATUS EEPROM_93C86_Read(uint16_t address, uint16_t* data) {
   return status;
 }
 
-EEPROM_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t* data) {
+EEPROM_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t data) {
   EEPROM_STATUS status = EEPROM_OK;
 
   while (EEPROM_93C86_getStatus() == EEPROM_BUSY);
@@ -151,14 +151,14 @@ EEPROM_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t* data) {
   }
 
   // Send the high byte of the 16-bit data
-  temp = (*data >> 8) & 0xFF;
+  temp = (data >> 8) & 0xFF;
   status = EEPROM_93C86_TransmitReceive(temp, &temp);
   if (status != EEPROM_OK) {
     EEPROM_93C86_CS_UNSELECT();
     return status;
   }
   // Send the low byte of the 16-bit data
-  temp = *data & 0xFF;
+  temp = data & 0xFF;
   status = EEPROM_93C86_TransmitReceive(temp, &temp);
   if (status != EEPROM_OK) {
     EEPROM_93C86_CS_UNSELECT();
@@ -244,7 +244,8 @@ void EEPROM_Test(void) {
   uint16_t data;
   EEPROM_93C86_Read(0xFFEE, &data);
   printf("EEprom says: %04X\r\n", data);
-  EEPROM_93C86_Write(0xFFEE, 0xABCD);
+  data = 0xABCD;
+  EEPROM_93C86_Write(0xFFEE, data);
   EEPROM_93C86_Read(0xFFEE, &data);
   printf("EEprom says: %04X\r\n", data);
 
