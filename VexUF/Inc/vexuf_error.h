@@ -11,5 +11,6 @@
 #include "vexuf_helpers.h"
 
 void Error_Handler(void);
+void ERROR_handleNoConfig(void);
 
-#endif // INC_VEXUF_ERROR_H
+#endif  // INC_VEXUF_ERROR_H

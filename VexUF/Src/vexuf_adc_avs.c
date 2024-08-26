@@ -66,9 +66,7 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues[NUMBER_OF_AVS],
 
     value = adcBuffer[2 + i];
     *AVsVoltages[i] = ADC_rawToVoltage(vref, adcBuffer[2 + i]);
-
-    if (avSensors[i].indicatorEnabled != 1) continue;
-
+    // TODO: Skip if indicator for that AV is disabled
     if (av.statusSlow && (value >= av.minSlow && value <= av.maxSlow)) {
       IND_setLevel(ind, IndSLOW);
     } else if (av.statusFast && (value >= av.minFast && value <= av.maxFast)) {

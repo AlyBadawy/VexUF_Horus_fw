@@ -17,13 +17,13 @@ void MX_I2C1_Init(void) {
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(i2cHandle->Instance==I2C1) {
+  if (i2cHandle->Instance == I2C1) {
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /**I2C1 GPIO Configuration
     PB6     ------> I2C1_SCL
     PB7     ------> I2C1_SDA
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -34,8 +34,8 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle) {
   }
 }
 
-void HAL_I2C_MspDeInit(I2C_HandleTypeDef * i2cHandle) {
-  if(i2cHandle->Instance==I2C1) {
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle) {
+  if (i2cHandle->Instance == I2C1) {
     __HAL_RCC_I2C1_CLK_DISABLE();
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6);
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_7);
@@ -44,11 +44,9 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef * i2cHandle) {
 
 // Function to reset the I2C peripheral
 HAL_StatusTypeDef I2C_Reset() {
-    HAL_StatusTypeDef status = HAL_OK;
+  __HAL_I2C_DISABLE(&hi2c1);
+  HAL_Delay(1);
+  __HAL_I2C_ENABLE(&hi2c1);
 
-    __HAL_I2C_DISABLE(&hi2c1);
-    HAL_Delay(1);
-    __HAL_I2C_ENABLE(&hi2c1);
-
-    return status;
+  return HAL_OK;
 }

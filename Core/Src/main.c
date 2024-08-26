@@ -15,6 +15,7 @@
 #include "usb_device.h"
 #include "vexuf_actuators.h"
 #include "vexuf_adc_avs.h"
+#include "vexuf_config.h"
 #include "vexuf_error.h"
 #include "vexuf_helpers.h"
 #include "vexuf_i2c_checker.h"
@@ -70,6 +71,9 @@ int main(void) {
   // MX_USB_DEVICE_Init();
 
   VexUF_GenerateSerialNumber();
+
+  if (CONFIG_IsConfigured() != CONFIG_OK) ERROR_handleNoConfig();
+
   PWM_init();
   TIMERS_Start();
 
@@ -79,6 +83,8 @@ int main(void) {
   IND_BuzzOnStartUp();
 
   IND_setLevel(IndWarn, IndON);
+  if (CONFIG_WriteSerialNumber() != CONFIG_OK) Error_Handler();
+
   // TODO: Apply configurations
   // TODO: Init the screen with the number of rows as configured.
 

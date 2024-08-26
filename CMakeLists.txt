@@ -53,13 +53,19 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/HD44780/Src/hd44780.c"
     "./VexUF/Src/vexuf_actuators.c"
     "./VexUF/Src/vexuf_adc_avs.c"
+    "./VexUF/Src/vexuf_config.c"
     "./VexUF/Src/vexuf_error.c"
     "./VexUF/Src/vexuf_helpers.c"
+    "./VexUF/Src/vexuf_i2c.c"
     "./VexUF/Src/vexuf_i2c_checker.c"
     "./VexUF/Src/vexuf_indicators.c"
     "./VexUF/Src/vexuf_lcd.c"
     "./VexUF/Src/vexuf_pwm.c"
+    "./VexUF/Src/vexuf_rtc.c"
+    "./VexUF/Src/vexuf_serial.c"
+    "./VexUF/Src/vexuf_spi.c"
     "./VexUF/Src/vexuf_timers.c"
+    "./VexUF/Src/vexuf_trigs.c"
 )
 
 # Add include paths

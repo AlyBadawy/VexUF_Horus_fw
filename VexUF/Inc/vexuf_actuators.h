@@ -54,7 +54,7 @@ ACT_STATUS ACTUATORS_Update(void);
 
 ACT_STATUS ACTUATORS_lights(GPIO_PinState state);
 
-void ACTUATORS_trigegr(ActuatorsValues values);
+ACT_STATUS ACTUATORS_trigger(ActuatorsValues values);
 
 void ACT_DeInit(void);
 
