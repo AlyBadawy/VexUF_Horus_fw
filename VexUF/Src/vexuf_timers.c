@@ -23,18 +23,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   }
 }
 
-void TIMERS_Start(void) {
+UF_STATUS TIMERS_Start(void) {
   // Start TIM4, TIM9, TIM5 in interrupt mode
-  HAL_TIM_Base_Start_IT(&htim4);
-  HAL_TIM_Base_Start_IT(&htim5);
-  HAL_TIM_Base_Start_IT(&htim9);
+  if (HAL_TIM_Base_Start_IT(&htim4) != HAL_OK) return UF_ERROR;
+  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK) return UF_ERROR;
+  if (HAL_TIM_Base_Start_IT(&htim9) != HAL_OK) return UF_ERROR;
+
+  return UF_OK;
 }
 
-void TIMERS_Stop(void) {
-  HAL_TIM_Base_Stop_IT(&htim4);
-  HAL_TIM_Base_Stop_IT(&htim5);
-  HAL_TIM_Base_Stop_IT(&htim9);
+UF_STATUS TIMERS_Stop(void) {
+  if (HAL_TIM_Base_Stop_IT(&htim4) != HAL_OK) return UF_ERROR;
+  if (HAL_TIM_Base_Stop_IT(&htim5) != HAL_OK) return UF_ERROR;
+  if (HAL_TIM_Base_Stop_IT(&htim9) != HAL_OK) return UF_ERROR;
   vexufStatus.timer_0d1hz_ticked = 0;
   vexufStatus.timer_1hz_ticked = 0;
   vexufStatus.timer_10hz_ticked = 0;
+
+  return UF_OK;
 }
