@@ -10,6 +10,9 @@
 #include "vexuf_adc_avs.h"
 #include "vexuf_helpers.h"
 
+void IND_applyOnOffLevelsToGPIO(void);
+IndLevelOption IND_getCurrentLevel(Indicator ind);
+
 IndLevels indLevels;
 IndConfiguration indConfig;
 
@@ -22,8 +25,6 @@ static IndicatorPin indicatorPins[] = {
     {Av3Indicator_GPIO_Port, Av3Indicator_Pin},
     {Buzzer_GPIO_Port, Buzzer_Pin},
     {SdioInd_GPIO_Port, SdioInd_Pin}};
-
-void IND_applyOnOffLevelsToGPIO(void);
 
 void IND_applyOnOffLevelsToGPIO(void) {
   for (Indicator ind = IndError; ind <= IndSdio; ind++) {
@@ -76,25 +77,25 @@ IndLevelOption IND_getCurrentLevel(Indicator ind) {
   }
 }
 
-IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
-  IND_STATUS status = IND_OK;
+UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
+  UF_STATUS status = UF_OK;
 
   // Return if current status equals new status
   if (IND_getCurrentLevel(ind) == option ||
       indConfig.globalIndicatorEnabled != 1)
-    return IND_DISABLED;
+    return UF_DISABLED;
 
   if ((indConfig.statusIndicatorsEnabled != 1) &&
       (ind == IndError || ind == IndWarn || ind == IndInfo))
-    return IND_DISABLED;
+    return UF_DISABLED;
 
-  if (indConfig.buzzerEnabled != 1 && ind == IndBuzzer) return IND_DISABLED;
+  if (indConfig.buzzerEnabled != 1 && ind == IndBuzzer) return UF_DISABLED;
   if (indConfig.sdCardIndicatorEnabled != 1 && ind == IndSdio)
-    return IND_DISABLED;
+    return UF_DISABLED;
 
   if (indConfig.AvGlobalIndEnabled != 1 &&
       (ind == IndAv1 || ind == IndAv2 || ind == IndAv3))
-    return IND_DISABLED;
+    return UF_DISABLED;
 
   // Special handling for mutual exclusivity
   if ((option != IndOFF) &&
@@ -102,7 +103,7 @@ IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
     indLevels.indErrorLevel = IndOFF;
     indLevels.indWarnLevel = IndOFF;
     indLevels.indInfoLevel = IndOFF;
-    status = IND_OVERWRITTEN;
+    status = UF_OVERWRITTEN;
   }
 
   switch (ind) {
@@ -127,7 +128,7 @@ IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
     case (IndBuzzer):
       if (option == IndFAST) {
         indLevels.indBuzzerLevel = IndSLOW;
-        status = IND_OVERWRITTEN;
+        status = UF_OVERWRITTEN;
       } else {
         indLevels.indBuzzerLevel = option;
       }
@@ -135,7 +136,7 @@ IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
     case (IndSdio):
       if (option == IndFAST || option == IndSLOW) {
         indLevels.indSdioLevel = IndON;
-        status = IND_OVERWRITTEN;
+        status = UF_OVERWRITTEN;
       } else {
         indLevels.indSdioLevel = option;
       }
@@ -147,8 +148,8 @@ IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
   return status;
 }
 
-IND_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
-  if (option == IndON || option == IndOFF) return IND_ERROR;  // Invalid status
+UF_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
+  if (option == IndON || option == IndOFF) return UF_ERROR;  // Invalid status
 
   for (Indicator ind = IndError; ind <= IndAv3; ind++) {
     IndLevelOption lo = IND_getCurrentLevel(ind);
@@ -156,28 +157,28 @@ IND_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
       HAL_GPIO_TogglePin(indicatorPins[ind].port, indicatorPins[ind].pin);
     }
   }
-  return IND_OK;
+  return UF_OK;
 }
 
-IND_STATUS IND_buzzOnError(void) {
+UF_STATUS IND_buzzOnError(void) {
   if (indConfig.globalIndicatorEnabled && indConfig.buzzerEnabled &&
       indConfig.buzzerHoldOnError) {
     IND_setLevel(IndBuzzer, IndON);
-    return IND_OK;
+    return UF_OK;
   }
-  return IND_DISABLED;
+  return UF_DISABLED;
 }
 
-IND_STATUS IND_BuzzOnStartUp(void) {
+UF_STATUS IND_BuzzOnStartUp(void) {
   if (indConfig.globalIndicatorEnabled && indConfig.buzzerEnabled &&
       indConfig.buzzer1sEnabled) {
     for (uint8_t i = 0; i < 3; i++) {
-      if (IND_setLevel(IndBuzzer, IndON) != IND_OK) return IND_ERROR;
+      if (IND_setLevel(IndBuzzer, IndON) != UF_OK) return UF_ERROR;
       HAL_Delay(20);
-      if (IND_setLevel(IndBuzzer, IndOFF) != IND_OK) return IND_ERROR;
+      if (IND_setLevel(IndBuzzer, IndOFF) != UF_OK) return UF_ERROR;
       HAL_Delay(40);
     }
-    return IND_OK;
+    return UF_OK;
   }
-  return IND_DISABLED;
+  return UF_DISABLED;
 }
