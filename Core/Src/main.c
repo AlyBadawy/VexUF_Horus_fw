@@ -78,10 +78,10 @@ int main(void) {
 
   VexUF_GenerateSerialNumber();
   CONFIG_SetIsConfigured();
-  if (CONFIG_IsConfigured() != CONFIG_OK) ERROR_handleNoConfig();
+  if (CONFIG_IsConfigured() != UF_OK) ERROR_handleNoConfig();
 
   // TODO: Apply configurations
-  if (CONFIG_WriteSerialNumber() != CONFIG_OK) Error_Handler();
+  if (CONFIG_WriteSerialNumber() != UF_OK) Error_Handler();
 
   PWM_init();
   TIMERS_Start();
