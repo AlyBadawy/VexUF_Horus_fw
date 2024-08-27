@@ -10,20 +10,23 @@
 extern TIM_HandleTypeDef htim10;  // Servo 2 Timer
 extern TIM_HandleTypeDef htim11;  // Servo 1 Timer
 
-UF_Status PWM_Start(PwmChannel channel);
-UF_Status PWM_Stop(PwmChannel channel);
+void PWM_Start(PwmChannel channel);
+void PWM_Stop(PwmChannel channel);
 
 PwmConfiguration pwmConfig;
 
-UF_Status PWM_init(void) {
-  if ((PWM_Start(PwmChannel1) != UF_ERROR) &&
-      PWM_Start(PwmChannel2) != UF_ERROR) {
-    return UF_OK;
+void PWM_init(void) {
+  if (pwmConfig.pwm1Enabled == 1 && pwmConfig.pwm1Value <= 1000) {
+    PWM_Start(PwmChannel1);
+    PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value);
   }
-  return UF_ERROR;
+  if (pwmConfig.pwm2Enabled == 1 && pwmConfig.pwm2Value <= 1000) {
+    PWM_Start(PwmChannel2);
+    PWM_setDutyCycle(PwmChannel2, pwmConfig.pwm2Value);
+  }
 }
 
-UF_Status PWM_enable(PwmChannel channel) {
+void PWM_enable(PwmChannel channel) {
   switch (channel) {
     case PwmChannel1:
       pwmConfig.pwm1Enabled = 1;
@@ -34,74 +37,74 @@ UF_Status PWM_enable(PwmChannel channel) {
     default:
       break;
   }
-  return PWM_init();
+  PWM_init();
 }
 
-UF_Status PWM_Start(PwmChannel channel) {
+void PWM_Start(PwmChannel channel) {
   switch (channel) {
     case PwmChannel1:
-      if (pwmConfig.pwm1Enabled != 1) return UF_DISABLED;
-      return HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1) == HAL_OK ? UF_OK
-                                                                 : UF_ERROR;
+      if (pwmConfig.pwm1Enabled != 1) return;
+      HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
+      break;
     case PwmChannel2:
-      if (pwmConfig.pwm2Enabled != 1) return UF_DISABLED;
-      return HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1) == HAL_OK ? UF_OK
-                                                                 : UF_ERROR;
+      if (pwmConfig.pwm2Enabled != 1) return;
+      HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
+      break;
     default:
-      UF_ERROR;
+      break;
   }
 }
 
-UF_Status PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle) {
-  if (dutyCycle == 0xFFFF) return UF_OK;  // 0xFFFF means leave unchanged
-  if (dutyCycle > 0x0FFF) return UF_ERROR;
+void PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle) {
+  if (dutyCycle == 0xFFFF) return;  // 0xFFFF means leave unchanged
+
+  if (dutyCycle > 1000) dutyCycle = 1000;
 
   switch (channel) {
     case PwmChannel1:
-      if (pwmConfig.pwm1Enabled != 1) return UF_DISABLED;
+      if (pwmConfig.pwm1Enabled != 1) return;
       __HAL_TIM_SET_COMPARE(&htim11, TIM_CHANNEL_1, dutyCycle);
-      return UF_OK;
+      break;
     case PwmChannel2:
-      if (pwmConfig.pwm2Enabled != 1) return UF_DISABLED;
+      if (pwmConfig.pwm2Enabled != 1) return;
       __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, dutyCycle);
-      return UF_OK;
+      break;
     default:
-      return UF_ERROR;
+      break;
   }
 }
 
-UF_Status PWM_Stop(PwmChannel channel) {
+void PWM_Stop(PwmChannel channel) {
   switch (channel) {
     case PwmChannel1:
-      if (PWM_setDutyCycle(TIM_CHANNEL_1, 0) != UF_OK) return UF_ERROR;
-      if (HAL_TIM_PWM_Stop(&htim11, TIM_CHANNEL_1) != HAL_OK) return UF_ERROR;
-      return UF_OK;
+      PWM_setDutyCycle(TIM_CHANNEL_1, 0);
+      HAL_TIM_PWM_Stop(&htim11, TIM_CHANNEL_1);
+      break;
     case PwmChannel2:
-      if (PWM_setDutyCycle(TIM_CHANNEL_2, 0) != UF_OK) return UF_ERROR;
-      if (HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1) != HAL_OK) return UF_ERROR;
-      return UF_OK;
+      PWM_setDutyCycle(TIM_CHANNEL_2, 0);
+      HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
+      break;
     default:
-      return UF_ERROR;
+      break;
   }
 }
 
-UF_Status PWM_disable(PwmChannel channel) {
+void PWM_disable(PwmChannel channel) {
   switch (channel) {
     case PwmChannel1:
       pwmConfig.pwm1Enabled = 0;
-      return PWM_Stop(PwmChannel1);
+      PWM_Stop(PwmChannel1);
+      break;
     case PwmChannel2:
       pwmConfig.pwm2Enabled = 0;
-      return PWM_Stop(PwmChannel2);
+      PWM_Stop(PwmChannel2);
+      break;
     default:
-      return UF_ERROR;
+      break;
   }
 }
 
-UF_Status PWM_deinit(void) {
-  if ((PWM_disable(PwmChannel1) != UF_ERROR) &&
-      PWM_disable(PwmChannel2) != UF_ERROR) {
-    return UF_OK;
-  }
-  return UF_ERROR;
+void PWM_deinit(void) {
+  PWM_disable(PwmChannel1);
+  PWM_disable(PwmChannel2);
 }
