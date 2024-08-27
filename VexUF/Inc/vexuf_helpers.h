@@ -16,8 +16,6 @@
 #define SERIAL_NUMBER_LENGTH 24
 #define CALLSIGN_LENGTH 20
 
-typedef enum { UF_OK, UF_DISABLED, UF_ERROR } UF_Status;
-
 typedef struct {
   uint16_t isConfigured : 1;
   uint16_t timer_1hz_ticked : 1;

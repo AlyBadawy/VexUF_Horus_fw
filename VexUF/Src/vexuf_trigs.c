@@ -24,10 +24,10 @@ TRIGS_Status TRIGS_runAll(void) {
     return TRIGS_ERROR;
   }
 
-  if (PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value) != UF_OK)
-    return TRIGS_ERROR;
-  if (PWM_setDutyCycle(PwmChannel2, pwmConfig.pwm2Value) != UF_OK)
-    return TRIGS_ERROR;
+  // TODO: Check the status of PWM calls.
+  // If any of them fails, return TRIGS_ERROR.
+  PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value);
+  PWM_setDutyCycle(PwmChannel2, pwmConfig.pwm2Value);
 
   return TRIGS_OK;
 }

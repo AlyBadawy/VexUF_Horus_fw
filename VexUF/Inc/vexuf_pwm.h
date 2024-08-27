@@ -10,8 +10,6 @@
 
 #include "vexuf_helpers.h"
 
-typedef enum { PWM_OK, PWM_ERROR, PW } PWM_Status;
-
 typedef enum {
   PwmChannel1 = 0,
   PwmChannel2 = 1,
@@ -24,10 +22,10 @@ typedef struct {
   uint16_t pwm2Value;
 } PwmConfiguration;
 
-UF_Status PWM_init(void);
-UF_Status PWM_enable(PwmChannel channel);
-UF_Status PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle);
-UF_Status PWM_disable(PwmChannel channel);
-UF_Status PWM_deinit(void);
+void PWM_init(void);
+void PWM_enable(PwmChannel channel);
+void PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle);
+void PWM_disable(PwmChannel channel);
+void PWM_deinit(void);
 
 #endif /* VEXUF_VEXUF_PWM_H_ */
