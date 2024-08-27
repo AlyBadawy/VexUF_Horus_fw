@@ -11,7 +11,7 @@ extern I2C_HandleTypeDef hi2c1;
 
 // Function to scan I2C bus for devices and store found addresses in the
 // provided buffer
-void I2C_Scan(uint8_t *foundDevices, uint8_t *foundDevicesCount) {
+UF_STATUS I2C_Scan(uint8_t *foundDevices, uint8_t *foundDevicesCount) {
   uint8_t i2c_address;
   HAL_StatusTypeDef result;
   uint8_t count = 0;
@@ -22,8 +22,8 @@ void I2C_Scan(uint8_t *foundDevices, uint8_t *foundDevicesCount) {
       foundDevices[count++] = i2c_address;
     }
   }
-
   *foundDevicesCount = count;
+  return UF_OK;
 }
 
 void I2C_ScanTest(void) {

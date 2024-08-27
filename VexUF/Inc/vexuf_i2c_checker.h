@@ -8,10 +8,10 @@
 #ifndef INC_VEXUF_I2C_CHECKER_H_
 #define INC_VEXUF_I2C_CHECKER_H_
 
+#include "vexuf.h"
 #include "vexuf_helpers.h"
 
-
-void I2C_Scan(uint8_t *foundDevices, uint8_t *foundDevicesCount);
+UF_STATUS I2C_Scan(uint8_t *foundDevices, uint8_t *foundDevicesCount);
 void I2C_ScanTest(void);
 
 #endif /* INC_VEXUF_I2C_CHECKER_H_ */
