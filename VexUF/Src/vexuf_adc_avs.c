@@ -12,6 +12,12 @@
 
 extern ADC_HandleTypeDef hadc1;
 
+float cpuTempC;
+float AVsVoltages[3];
+uint32_t AVsRawValues[3];
+uint32_t adcBuffer[5];
+AvSensor avSensors[NUMBER_OF_AVS];
+
 /*
  * avsBuffer:
  * 0: VrefValue
@@ -20,9 +26,6 @@ extern ADC_HandleTypeDef hadc1;
  * 3: AV2 Raw Value
  * 4: AV3 Raw Value
  */
-uint32_t adcBuffer[5];
-
-AvSensor avSensors[NUMBER_OF_AVS];
 
 ADC_STATUS ADC_getVref(float* vref);
 float ADC_rawToVoltage(float vref, uint32_t adcValue);
@@ -51,6 +54,10 @@ ADC_STATUS ADC_getCpuTempC(float vref, float* cpuTempC) {
 ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
                     float* AVsVoltages) {
   float vref;
+  Indicator ind;
+  AvSensor av;
+  uint32_t value;
+
   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer, 5) != HAL_OK)
     return ADC_ERROR;
   HAL_Delay(50);
@@ -60,9 +67,8 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
   if (ADC_getCpuTempC(vref, cpuTempC) == ADC_ERROR) return ADC_ERROR;
 
   for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
-    Indicator ind = IndAv1 + i;
-    AvSensor av;
-    uint32_t value = 0;
+    ind = IndAv1 + i;
+    value = 0;
     AVsRawValues[i] = 0;
     memcpy(&av, &avSensors[i], sizeof(AvSensor));
 
@@ -91,10 +97,6 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
 }
 
 void ADC_Test(void) {
-  float cpuTempC;
-  uint32_t AVsRawValues[3];
-  float AVsVoltages[3];
-
   ADC_Scan(&cpuTempC, AVsRawValues, AVsVoltages);
 
   printf("\r\n");

@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include "93c86.h"
 #include "adc.h"
 #include "clock.h"
 #include "dma.h"
@@ -121,7 +122,7 @@ int main(void) {
       // TODO: toggle SDCARD indicator if full and no halt on error
     }
     if (vexufStatus.timer_0d1hz_ticked == 1) {
-      HAL_Delay(250);
+      TRIGS_runAll();
       vexufStatus.timer_0d1hz_ticked = 0;
     }
     HAL_IWDG_Refresh(&hiwdg);
