@@ -23,7 +23,6 @@
 #include "vexuf_pwm.h"
 #include "vexuf_timers.h"
 
-// TODO: Remove before release
 extern UART_HandleTypeDef huart1;
 int _write(int file, char *ptr, int len) {
   UNUSED(file);
@@ -34,6 +33,7 @@ int _write(int file, char *ptr, int len) {
 extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConfig;
+extern OutputConfiguration outputConfig;
 
 int main(void) {
   /*
@@ -43,6 +43,8 @@ int main(void) {
   */
   indConfig.globalIndicatorEnabled = 1;
   indConfig.statusIndicatorsEnabled = 1;
+  indConfig.sdCardIndicatorEnabled = 1;
+  outputConfig.haltOnSdCardErrors = 1;
 
   HAL_Init();
 
@@ -70,9 +72,15 @@ int main(void) {
   // TODO: Enable before release
   // MX_USB_DEVICE_Init();
 
-  VexUF_GenerateSerialNumber();
+  HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_SET);
+  EEPROM_93C86_init(EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
+  VexUF_GenerateSerialNumber();
+  CONFIG_SetIsConfigured();
   if (CONFIG_IsConfigured() != CONFIG_OK) ERROR_handleNoConfig();
+
+  // TODO: Apply configurations
+  if (CONFIG_WriteSerialNumber() != CONFIG_OK) Error_Handler();
 
   PWM_init();
   TIMERS_Start();
@@ -82,32 +90,40 @@ int main(void) {
   HAL_Delay(500);
   IND_BuzzOnStartUp();
 
-  IND_setLevel(IndWarn, IndON);
-  if (CONFIG_WriteSerialNumber() != CONFIG_OK) Error_Handler();
-
-  // TODO: Apply configurations
   // TODO: Init the screen with the number of rows as configured.
 
   // TODO: remove the following tests before release
   ADC_Test();
   ACTUATORS_Test();
   I2C_ScanTest();
+  // END OF TESTS
 
-  // TODO: Enable before release
-  // MX_IWDG_Init();
+  HAL_Delay(500);
+  printf("VexUF Horus is ready.\n");
+  HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_RESET);
+
+  MX_IWDG_Init();
 
   while (1) {
+    SDCard_checkCard();
+    ERROR_handleSdError();
+
     if (vexufStatus.timer_10hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndFAST);
       vexufStatus.timer_10hz_ticked = 0;
+      if (vexufStatus.sdCardError == 1 || vexufStatus.sdCardEjected == 1) {
+      }
     }
 
     if (vexufStatus.timer_1hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndSLOW);
       vexufStatus.timer_1hz_ticked = 0;
+      // TODO: toggle SDCARD indicator if full and no halt on error
     }
-
-    // TODO: Enable before release
-    // HAL_IWDG_Refresh(&hiwdg);
+    if (vexufStatus.timer_0d1hz_ticked == 1) {
+      HAL_Delay(250);
+      vexufStatus.timer_0d1hz_ticked = 0;
+    }
+    HAL_IWDG_Refresh(&hiwdg);
   }
 }

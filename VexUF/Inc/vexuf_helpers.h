@@ -23,11 +23,13 @@ typedef struct {
   uint16_t timer_0d1hz_ticked : 1;
   uint16_t noConfigError : 1;
   uint16_t sdCardError : 1;
-  uint16_t sdCardPresent : 1;
+  uint16_t sdCardEjected : 1;
+  uint16_t sdCardFull : 1;
+  uint16_t sdCardMounted : 1;
   uint16_t ttlBuffered : 1;
   uint16_t tncBuffered : 1;
   uint16_t cdcBuffered : 1;
-  uint16_t reserved : 6;
+  uint16_t reserved : 4;
 } VexufStatus;
 
 float cToF(float c);

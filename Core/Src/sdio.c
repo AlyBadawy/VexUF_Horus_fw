@@ -4,14 +4,13 @@ SD_HandleTypeDef hsd;
 DMA_HandleTypeDef hdma_sdio;
 
 void MX_SDIO_SD_Init(void) {
-
-hsd.Instance = SDIO;
+  hsd.Instance = SDIO;
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
+  hsd.Init.ClockDiv = 8;
   if (HAL_SD_Init(&hsd) == HAL_OK) {
     HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B);
   }
@@ -20,7 +19,7 @@ hsd.Instance = SDIO;
 void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  if(sdHandle->Instance==SDIO) {
+  if (sdHandle->Instance == SDIO) {
     __HAL_RCC_SDIO_CLK_ENABLE();
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -33,18 +32,18 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle) {
     PC12     ------> SDIO_CK
     PD2     ------> SDIO_CMD
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_12;
+    GPIO_InitStruct.Pin =
+        GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
@@ -64,11 +63,12 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle) {
     if (HAL_DMA_Init(&hdma_sdio) != HAL_OK) Error_Handler();
 
     /* Several peripheral DMA handle pointers point to the same DMA handle.
-     Be aware that there is only one stream to perform all the requested DMAs. */
+     Be aware that there is only one stream to perform all the requested DMAs.
+   */
     /* Be sure to change transfer direction before calling
      HAL_SD_ReadBlocks_DMA or HAL_SD_WriteBlocks_DMA. */
-    __HAL_LINKDMA(sdHandle,hdmarx,hdma_sdio);
-    __HAL_LINKDMA(sdHandle,hdmatx,hdma_sdio);
+    __HAL_LINKDMA(sdHandle, hdmarx, hdma_sdio);
+    __HAL_LINKDMA(sdHandle, hdmatx, hdma_sdio);
 
     HAL_NVIC_SetPriority(SDIO_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(SDIO_IRQn);
@@ -76,7 +76,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle) {
 }
 
 void HAL_SD_MspDeInit(SD_HandleTypeDef* sdHandle) {
-  if(sdHandle->Instance==SDIO) {
+  if (sdHandle->Instance == SDIO) {
     __HAL_RCC_SDIO_CLK_DISABLE();
 
     /**SDIO GPIO Configuration
@@ -87,8 +87,8 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef* sdHandle) {
     PC12     ------> SDIO_CK
     PD2     ------> SDIO_CMD
     */
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 |
+                               GPIO_PIN_12);
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 

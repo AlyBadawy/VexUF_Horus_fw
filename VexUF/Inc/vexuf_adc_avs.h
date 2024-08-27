@@ -38,8 +38,8 @@ typedef struct {
   uint16_t maxOn;
 } AvSensor;
 
-ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues[NUMBER_OF_AVS],
-                    float* AVsVoltages[NUMBER_OF_AVS]);
+ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
+                    float* AVsVoltages);
 
 #if defined(DEBUG)
 

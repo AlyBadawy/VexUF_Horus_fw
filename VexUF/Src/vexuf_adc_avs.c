@@ -10,6 +10,8 @@
 #include "vexuf_helpers.h"
 #include "vexuf_indicators.h"
 
+extern ADC_HandleTypeDef hadc1;
+
 /*
  * avsBuffer:
  * 0: VrefValue
@@ -46,9 +48,14 @@ ADC_STATUS ADC_getCpuTempC(float vref, float* cpuTempC) {
   return ADC_OK;
 }
 
-ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues[NUMBER_OF_AVS],
-                    float* AVsVoltages[NUMBER_OF_AVS]) {
+ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
+                    float* AVsVoltages) {
   float vref;
+  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer, 5) != HAL_OK)
+    return ADC_ERROR;
+  HAL_Delay(50);
+  if (HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) return ADC_ERROR;
+
   if (ADC_getVref(&vref) == ADC_ERROR) return ADC_ERROR;
   if (ADC_getCpuTempC(vref, cpuTempC) == ADC_ERROR) return ADC_ERROR;
 
@@ -56,7 +63,7 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues[NUMBER_OF_AVS],
     Indicator ind = IndAv1 + i;
     AvSensor av;
     uint32_t value = 0;
-    *AVsRawValues[i] = 0;
+    AVsRawValues[i] = 0;
     memcpy(&av, &avSensors[i], sizeof(AvSensor));
 
     if (av.enabled != 1) {
@@ -65,7 +72,7 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues[NUMBER_OF_AVS],
     }
 
     value = adcBuffer[2 + i];
-    *AVsVoltages[i] = ADC_rawToVoltage(vref, adcBuffer[2 + i]);
+    AVsVoltages[i] = ADC_rawToVoltage(vref, adcBuffer[2 + i]);
     // TODO: Skip if indicator for that AV is disabled
     if (av.statusSlow && (value >= av.minSlow && value <= av.maxSlow)) {
       IND_setLevel(ind, IndSLOW);
@@ -83,23 +90,22 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues[NUMBER_OF_AVS],
   return ADC_OK;
 }
 
-// TODO: Remove before release
 void ADC_Test(void) {
   float cpuTempC;
   uint32_t AVsRawValues[3];
   float AVsVoltages[3];
 
-  ADC_Scan(&cpuTempC, &AVsRawValues, &AVsVoltages);
+  ADC_Scan(&cpuTempC, AVsRawValues, AVsVoltages);
 
   printf("\r\n");
   printf("Testing ADC functionality...\r\n");
   printf("  Temperature CPU Raw: %lu\r\n", adcBuffer[1]);
-  printf("  Temperature CPU C: %0.2f\r\n", cpuTempC);
+  printf("  Temperature CPU C: %.2f\r\n", cpuTempC);
   printf("  Temperature CPU F: %0.2f\r\n", cToF(cpuTempC));
   printf("  Av1 Raw: %lu\r\n", AVsRawValues[0]);
-  printf("  Av1 Volt: %0.3fV\r\n", AVsVoltages[0]);
+  printf("  Av1 Volt: %0.03fV\r\n", AVsVoltages[0]);
   printf("  Av2 Raw: %lu\r\n", AVsRawValues[1]);
-  printf("  Av2 Volt: %0.3fV\r\n", AVsVoltages[1]);
+  printf("  Av2 Volt: %0.03fV\r\n", AVsVoltages[1]);
   printf("  Av3 Raw: %lu\r\n", AVsRawValues[2]);
-  printf("  Av4 Volt: %0.3fV\r\n", AVsVoltages[2]);
+  printf("  Av4 Volt: %0.03fV\r\n", AVsVoltages[2]);
 }

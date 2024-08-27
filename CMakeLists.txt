@@ -60,8 +60,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./VexUF/Src/vexuf_i2c_checker.c"
     "./VexUF/Src/vexuf_indicators.c"
     "./VexUF/Src/vexuf_lcd.c"
+    "./VexUF/Src/vexuf_outputs.c"
     "./VexUF/Src/vexuf_pwm.c"
     "./VexUF/Src/vexuf_rtc.c"
+    "./VexUF/Src/vexuf_sd_card.c"
     "./VexUF/Src/vexuf_serial.c"
     "./VexUF/Src/vexuf_spi.c"
     "./VexUF/Src/vexuf_timers.c"
@@ -88,3 +90,36 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
     # Add user defined libraries
 )
+
+# Add the floating-point support for printf
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u _printf_float")
+
+
+# Generate HEX and BIN files and copy them if the build type is Release or MinSizeRel
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    # Define the output directory
+    set(OUTPUT_DIR "${PROJECT_SOURCE_DIR}/binaries/${CMAKE_BUILD_TYPE}")
+
+    # Create the output directory if it doesn't exist
+    file(MAKE_DIRECTORY ${OUTPUT_DIR})
+
+    # Convert ELF to HEX
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${CMAKE_PROJECT_NAME}> ${CMAKE_PROJECT_NAME}.hex
+        COMMENT "Building ${CMAKE_PROJECT_NAME}.hex"
+    )
+
+    # Convert ELF to BIN
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${CMAKE_PROJECT_NAME}> ${CMAKE_PROJECT_NAME}.bin
+        COMMENT "Building ${CMAKE_PROJECT_NAME}.bin"
+    )
+
+    # Copy the files to the output directory
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CMAKE_PROJECT_NAME}> ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.elf
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_PROJECT_NAME}.hex ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.hex
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_PROJECT_NAME}.bin ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.bin
+        COMMENT "Copying files to ${OUTPUT_DIR}"
+    )
+endif()
