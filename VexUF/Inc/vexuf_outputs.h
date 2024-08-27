@@ -12,4 +12,14 @@ typedef struct {
 
 } OutputConfiguration;
 
+typedef struct {
+  uint16_t buzz : 1;
+  uint16_t info : 1;
+  uint16_t log : 1;
+  uint16_t pwm1_change : 1;
+  uint16_t pwm2_change : 1;
+  uint16_t reserved : 11;
+
+} AlarmOrTrigOutput;
+
 #endif  // VEXUF_OUTPUTS_H_

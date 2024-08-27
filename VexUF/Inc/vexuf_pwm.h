@@ -11,17 +11,16 @@
 #include "vexuf_helpers.h"
 
 typedef enum {
-	PwmChannel1 = 0,
-	PwmChannel2 = 1,
+  PwmChannel1 = 0,
+  PwmChannel2 = 1,
 } PwmChannel;
 
 typedef struct {
-	uint8_t pwm1Enabled;
-	uint8_t pwm2Enabled;
-	uint16_t pwm1Value;
-	uint16_t pwm2Value;
+  uint8_t pwm1Enabled;
+  uint8_t pwm2Enabled;
+  uint16_t pwm1Value;
+  uint16_t pwm2Value;
 } PwmConfiguration;
-
 
 void PWM_init(void);
 void PWM_enable(PwmChannel channel);

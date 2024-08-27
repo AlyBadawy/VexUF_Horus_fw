@@ -3,18 +3,18 @@
 
 #include "vexuf_actuators.h"
 #include "vexuf_helpers.h"
+#include "vexuf_outputs.h"
+#include "vexuf_pwm.h"
 
 #define NUMBER_OF_TRIGGERS 25
 
-typedef struct {
-  uint16_t buzz : 1;
-  uint16_t info : 1;
-  uint16_t log : 1;
-  uint16_t pwm1_change : 1;
-  uint16_t pwm2_change : 1;
-  uint16_t reserved : 11;
-
-} AlarmOrTrigOutput;
+typedef enum {
+  TRIGS_OK,
+  TRIGS_DISABLED,
+  TRIGS_TRIGGERED,
+  TRIGS_NOT_TRIGGERED,
+  TRIGS_ERROR
+} TRIGS_Status;
 
 typedef enum {
   noTest = 0,
@@ -58,5 +58,8 @@ typedef struct {
   uint16_t tnc2Path : 3;
   uint16_t tnc2Message : 4;
 } TriggerConfiguration;
+
+TRIGS_Status TRIGS_runAll(void);
+TRIGS_Status TRIGS_runTrigger(uint8_t idx);
 
 #endif  // VEXUF_TRIGS_H_
