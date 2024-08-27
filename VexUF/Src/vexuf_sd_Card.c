@@ -16,15 +16,17 @@ DWORD FreeClusters;
 SDCARD_STATUS SDCard_MountFS() {
   char cardLabel[12];
   // Add a delay to ensure the SD card is ready
-
-  FRESULT rs = f_mount(NULL, "", 1);  // Unmount the filesystem
+  HAL_Delay(10);
+  FRESULT rs = f_mount(NULL, "", 0);  // Unmount the filesystem
+  HAL_Delay(30);                      // Short delay
   HAL_SD_DeInit(&hsd);
   __HAL_RCC_SDIO_FORCE_RESET();
   HAL_Delay(10);  // Short delay
   __HAL_RCC_SDIO_RELEASE_RESET();
   MX_SDIO_SD_Init();  // Reinitialize SDIO peripheral
-
+  HAL_Delay(10);      // Short delay
   rs = f_mount(&FatFs, SDPath, 1);
+  if (rs != FR_OK) return SDCARD_ERROR;
 
   if (f_getlabel("", cardLabel, NULL) != FR_OK) return SDCARD_ERROR;
 

@@ -58,6 +58,6 @@ ACT_STATUS ACTUATORS_trigger(ActuatorsValues values);
 
 void ACT_DeInit(void);
 
-void ACTUATORS_Test(void);  // TODO: Remove before release
+void ACTUATORS_Test(void);
 
 #endif /* INC_VEXUF_ACTUATORS_H_ */

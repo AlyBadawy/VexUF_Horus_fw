@@ -70,7 +70,6 @@ void ACT_DeInit(void) {
   actConf.actuators_lights_enabled = 0;
 }
 
-// TODO: Remove before release
 void ACTUATORS_Test(void) {
   ActuatorsConfiguration newconf;
   newconf.actuators_enabled = 1;

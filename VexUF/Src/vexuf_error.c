@@ -26,12 +26,22 @@ void ERROR_ConfigLoop() {
   }
 }
 void ERROR_SdCardLoop(uint16_t delay) {
+  printf("SD card error detected\n");
   SDCARD_STATUS status = SDCARD_ERROR;
   IND_buzzOnError();
   TIMERS_Stop();
   PWM_deinit();
   while (status != SDCARD_OK) {
     HAL_IWDG_Refresh(&hiwdg);
+    while (status != SDCARD_OK &&
+           HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) ==
+               GPIO_PIN_RESET) {
+      printf("SD card error detected while inserted\n");
+      if (SDCard_MountFS() == SDCARD_OK) {
+        printf("SD card mounted successfully\n");
+        status = SDCARD_OK;
+      }
+    }
     IND_setLevel(IndSdio, IndON);
     IND_setLevel(IndError, IndOFF);
     HAL_Delay(delay);
@@ -47,6 +57,7 @@ void ERROR_SdCardLoop(uint16_t delay) {
       status = SDCARD_OK;
     }
   }
+  printf("SD card error resolved\n");
   IND_setLevel(IndError, IndOFF);
   IND_setLevel(IndSdio, IndOFF);
   IND_setLevel(IndBuzzer, IndOFF);
