@@ -4,6 +4,7 @@
 typedef enum {
   UF_OK,
   UF_DISABLED,
+  UF_NOT_CONFIGURED,
   UF_OVERWRITTEN,
   UF_ERROR,
   UF_HARD_ERROR

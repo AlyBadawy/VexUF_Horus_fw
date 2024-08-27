@@ -8,6 +8,7 @@
 #ifndef INC_VEXUF_CONFIG_H_
 #define INC_VEXUF_CONFIG_H_
 
+#include "vexuf.h"
 #include "vexuf_actuators.h"
 #include "vexuf_adc_avs.h"
 #include "vexuf_helpers.h"
@@ -107,55 +108,54 @@
 
 typedef enum { CONFIG_OK, CONFIG_ERROR, CONFIG_NOT_CONFIGURED } CONFIG_STATUS;
 
-CONFIG_STATUS CONFIG_IsConfigured(void);
-CONFIG_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount);
-CONFIG_STATUS CONFIG_SetIsConfigured(void);
+UF_STATUS CONFIG_IsConfigured(void);
+UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount);
+UF_STATUS CONFIG_SetIsConfigured(void);
 
-CONFIG_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]);
-CONFIG_STATUS CONFIG_WriteSerialNumber(void);
+UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]);
+UF_STATUS CONFIG_WriteSerialNumber(void);
 
-CONFIG_STATUS CONFIG_getRegNumber(uint32_t* regNumber);
-CONFIG_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber);
+UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber);
+UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber);
 
-CONFIG_STATUS CONFIG_LoadCallSign(char* callsign[CALLSIGN_LENGTH]);
-CONFIG_STATUS CONFIG_SetCallSign(const char* newCallSign[CALLSIGN_LENGTH]);
+UF_STATUS CONFIG_LoadCallSign(char* callsign[CALLSIGN_LENGTH]);
+UF_STATUS CONFIG_SetCallSign(const char* newCallSign[CALLSIGN_LENGTH]);
 
-CONFIG_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer);
-CONFIG_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig);
+UF_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer);
+UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig);
 
-CONFIG_STATUS CONFIG_getActuators(ActuatorsConfiguration* actConf,
-                                  ActuatorsValues* ActValues);
-CONFIG_STATUS CONFIG_setActuators(const ActuatorsConfiguration* actConf,
-                                  const ActuatorsValues* actValues);
+UF_STATUS CONFIG_getActuators(ActuatorsConfiguration* actConf,
+                              ActuatorsValues* ActValues);
+UF_STATUS CONFIG_setActuators(const ActuatorsConfiguration* actConf,
+                              const ActuatorsValues* actValues);
 
-CONFIG_STATUS CONFIG_getSerialConf(SerialConfiguration* serialConf);
-CONFIG_STATUS CONFIG_setSerialConf(const SerialConfiguration* serialConf);
+UF_STATUS CONFIG_getSerialConf(SerialConfiguration* serialConf);
+UF_STATUS CONFIG_setSerialConf(const SerialConfiguration* serialConf);
 
-CONFIG_STATUS CONFIG_getI2cConf(I2CConfiguration* i2cConf);
-CONFIG_STATUS CONFIG_setI2cConf(const I2CConfiguration* i2cConf);
-CONFIG_STATUS CONFIG_getLcdConf(LcdConfiguration* lcdConf);
-CONFIG_STATUS CONFIG_setLcdConf(const LcdConfiguration* lcdConf);
+UF_STATUS CONFIG_getI2cConf(I2CConfiguration* i2cConf);
+UF_STATUS CONFIG_setI2cConf(const I2CConfiguration* i2cConf);
+UF_STATUS CONFIG_getLcdConf(LcdConfiguration* lcdConf);
+UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* lcdConf);
 
-CONFIG_STATUS CONFIG_getSPIType(SpiType* spiType);
-CONFIG_STATUS CONFIG_setSPIType(const SpiType* spiType);
+UF_STATUS CONFIG_getSPIType(SpiType* spiType);
+UF_STATUS CONFIG_setSPIType(const SpiType* spiType);
 
-CONFIG_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf);
-CONFIG_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf);
+UF_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf);
+UF_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf);
 
-CONFIG_STATUS CONFIG_getAvSensor(AvSensor* av, uint8_t idx);
-CONFIG_STATUS CONFIG_SetAvSensor(const AvSensor* av, uint8_t idx);
+UF_STATUS CONFIG_getAvSensor(AvSensor* av, uint8_t idx);
+UF_STATUS CONFIG_SetAvSensor(const AvSensor* av, uint8_t idx);
 
-CONFIG_STATUS CONFIG_getAlarmConf(AlarmConfiguration* alarm, uint8_t idx);
-CONFIG_STATUS CONFIG_setAlarmConf(const AlarmConfiguration* alarm, uint8_t idx);
+UF_STATUS CONFIG_getAlarmConf(AlarmConfiguration* alarm, uint8_t idx);
+UF_STATUS CONFIG_setAlarmConf(const AlarmConfiguration* alarm, uint8_t idx);
 
-CONFIG_STATUS CONFIG_getTrigConf(TriggerConfiguration* trigConf, uint8_t idx);
-CONFIG_STATUS CONFIG_setTrigConf(const TriggerConfiguration* trigConf,
-                                 uint8_t idx);
+UF_STATUS CONFIG_getTrigConf(TriggerConfiguration* trigConf, uint8_t idx);
+UF_STATUS CONFIG_setTrigConf(const TriggerConfiguration* trigConf, uint8_t idx);
 
-CONFIG_STATUS CONFIG_getTncMessage(char* tncMessage, uint8_t idx);
-CONFIG_STATUS CONFIG_setTncMessage(const char* tncMessage, uint8_t idx);
+UF_STATUS CONFIG_getTncMessage(char* tncMessage, uint8_t idx);
+UF_STATUS CONFIG_setTncMessage(const char* tncMessage, uint8_t idx);
 
-CONFIG_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx);
-CONFIG_STATUS CONFIG_setTncPath(const char* tncPath, uint8_t idx);
+UF_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx);
+UF_STATUS CONFIG_setTncPath(const char* tncPath, uint8_t idx);
 
 #endif /* INC_VEXUF_CONFIG_H_ */
