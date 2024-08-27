@@ -14,7 +14,6 @@
 #define NUMBER_OF_Actuators 8
 
 typedef enum { ActOff = 0, ActOn = 1, ActUnchanged = 2 } ActLevel;
-// typedef enum { ACT_OK, ACT_DISABLED, ACT_ERROR } ACT_STATUS;
 
 // Define an enum for the shift register pins
 typedef enum {

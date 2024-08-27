@@ -27,44 +27,44 @@ AvSensor avSensors[NUMBER_OF_AVS];
  * 4: AV3 Raw Value
  */
 
-ADC_STATUS ADC_getVref(float* vref);
-float ADC_rawToVoltage(float vref, uint32_t adcValue);
-ADC_STATUS ADC_getCpuTempC(float vref, float* cpuTempC);
+UF_STATUS ADC_getVref(float* vref);
+UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* rawValue);
+UF_STATUS ADC_getCpuTempC(float vref, float* cpuTempC);
 
-ADC_STATUS ADC_getVref(float* vref) {
+UF_STATUS ADC_getVref(float* vref) {
   if (adcBuffer[0] == 0) {
     *vref = 0;
-    return ADC_ERROR;
+    return UF_ERROR;
   }
   *vref = (VREFINT * ADC_RESOLUTION) / adcBuffer[0];
-  return ADC_OK;
+  return UF_OK;
 }
-float ADC_rawToVoltage(float vref, uint32_t adcValue) {
-  float voltage = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
-  return voltage;
+UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* rawValue) {
+  *rawValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
+  return UF_OK;
 }
-ADC_STATUS ADC_getCpuTempC(float vref, float* cpuTempC) {
-  if (vref == 0 || adcBuffer[1] == 0) return ADC_ERROR;
+UF_STATUS ADC_getCpuTempC(float vref, float* cpuTempC) {
+  if (vref == 0 || adcBuffer[1] == 0) return UF_ERROR;
   float temp_sense = (vref / ADC_RESOLUTION) * adcBuffer[1];
   *cpuTempC = (((V25 - temp_sense) / CPU_TEMP_AVG_SLOPE) + 25.0);
 
-  return ADC_OK;
+  return UF_OK;
 }
 
-ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
-                    float* AVsVoltages) {
+UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
+                   float* AVsVoltages) {
   float vref;
   Indicator ind;
   AvSensor av;
   uint32_t value;
 
   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer, 5) != HAL_OK)
-    return ADC_ERROR;
+    return UF_ERROR;
   HAL_Delay(50);
-  if (HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) return ADC_ERROR;
+  if (HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) return UF_ERROR;
 
-  if (ADC_getVref(&vref) == ADC_ERROR) return ADC_ERROR;
-  if (ADC_getCpuTempC(vref, cpuTempC) == ADC_ERROR) return ADC_ERROR;
+  if (ADC_getVref(&vref) == UF_ERROR) return UF_ERROR;
+  if (ADC_getCpuTempC(vref, cpuTempC) == UF_ERROR) return UF_ERROR;
 
   for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
     ind = IndAv1 + i;
@@ -78,7 +78,7 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
     }
 
     value = adcBuffer[2 + i];
-    AVsVoltages[i] = ADC_rawToVoltage(vref, adcBuffer[2 + i]);
+    ADC_rawToVoltage(vref, adcBuffer[2 + i], &AVsVoltages[i]);
     // TODO: Skip if indicator for that AV is disabled
     if (av.statusSlow && (value >= av.minSlow && value <= av.maxSlow)) {
       IND_setLevel(ind, IndSLOW);
@@ -93,7 +93,7 @@ ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
     // TODO: Display output on LCD
     // TODO: Log the output to Logger
   }
-  return ADC_OK;
+  return UF_OK;
 }
 
 void ADC_Test(void) {

@@ -22,8 +22,6 @@
 
 #define NUMBER_OF_AVS 3
 
-typedef enum { ADC_OK, ADC_DISABLED, ADC_ERROR } ADC_STATUS;
-
 typedef struct {
   uint16_t enabled : 1;
   uint16_t statusSlow : 1;
@@ -38,8 +36,7 @@ typedef struct {
   uint16_t maxOn;
 } AvSensor;
 
-ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
-                    float* AVsVoltages);
+UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues, float* AVsVoltages);
 
 #if defined(DEBUG)
 
