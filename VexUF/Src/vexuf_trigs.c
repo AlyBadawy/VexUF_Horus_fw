@@ -20,7 +20,7 @@ TRIGS_Status TRIGS_runAll(void) {
     // TODO: Check the status of TRIGS_runTrigger, and log/output accordingly.
   }
 
-  if (ACTUATORS_Update() != ACT_OK) {
+  if (ACTUATORS_Update() != UF_OK) {
     return TRIGS_ERROR;
   }
 

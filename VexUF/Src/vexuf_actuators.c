@@ -17,33 +17,33 @@ void ACT_Init(ActuatorsConfiguration* newActConf) {
   actConf.actuators_lights_enabled = newActConf->actuators_lights_enabled;
 }
 
-ACT_STATUS ACTUATORS_setPin(ActuatorPin pin) {
-  if (actConf.actuators_enabled != 1) return ACT_DISABLED;
+UF_STATUS ACTUATORS_setPin(ActuatorPin pin) {
+  if (actConf.actuators_enabled != 1) return UF_DISABLED;
   actuatorsData |= (1 << (pin));
 }
-ACT_STATUS ACTUATORS_resetPin(ActuatorPin pin) {
-  if (actConf.actuators_enabled != 1) return ACT_DISABLED;
+UF_STATUS ACTUATORS_resetPin(ActuatorPin pin) {
+  if (actConf.actuators_enabled != 1) return UF_DISABLED;
   actuatorsData &= ~(1 << (pin));
 }
 
-ACT_STATUS ACTUATORS_Update(void) {
-  if (actConf.actuators_enabled != 1) return ACT_DISABLED;
+UF_STATUS ACTUATORS_Update(void) {
+  if (actConf.actuators_enabled != 1) return UF_DISABLED;
 
-  SHIFTREG_74HC595D_update(actuatorsData);
-  return ACT_OK;
+  SHIFTREG_74HC595D_update(actuatorsData);  // TODO: Get a return status
+  return UF_OK;
 }
 
-ACT_STATUS ACTUATORS_setLights(uint8_t state) {
+UF_STATUS ACTUATORS_setLights(uint8_t state) {
   if (actConf.actuators_enabled != 1 || actConf.actuators_lights_enabled != 1)
-    return ACT_DISABLED;
+    return UF_DISABLED;
 
   HAL_GPIO_WritePin(ActInd_GPIO_Port, ActInd_Pin,
                     state == 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-  return ACT_OK;
+  return UF_OK;
 }
 
-ACT_STATUS ACTUATORS_trigger(ActuatorsValues values) {
-  if (actConf.actuators_enabled != 1) return ACT_DISABLED;
+UF_STATUS ACTUATORS_trigger(ActuatorsValues values) {
+  if (actConf.actuators_enabled != 1) return UF_DISABLED;
 
   const ActuatorPin pins[] = {ACT_PIN_A1, ACT_PIN_A2, ACT_PIN_A3, ACT_PIN_A4,
                               ACT_PIN_A5, ACT_PIN_A6, ACT_PIN_A7, ACT_PIN_A8};
@@ -52,17 +52,17 @@ ACT_STATUS ACTUATORS_trigger(ActuatorsValues values) {
 
   for (int i = 0; i < 8; i++) {
     if (actValues[i] == ActOn) {
-      if (ACTUATORS_setPin(pins[i]) != ACT_OK) return ACT_ERROR;
+      if (ACTUATORS_setPin(pins[i]) != UF_OK) return UF_ERROR;
     } else if (actValues[i] == ActOff) {
-      if (ACTUATORS_resetPin(pins[i]) != ACT_OK) return ACT_ERROR;
+      if (ACTUATORS_resetPin(pins[i]) != UF_OK) return UF_ERROR;
     }
   }
-  if (ACTUATORS_Update() != ACT_OK) return ACT_ERROR;
+  if (ACTUATORS_Update() != UF_OK) return UF_ERROR;
 
-  return ACT_OK;
+  return UF_OK;
 }
 
-void ACT_DeInit(void) {
+UF_STATUS ACT_DeInit(void) {
   actuatorsData = 0;
   SHIFTREG_74HC595D_update(actuatorsData);
   ACTUATORS_setLights(0);
