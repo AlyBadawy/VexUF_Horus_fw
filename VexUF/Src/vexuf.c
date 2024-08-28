@@ -1,5 +1,7 @@
 #include "vexuf.h"
 
+#include <ctype.h>
+
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char serialNumber[24];
 VexufStatus vexufStatus;
