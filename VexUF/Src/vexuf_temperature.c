@@ -11,10 +11,10 @@ float TEMPERATURE_fToC(float f) { return (f - 32.0) * (5.0 / 9.0); }
 
 UF_STATUS TEMPERATURE_getCpuTempC(float* cpuTempC) {
   float vref = 0;
-  ADC_getVref(&vref);
+  uint32_t adcBuffer[5];
 
-  if (vref == 0 || adcBuffer[1] == 0) return UF_ERROR;
-  // float temp_sense = (vref / ADC_RESOLUTION) * adcBuffer[1];
+  if (ADC_run(adcBuffer, &vref) == UF_ERROR) return UF_ERROR;
+
   float temp_sense = (adcBuffer[1] / ADC_RESOLUTION) * vref;
   *cpuTempC = ((temp_sense - VOLT_AT_25C) / TEMP_SLOPE) + 25.0;
 

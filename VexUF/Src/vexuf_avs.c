@@ -16,7 +16,6 @@ extern IndConfiguration indConf;
 
 float AVsVoltages[3];
 uint32_t AVsRawValues[3];
-uint32_t adcBuffer[5];
 AvSensor avSensors[NUMBER_OF_AVS];
 
 /*
@@ -30,17 +29,21 @@ AvSensor avSensors[NUMBER_OF_AVS];
 
 UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue);
 
-UF_STATUS ADC_getVref(float* vref) {
-  if (adcBuffer[0] == 0) {
-    *vref = 0;
-    return UF_ERROR;
-  }
-  *vref = (VREFINT * ADC_RESOLUTION) / adcBuffer[0];
-  return UF_OK;
-}
 UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
   *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
   return UF_OK;
+}
+
+UF_STATUS ADC_run(uint32_t* adcBuffer, float* vref) {
+  if (HAL_ADC_Start_DMA(&hadc1, adcBuffer, 5) == HAL_OK) {
+    HAL_Delay(50);
+    if (HAL_ADC_Stop_DMA(&hadc1) == HAL_OK && adcBuffer[0] != 0) {
+      *vref = (VREFINT * ADC_RESOLUTION) / adcBuffer[0];
+      return UF_OK;
+    }
+  }
+  *vref = 0;
+  return UF_ERROR;
 }
 
 UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
@@ -48,13 +51,10 @@ UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
   Indicator ind;
   AvSensor av;
   uint32_t value;
+  uint32_t adcBuffer[5];
+  IndLevelOption option = IndOFF;
 
-  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuffer, 5) != HAL_OK)
-    return UF_ERROR;
-  HAL_Delay(50);
-  if (HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) return UF_ERROR;
-
-  if (ADC_getVref(&vref) == UF_ERROR) return UF_ERROR;
+  if (ADC_run(adcBuffer, &vref) == UF_ERROR) return UF_ERROR;
 
   for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
     ind = IndAv1 + i;
@@ -71,14 +71,13 @@ UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
     ADC_rawToVoltage(vref, adcBuffer[2 + i], &AVsVoltages[i]);
     // TODO: Skip if indicator for that AV is disabled
     if (av.statusSlow && (value >= av.minSlow && value <= av.maxSlow)) {
-      IND_setLevel(ind, IndSLOW);
+      option = IndSLOW;
     } else if (av.statusFast && (value >= av.minFast && value <= av.maxFast)) {
-      IND_setLevel(ind, IndFAST);
+      option = IndFAST;
     } else if (av.statusOn && (value >= av.minOn && value <= av.maxOn)) {
-      IND_setLevel(ind, IndON);
-    } else {
-      IND_setLevel(ind, IndOFF);
+      option = IndON;
     }
+    IND_setLevel(ind, option);
 
     // TODO: Display output on LCD
     // TODO: Log the output to Logger
