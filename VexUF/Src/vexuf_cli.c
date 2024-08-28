@@ -112,11 +112,11 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
 void handle_get_time(const char *args) {
   UNUSED(args);
   char datetime[20];
-  RTC_GetDateTime(datetime);
+  RTC_getDateTime(datetime);
   sprintf(serialTxBuffer, "Date/Time: %s%s", datetime, ok);
 }
 void handle_set_time(const char *args) {
-  RTC_SetDateTime(args);
+  RTC_setDateTime(args);
   sprintf(serialTxBuffer, "Date and Time set...%s", ok);
 }
 
