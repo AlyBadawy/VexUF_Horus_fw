@@ -71,8 +71,7 @@ UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]) {
   return UF_OK;
 }
 UF_STATUS CONFIG_WriteSerialNumber(void) {
-  // TODO: return if eeprom already has the correct serial.
-
+  // TODO: utilize generate serial number function instead.
   uint16_t vexufSerial = getSerialBytes();
 
   uint16_t buffer[EEPROM_SERIAL_NUMBER_LENGTH] = {0};
@@ -80,6 +79,7 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
     buffer[i] =
         (serialNumber[2 * i] & 0xFF) | ((serialNumber[2 * i + 1] & 0xFF) << 8);
   }
+  // TODO: return if eeprom already has the correct serial.
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
                                       EEPROM_SERIAL_NUMBER_LENGTH) != UF_OK)
     return UF_ERROR;

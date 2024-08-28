@@ -97,6 +97,8 @@ UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
       (ind == IndAv1 || ind == IndAv2 || ind == IndAv3))
     return UF_DISABLED;
 
+  // TODO: check AV indicators individually for disabled status
+
   // Special handling for mutual exclusivity
   if ((option != IndOFF) &&
       (ind == IndError || ind == IndWarn || ind == IndInfo)) {
