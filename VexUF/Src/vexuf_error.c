@@ -7,6 +7,14 @@
 
 #include "vexuf_error.h"
 
+#include "iwdg.h"
+#include "vexuf_helpers.h"
+#include "vexuf_indicators.h"
+#include "vexuf_outputs.h"
+#include "vexuf_pwm.h"
+#include "vexuf_sd_card.h"
+#include "vexuf_timers.h"
+
 extern IWDG_HandleTypeDef hiwdg;
 
 extern VexufStatus vexufStatus;

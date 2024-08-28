@@ -1,6 +1,8 @@
 #ifndef VEXUF_H
 #define VEXUF_H
 
+#define SERIAL_NUMBER_LENGTH 24
+
 typedef enum {
   UF_OK,
   UF_DISABLED,
