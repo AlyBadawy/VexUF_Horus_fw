@@ -5,16 +5,15 @@
  *      Author: Aly Badawy
  */
 
-#include "vexuf_adc_avs.h"
+#include "vexuf_avs.h"
 
 #include "vexuf.h"
 #include "vexuf_indicators.h"
+#include "vexuf_temperature.h"
 
 extern ADC_HandleTypeDef hadc1;
-
 extern IndConfiguration indConf;
 
-float cpuTempC;
 float AVsVoltages[3];
 uint32_t AVsRawValues[3];
 uint32_t adcBuffer[5];
@@ -29,9 +28,7 @@ AvSensor avSensors[NUMBER_OF_AVS];
  * 4: AV3 Raw Value
  */
 
-UF_STATUS ADC_getVref(float* vref);
 UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue);
-UF_STATUS ADC_getCpuTempC(float vref, float* cpuTempC);
 
 UF_STATUS ADC_getVref(float* vref) {
   if (adcBuffer[0] == 0) {
@@ -45,17 +42,8 @@ UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
   *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
   return UF_OK;
 }
-UF_STATUS ADC_getCpuTempC(float vref, float* cpuTempC) {
-  if (vref == 0 || adcBuffer[1] == 0) return UF_ERROR;
-  // float temp_sense = (vref / ADC_RESOLUTION) * adcBuffer[1];
-  float temp_sense = (adcBuffer[1] / ADC_RESOLUTION) * vref;
-  *cpuTempC = ((temp_sense - VOLT_AT_25C) / TEMP_SLOPE) + 25.0;
 
-  return UF_OK;
-}
-
-UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
-                   float* AVsVoltages) {
+UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
   float vref;
   Indicator ind;
   AvSensor av;
@@ -67,7 +55,6 @@ UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
   if (HAL_ADC_Stop_DMA(&hadc1) != HAL_OK) return UF_ERROR;
 
   if (ADC_getVref(&vref) == UF_ERROR) return UF_ERROR;
-  if (ADC_getCpuTempC(vref, cpuTempC) == UF_ERROR) return UF_ERROR;
 
   for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
     ind = IndAv1 + i;
@@ -100,13 +87,10 @@ UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
 }
 
 void ADC_Test(void) {
-  ADC_Scan(&cpuTempC, AVsRawValues, AVsVoltages);
+  ADC_Scan(AVsRawValues, AVsVoltages);
 
   printf("\r\n");
   printf("Testing ADC functionality...\r\n");
-  printf("  Temperature CPU Raw: %lu\r\n", adcBuffer[1]);
-  printf("  Temperature CPU C: %.2f\r\n", cpuTempC);
-  printf("  Temperature CPU F: %0.2f\r\n", cToF(cpuTempC));
   printf("  Av1 Raw: %lu\r\n", AVsRawValues[0]);
   printf("  Av1 Volt: %0.03fV\r\n", AVsVoltages[0]);
   printf("  Av2 Raw: %lu\r\n", AVsRawValues[1]);

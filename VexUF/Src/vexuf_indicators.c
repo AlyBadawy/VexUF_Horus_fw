@@ -8,7 +8,7 @@
 #include "vexuf_indicators.h"
 
 #include "vexuf.h"
-#include "vexuf_adc_avs.h"
+#include "vexuf_avs.h"
 
 void IND_applyOnOffLevelsToGPIO(void);
 IndLevelOption IND_getCurrentLevel(Indicator ind);

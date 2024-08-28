@@ -109,22 +109,22 @@ UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_LoadCallSign(char* callsign[CALLSIGN_LENGTH]) {
+UF_STATUS CONFIG_getCallSign(char* callsign) {
   uint16_t buffer[EEPROM_CALLSIGN_LENGTH] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                      EEPROM_CALLSIGN_LENGTH) != UF_OK)
     return UF_ERROR;
   for (int i = 0; i < EEPROM_CALLSIGN_LENGTH; i++) {
-    *callsign[2 * i] = buffer[i] & 0xFF;
-    *callsign[2 * i + 1] = (buffer[i] >> 8) & 0xFF;
+    callsign[2 * i] = buffer[i] & 0xFF;
+    callsign[2 * i + 1] = (buffer[i] >> 8) & 0xFF;
   }
   return UF_OK;
 }
-UF_STATUS CONFIG_SetCallSign(const char* newCallSign[CALLSIGN_LENGTH]) {
+UF_STATUS CONFIG_setCallSign(const char* newCallSign) {
   uint16_t buffer[EEPROM_CALLSIGN_LENGTH] = {0};
   for (int i = 0; i < EEPROM_CALLSIGN_LENGTH; i++) {
     buffer[i] =
-        (*newCallSign[2 * i] & 0xFF) | ((*newCallSign[2 * i + 1] & 0xFF) << 8);
+        (newCallSign[2 * i] & 0xFF) | ((newCallSign[2 * i + 1] & 0xFF) << 8);
   }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                       EEPROM_CALLSIGN_LENGTH) != UF_OK)

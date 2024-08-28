@@ -41,8 +41,6 @@ typedef struct {
 #define SERIAL_NUMBER_LENGTH 24
 #define CALLSIGN_LENGTH 20
 
-float cToF(float c);
-float fToC(float f);
 // void VexUF_CurrentDateTimeString(char *string);
 void VexUF_GenerateSerialNumber();
 uint16_t getSerialBytes(void);

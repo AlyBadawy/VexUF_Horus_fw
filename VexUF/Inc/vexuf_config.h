@@ -10,7 +10,7 @@
 
 #include "vexuf.h"
 #include "vexuf_actuators.h"
-#include "vexuf_adc_avs.h"
+#include "vexuf_avs.h"
 #include "vexuf_i2c.h"
 #include "vexuf_indicators.h"
 #include "vexuf_lcd.h"
@@ -18,12 +18,11 @@
 #include "vexuf_rtc.h"
 #include "vexuf_serial.h"
 #include "vexuf_spi.h"
+#include "vexuf_tnc.h"
 #include "vexuf_trigs.h"
 
 #define CONFIG_FLAG 0x3E3E
 #define CONFIG_VERSION 1
-
-#define CALLSIGN_LENGTH 20
 
 // Memory Map addresses
 #define EEPROM_CONFIG_FLAG_ADDRESS 0x0000
@@ -119,8 +118,8 @@ UF_STATUS CONFIG_WriteSerialNumber(void);
 UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber);
 UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber);
 
-UF_STATUS CONFIG_LoadCallSign(char* callsign[CALLSIGN_LENGTH]);
-UF_STATUS CONFIG_SetCallSign(const char* newCallSign[CALLSIGN_LENGTH]);
+UF_STATUS CONFIG_getCallSign(char* callsign);
+UF_STATUS CONFIG_setCallSign(const char* newCallSign);
 
 UF_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer);
 UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig);
