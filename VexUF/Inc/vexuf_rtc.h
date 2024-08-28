@@ -18,7 +18,7 @@ typedef struct {
 
 } AlarmConfiguration;
 
-UF_STATUS RTC_GetDateTime(char *datetime);
-UF_STATUS RTC_SetDateTime(const char *datetime);
+UF_STATUS RTC_getDateTime(char *datetime);
+UF_STATUS RTC_setDateTime(const char *datetime);
 
 #endif  // VEXUF_RTC_H
