@@ -4,6 +4,13 @@ static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char serialNumber[24];
 VexufStatus vexufStatus;
 
+extern UART_HandleTypeDef huart1;
+int _write(int file, char *ptr, int len) {
+  UNUSED(file);
+  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 200);
+  return len;
+}
+
 void base32_encode(const uint8_t *data, size_t length, char *output);
 
 float cToF(float c) { return (c * (9.0 / 5.0)) + 32.0; }

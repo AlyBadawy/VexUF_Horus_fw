@@ -25,13 +25,6 @@
 #include "vexuf_sd_card.h"
 #include "vexuf_timers.h"
 
-extern UART_HandleTypeDef huart1;
-int _write(int file, char *ptr, int len) {
-  UNUSED(file);
-  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 200);
-  return len;
-}
-
 extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConfig;
