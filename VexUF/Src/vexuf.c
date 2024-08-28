@@ -56,3 +56,27 @@ void VexUF_GenerateSerialNumber() {
   }
   serialNumber[j] = '\0';
 }
+
+void trim(char **str) {
+  char *start = *str;
+  char *end;
+
+  // Skip leading spaces
+  while (isspace((unsigned char)*start)) start++;
+
+  // If the string is all spaces or empty
+  if (*start == '\0') {
+    *str = start;
+    return;
+  }
+
+  // Find the last non-space character
+  end = start + strlen(start) - 1;
+  while (end > start && isspace((unsigned char)*end)) end--;
+
+  // Set the character after the last non-space character to '\0'
+  *(end + 1) = '\0';
+
+  // Update the str pointer to the new start
+  *str = start;
+}

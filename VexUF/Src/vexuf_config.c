@@ -7,6 +7,8 @@
 
 #include "vexuf_config.h"
 
+#include <string.h>
+
 #include "93c86.h"
 
 extern VexufStatus vexufStatus;
@@ -123,8 +125,10 @@ UF_STATUS CONFIG_getCallSign(char* callsign) {
 UF_STATUS CONFIG_setCallSign(const char* newCallSign) {
   uint16_t buffer[EEPROM_CALLSIGN_LENGTH] = {0};
   for (int i = 0; i < EEPROM_CALLSIGN_LENGTH; i++) {
-    buffer[i] =
-        (newCallSign[2 * i] & 0xFF) | ((newCallSign[2 * i + 1] & 0xFF) << 8);
+    char upperChar1 = toupper((unsigned char)newCallSign[2 * i]);
+    char upperChar2 = toupper((unsigned char)newCallSign[2 * i + 1]);
+
+    buffer[i] = (upperChar1 & 0xFF) | ((upperChar2 & 0xFF) << 8);
   }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                       EEPROM_CALLSIGN_LENGTH) != UF_OK)

@@ -17,6 +17,7 @@
 #include "vexuf.h"
 #include "vexuf_actuators.h"
 #include "vexuf_avs.h"
+#include "vexuf_cli.h"
 #include "vexuf_config.h"
 #include "vexuf_error.h"
 #include "vexuf_i2c_checker.h"
@@ -29,6 +30,9 @@ extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConfig;
 extern OutputConfiguration outputConfig;
+
+extern uint8_t ttlRxData[SERIAL_BUFFER_SIZE];
+extern uint8_t tncRxData[SERIAL_BUFFER_SIZE];
 
 int main(void) {
   /*
@@ -94,10 +98,16 @@ int main(void) {
   // END OF TESTS
 
   HAL_Delay(500);
+
+  HAL_UARTEx_ReceiveToIdle_IT(&huart1, ttlRxData, SERIAL_BUFFER_SIZE);
+  HAL_UARTEx_ReceiveToIdle_IT(&huart6, tncRxData, SERIAL_BUFFER_SIZE);
+
   printf("VexUF Horus is ready.\n");
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_RESET);
 
+#ifndef DEBUG
   MX_IWDG_Init();
+#endif
 
   while (1) {
     SDCard_checkCard();
@@ -127,15 +137,15 @@ int main(void) {
     }
 
     if (vexufStatus.ttlBuffered == 1) {
-      // if (COMMANDS_handleCommand(TtlUart) == UF_ERROR) {
-      //   // todo: handle error
-      // }
+      if (CLI_handleCommand(TtlUart) == UF_ERROR) {
+        // todo: handle error
+      }
       vexufStatus.ttlBuffered = 0;
     }
     if (vexufStatus.tncBuffered == 1) {
-      // if (COMMANDS_handleCommand(TncUart) == UF_ERROR) {
-      //   // todo: handle error
-      // }
+      if (CLI_handleCommand(TncUart) == UF_ERROR) {
+        // todo: handle error
+      }
       vexufStatus.ttlBuffered = 0;
     }
 
