@@ -126,18 +126,18 @@ int main(void) {
       vexufStatus.timer_0d1hz_ticked = 0;
     }
 
-    // if (vexufStatus.ttlBuffered == 1) {
-    //   if (COMMANDS_handleCommand(TtlUart) == UF_ERROR) {
-    //     // todo: handle error
-    //   }
-    //   vexufStatus.ttlBuffered = 0;
-    // }
-    // if (vexufStatus.tncBuffered == 1) {
-    //   if (COMMANDS_handleCommand(TncUart) == UF_ERROR) {
-    //     // todo: handle error
-    //   }
-    //   vexufStatus.ttlBuffered = 0;
-    // }
+    if (vexufStatus.ttlBuffered == 1) {
+      // if (COMMANDS_handleCommand(TtlUart) == UF_ERROR) {
+      //   // todo: handle error
+      // }
+      vexufStatus.ttlBuffered = 0;
+    }
+    if (vexufStatus.tncBuffered == 1) {
+      // if (COMMANDS_handleCommand(TncUart) == UF_ERROR) {
+      //   // todo: handle error
+      // }
+      vexufStatus.ttlBuffered = 0;
+    }
 
     // Run this routine every iteration.
     HAL_IWDG_Refresh(&hiwdg);
