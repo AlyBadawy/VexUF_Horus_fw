@@ -31,7 +31,7 @@ UF_STATUS ACTUATORS_resetPin(ActuatorPin pin) {
 UF_STATUS ACTUATORS_Update(void) {
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
 
-  SHIFTREG_74HC595D_update(actuatorsData);  // TODO: Get a return status
+  SHIFTREG_74HC595D_update(actuatorsData);
   return UF_OK;
 }
 
@@ -66,7 +66,6 @@ UF_STATUS ACTUATORS_trigger(ActuatorsValues values) {
 
 UF_STATUS ACT_DeInit(void) {
   actuatorsData = 0;
-  // TODO: Check if the return status is OK
   SHIFTREG_74HC595D_update(actuatorsData);
   ACTUATORS_setLights(0);
   actConf.actuators_enabled = 0;

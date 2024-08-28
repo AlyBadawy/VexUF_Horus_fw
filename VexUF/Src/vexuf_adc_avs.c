@@ -12,6 +12,8 @@
 
 extern ADC_HandleTypeDef hadc1;
 
+extern IndConfiguration indConf;
+
 float cpuTempC;
 float AVsVoltages[3];
 uint32_t AVsRawValues[3];
