@@ -13,7 +13,7 @@ FATFS *FS_Ptr;
 UINT RWC, WWC;
 DWORD FreeClusters;
 
-SDCARD_STATUS SDCard_MountFS() {
+UF_STATUS SDCard_MountFS() {
   char cardLabel[12];
   // Add a delay to ensure the SD card is ready
   HAL_Delay(10);
@@ -26,23 +26,23 @@ SDCARD_STATUS SDCard_MountFS() {
   MX_SDIO_SD_Init();  // Reinitialize SDIO peripheral
   HAL_Delay(10);      // Short delay
   rs = f_mount(&FatFs, SDPath, 1);
-  if (rs != FR_OK) return SDCARD_ERROR;
+  if (rs != FR_OK) return UF_ERROR;
 
-  if (f_getlabel("", cardLabel, NULL) != FR_OK) return SDCARD_ERROR;
+  if (f_getlabel("", cardLabel, NULL) != FR_OK) return UF_ERROR;
 
   if (strncmp("VEXUF_HORUS", cardLabel, 12) != 0) {
-    if (f_setlabel("VEXUF_HORUS") != FR_OK) return SDCARD_ERROR;
+    if (f_setlabel("VEXUF_HORUS") != FR_OK) return UF_ERROR;
   }
 
-  return SDCARD_OK;
+  return UF_OK;
 }
-SDCARD_STATUS SDCard_GetCardSize(float *totalSize, float *freeSize) {
+UF_STATUS SDCard_GetCardSize(float *totalSize, float *freeSize) {
   uint64_t total_sectors;
   uint64_t total_space;
   uint64_t free_sectors;
   uint64_t free_space;
 
-  if (f_getfree("", &FreeClusters, &FS_Ptr) != FR_OK) return SDCARD_ERROR;
+  if (f_getfree("", &FreeClusters, &FS_Ptr) != FR_OK) return UF_ERROR;
 
   total_sectors = (uint64_t)(FS_Ptr->n_fatent - 2) * FS_Ptr->csize;
   total_space = total_sectors * 512;  // Convert to bytes
@@ -58,13 +58,13 @@ SDCARD_STATUS SDCard_GetCardSize(float *totalSize, float *freeSize) {
               (1024 * 1024 * 1024);  // Convert to gigabytes (use float for GB
                                      // to handle large values)
 
-  return SDCARD_OK;
+  return UF_OK;
 }
-SDCARD_STATUS SDCard_checkCard(void) {
+UF_STATUS SDCard_checkCard(void) {
   GPIO_PinState sdio_det = HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin);
   if (vexufStatus.sdCardEjected && sdio_det == GPIO_PIN_SET) {
     // The card is marked to be ejected and is still ejected.
-    return SDCARD_EJECTED;
+    return UF_CARD_EJECTED;
   }
 
   if (!vexufStatus.sdCardEjected && sdio_det == GPIO_PIN_RESET) {
@@ -76,38 +76,38 @@ SDCARD_STATUS SDCard_checkCard(void) {
     // The card is marked present, but it's no longer present
     vexufStatus.sdCardEjected = 1;
     f_mount(NULL, (TCHAR const *)"", 1);  // Unmount the filesystem
-    return SDCARD_EJECTED;
+    return UF_CARD_EJECTED;
   }
 
   // The card is marked not to be present, but now is present.
   // Attempt to mount the SD card
   if (vexufStatus.sdCardMounted == 0) {
-    if (SDCard_MountFS() != SDCARD_OK) {
+    if (SDCard_MountFS() != UF_OK) {
       vexufStatus.sdCardError = 1;
-      return SDCARD_ERROR;
+      return UF_ERROR;
     }
   }
   vexufStatus.sdCardMounted = 1;
   vexufStatus.sdCardEjected = 0;
 
-  SDCARD_STATUS status = SDCARD_hasEnoughSpace();
-  if (status != SDCARD_OK) return status;
+  UF_STATUS status = SDCARD_hasEnoughSpace();
+  if (status != UF_OK) return status;
 
   vexufStatus.sdCardError = 0;
-  return SDCARD_OK;
+  return UF_OK;
 }
-SDCARD_STATUS SDCARD_hasEnoughSpace(void) {
+UF_STATUS SDCARD_hasEnoughSpace(void) {
   float totalSize, freeSize;
-  if (SDCard_GetCardSize(&totalSize, &freeSize) != SDCARD_OK) {
+  if (SDCard_GetCardSize(&totalSize, &freeSize) != UF_OK) {
     vexufStatus.sdCardError = 1;
-    return SDCARD_ERROR;
+    return UF_ERROR;
   }
   if (freeSize < 0.05) {  // Less than 50MB
     vexufStatus.sdCardError = 0;
     vexufStatus.sdCardFull = 1;
-    return SDCARD_FULL;
+    return UF_CARD_FULL;
   }
   vexufStatus.sdCardFull = 0;
   vexufStatus.sdCardError = 0;
-  return SDCARD_OK;
+  return UF_OK;
 }

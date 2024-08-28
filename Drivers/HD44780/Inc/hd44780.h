@@ -8,7 +8,7 @@
 #ifndef HD44780_H_
 #define HD44780_H_
 
-#include "vexuf_helpers.h"
+#include "main.h"
 
 /* Command */
 #define HD44780_CLEARDISPLAY 0x01
@@ -88,6 +88,5 @@ void HD44780_SetCursor(uint8_t, uint8_t);
 void HD44780_SetBacklight(uint8_t new_val);
 void HD44780_LoadCustomCharacter(uint8_t char_num, uint8_t *rows);
 void HD44780_PrintStr(const char[]);
-
 
 #endif /* HD44780_H_ */

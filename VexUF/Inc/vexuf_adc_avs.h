@@ -8,7 +8,7 @@
 #ifndef INC_VEXUF_ADC_AVS_H_
 #define INC_VEXUF_ADC_AVS_H_
 
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 
 #define VREFINT 1.22
 #define ADC_RESOLUTION 4096  // 12-bit ADC resolution
@@ -21,8 +21,6 @@
 #define adcRatio (adcR2 / (adcR1 + adcR2))
 
 #define NUMBER_OF_AVS 3
-
-typedef enum { ADC_OK, ADC_DISABLED, ADC_ERROR } ADC_STATUS;
 
 typedef struct {
   uint16_t enabled : 1;
@@ -38,8 +36,7 @@ typedef struct {
   uint16_t maxOn;
 } AvSensor;
 
-ADC_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues,
-                    float* AVsVoltages);
+UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues, float* AVsVoltages);
 
 #if defined(DEBUG)
 

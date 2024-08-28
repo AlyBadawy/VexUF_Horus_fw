@@ -1,20 +1,12 @@
 #ifndef VEXUF_TRIGS_H_
 #define VEXUF_TRIGS_H_
 
+#include "vexuf.h"
 #include "vexuf_actuators.h"
-#include "vexuf_helpers.h"
 #include "vexuf_outputs.h"
 #include "vexuf_pwm.h"
 
 #define NUMBER_OF_TRIGGERS 25
-
-typedef enum {
-  TRIGS_OK,
-  TRIGS_DISABLED,
-  TRIGS_TRIGGERED,
-  TRIGS_NOT_TRIGGERED,
-  TRIGS_ERROR
-} TRIGS_Status;
 
 typedef enum {
   noTest = 0,
@@ -59,7 +51,7 @@ typedef struct {
   uint16_t tnc2Message : 4;
 } TriggerConfiguration;
 
-TRIGS_Status TRIGS_runAll(void);
-TRIGS_Status TRIGS_runTrigger(uint8_t idx);
+UF_STATUS TRIGS_runAll(void);
+UF_STATUS TRIGS_runTrigger(uint8_t idx);
 
 #endif  // VEXUF_TRIGS_H_

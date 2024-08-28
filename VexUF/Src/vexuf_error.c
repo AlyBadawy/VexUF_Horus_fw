@@ -7,6 +7,14 @@
 
 #include "vexuf_error.h"
 
+#include "iwdg.h"
+#include "vexuf.h"
+#include "vexuf_indicators.h"
+#include "vexuf_outputs.h"
+#include "vexuf_pwm.h"
+#include "vexuf_sd_card.h"
+#include "vexuf_timers.h"
+
 extern IWDG_HandleTypeDef hiwdg;
 
 extern VexufStatus vexufStatus;
@@ -27,19 +35,18 @@ void ERROR_ConfigLoop() {
 }
 void ERROR_SdCardLoop(uint16_t delay) {
   printf("SD card error detected\n");
-  SDCARD_STATUS status = SDCARD_ERROR;
+  UF_STATUS status = UF_ERROR;
   IND_buzzOnError();
   TIMERS_Stop();
   PWM_deinit();
-  while (status != SDCARD_OK) {
+  while (status != UF_OK) {
     HAL_IWDG_Refresh(&hiwdg);
-    while (status != SDCARD_OK &&
-           HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) ==
-               GPIO_PIN_RESET) {
+    while (HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) ==
+           GPIO_PIN_RESET) {
       printf("SD card error detected while inserted\n");
-      if (SDCard_MountFS() == SDCARD_OK) {
+      if (SDCard_MountFS() == UF_OK) {
         printf("SD card mounted successfully\n");
-        status = SDCARD_OK;
+        status = UF_OK;
       }
     }
     IND_setLevel(IndSdio, IndON);
@@ -54,7 +61,7 @@ void ERROR_SdCardLoop(uint16_t delay) {
     }
     if (vexufStatus.sdCardEjected &&
         HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) == GPIO_PIN_RESET) {
-      status = SDCARD_OK;
+      status = UF_OK;
     }
   }
   printf("SD card error resolved\n");

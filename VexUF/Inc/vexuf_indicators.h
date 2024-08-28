@@ -8,9 +8,7 @@
 #ifndef INC_VEXUF_INDICATORS_H_
 #define INC_VEXUF_INDICATORS_H_
 
-#include "vexuf_helpers.h"
-
-typedef enum { IND_OK, IND_DISABLED, IND_OVERWRITTEN, IND_ERROR } IND_STATUS;
+#include "vexuf.h"
 
 typedef struct {
   GPIO_TypeDef* port;
@@ -60,11 +58,10 @@ typedef struct {
   uint16_t reserved : 6;
 } IndConfiguration;
 
-IndLevelOption IND_getCurrentLevel(Indicator ind);
-IND_STATUS IND_setLevel(Indicator ind, IndLevelOption option);
-IND_STATUS IND_toggleIndWithLevelOption(IndLevelOption option);
+UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option);
+UF_STATUS IND_toggleIndWithLevelOption(IndLevelOption option);
 
-IND_STATUS IND_buzzOnError(void);
-IND_STATUS IND_BuzzOnStartUp(void);
+UF_STATUS IND_buzzOnError(void);
+UF_STATUS IND_BuzzOnStartUp(void);
 
 #endif /* INC_VEXUF_INDICATORS_H_ */

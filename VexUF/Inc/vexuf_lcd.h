@@ -8,14 +8,14 @@
 #if !defined(INC_VEXUF_LCD_H)
 #define INC_VEXUF_LCD_H
 
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 
-typedef enum {NoLCD = 0, LCD2004 = 1, LCD1602 = 2} LcdType;
+typedef enum { NoLCD = 0, LCD2004 = 1, LCD1602 = 2 } LcdType;
 
 typedef struct {
-    uint16_t lcdAdd;
-    LcdType lcdType;  // Use the enum type for lcdType
-    uint16_t lcdPwm;
+  uint16_t lcdAdd;
+  LcdType lcdType;  // Use the enum type for lcdType
+  uint16_t lcdPwm;
 } LcdConfiguration;
 
-#endif // INC_VEXUF_LCD_H
+#endif  // INC_VEXUF_LCD_H

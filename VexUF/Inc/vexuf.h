@@ -1,12 +1,5 @@
-/*
- * vexuf_helpers.h
- *
- *  Created on: Aug 10, 2024
- *      Author: Aly Badawy
- */
-
-#ifndef VEXUF_VEXUF_HELPERS_H_
-#define VEXUF_VEXUF_HELPERS_H_
+#ifndef VEXUF_H
+#define VEXUF_H
 
 #include <stdio.h>
 
@@ -14,7 +7,20 @@
 #include "string.h"
 
 #define SERIAL_NUMBER_LENGTH 24
-#define CALLSIGN_LENGTH 20
+
+typedef enum {
+  UF_OK,
+  UF_DISABLED,
+  UF_TRIGGERED,
+  UF_NOT_TRIGGERED,
+  UF_NOT_CONFIGURED,
+  UF_OVERWRITTEN,
+  UF_CARD_EJECTED,
+  UF_CARD_FULL,
+  UF_BUSY,
+  UF_ERROR,
+  UF_HARD_ERROR
+} UF_STATUS;
 
 typedef struct {
   uint16_t isConfigured : 1;
@@ -32,10 +38,13 @@ typedef struct {
   uint16_t reserved : 4;
 } VexufStatus;
 
+#define SERIAL_NUMBER_LENGTH 24
+#define CALLSIGN_LENGTH 20
+
 float cToF(float c);
 float fToC(float f);
 // void VexUF_CurrentDateTimeString(char *string);
 void VexUF_GenerateSerialNumber();
 uint16_t getSerialBytes(void);
 
-#endif /* VEXUF_VEXUF_HELPERS_H_ */
+#endif  // VEXUF_H

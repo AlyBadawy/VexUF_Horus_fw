@@ -8,11 +8,11 @@
 #ifndef INC_ACTUATORS_H_
 #define INC_ACTUATORS_H_
 
-#include "main.h"
+#include "vexuf.h"
+
 #define NUMBER_OF_Actuators 8
 
 typedef enum { ActOff = 0, ActOn = 1, ActUnchanged = 2 } ActLevel;
-typedef enum { ACT_OK, ACT_DISABLED, ACT_ERROR } ACT_STATUS;
 
 // Define an enum for the shift register pins
 typedef enum {
@@ -48,15 +48,15 @@ typedef struct {
 // Function prototypes
 void ACT_Init(ActuatorsConfiguration* newActConf);
 
-ACT_STATUS ACTUATORS_setPin(ActuatorPin pin);
-ACT_STATUS ACTUATORS_resetPin(ActuatorPin pin);
-ACT_STATUS ACTUATORS_Update(void);
+UF_STATUS ACTUATORS_setPin(ActuatorPin pin);
+UF_STATUS ACTUATORS_resetPin(ActuatorPin pin);
+UF_STATUS ACTUATORS_Update(void);
 
-ACT_STATUS ACTUATORS_lights(GPIO_PinState state);
+UF_STATUS ACTUATORS_lights(GPIO_PinState state);
 
-ACT_STATUS ACTUATORS_trigger(ActuatorsValues values);
+UF_STATUS ACTUATORS_trigger(ActuatorsValues values);
 
-void ACT_DeInit(void);
+UF_STATUS ACT_DeInit(void);
 
 void ACTUATORS_Test(void);
 

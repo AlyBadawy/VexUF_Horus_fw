@@ -1,8 +1,8 @@
 #ifndef VEXUF_RTC_H
 #define VEXUF_RTC_H
 
+#include "vexuf.h"
 #include "vexuf_actuators.h"
-#include "vexuf_helpers.h"
 #include "vexuf_trigs.h"
 
 typedef struct {
