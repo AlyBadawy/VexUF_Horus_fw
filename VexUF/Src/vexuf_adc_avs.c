@@ -28,7 +28,7 @@ AvSensor avSensors[NUMBER_OF_AVS];
  */
 
 UF_STATUS ADC_getVref(float* vref);
-UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* rawValue);
+UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue);
 UF_STATUS ADC_getCpuTempC(float vref, float* cpuTempC);
 
 UF_STATUS ADC_getVref(float* vref) {
@@ -39,14 +39,15 @@ UF_STATUS ADC_getVref(float* vref) {
   *vref = (VREFINT * ADC_RESOLUTION) / adcBuffer[0];
   return UF_OK;
 }
-UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* rawValue) {
-  *rawValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
+UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
+  *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
   return UF_OK;
 }
 UF_STATUS ADC_getCpuTempC(float vref, float* cpuTempC) {
   if (vref == 0 || adcBuffer[1] == 0) return UF_ERROR;
-  float temp_sense = (vref / ADC_RESOLUTION) * adcBuffer[1];
-  *cpuTempC = (((V25 - temp_sense) / CPU_TEMP_AVG_SLOPE) + 25.0);
+  // float temp_sense = (vref / ADC_RESOLUTION) * adcBuffer[1];
+  float temp_sense = (adcBuffer[1] / ADC_RESOLUTION) * vref;
+  *cpuTempC = ((temp_sense - VOLT_AT_25C) / TEMP_SLOPE) + 25.0;
 
   return UF_OK;
 }

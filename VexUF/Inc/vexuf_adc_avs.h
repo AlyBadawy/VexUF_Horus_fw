@@ -10,11 +10,10 @@
 
 #include "vexuf.h"
 
-#define VREFINT 1.22
-#define ADC_RESOLUTION 4096  // 12-bit ADC resolution
-
-#define V25 0.76
-#define CPU_TEMP_AVG_SLOPE 0.0025
+#define ADC_RESOLUTION 4095.0  // 12-bit ADC
+#define VREFINT 1.22           // VREFINT is 1.22V
+#define TEMP_SLOPE 0.0025      // 2.5mV/°C
+#define VOLT_AT_25C 0.76       // 0.76V at 25°C
 
 #define adcR1 33000.0
 #define adcR2 3300.0
