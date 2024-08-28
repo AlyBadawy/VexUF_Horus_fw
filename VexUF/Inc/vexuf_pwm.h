@@ -9,7 +9,6 @@
 #define VEXUF_VEXUF_PWM_H_
 
 #include "vexuf.h"
-#include "vexuf_helpers.h"
 
 typedef enum {
   PwmChannel1 = 0,

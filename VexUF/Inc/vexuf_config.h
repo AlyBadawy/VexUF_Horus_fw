@@ -11,7 +11,6 @@
 #include "vexuf.h"
 #include "vexuf_actuators.h"
 #include "vexuf_adc_avs.h"
-#include "vexuf_helpers.h"
 #include "vexuf_i2c.h"
 #include "vexuf_indicators.h"
 #include "vexuf_lcd.h"

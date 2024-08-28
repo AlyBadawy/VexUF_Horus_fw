@@ -1,7 +1,7 @@
 #ifndef VEXUF_OUTPUTS_H_
 #define VEXUF_OUTPUTS_H_
 
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 
 typedef struct {
   uint16_t haltOnSdCardErrors : 1;

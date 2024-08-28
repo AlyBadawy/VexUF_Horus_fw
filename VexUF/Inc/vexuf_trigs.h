@@ -1,8 +1,8 @@
 #ifndef VEXUF_TRIGS_H_
 #define VEXUF_TRIGS_H_
 
+#include "vexuf.h"
 #include "vexuf_actuators.h"
-#include "vexuf_helpers.h"
 #include "vexuf_outputs.h"
 #include "vexuf_pwm.h"
 

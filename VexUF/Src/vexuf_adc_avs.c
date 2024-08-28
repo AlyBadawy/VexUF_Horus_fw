@@ -7,7 +7,7 @@
 
 #include "vexuf_adc_avs.h"
 
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 #include "vexuf_indicators.h"
 
 extern ADC_HandleTypeDef hadc1;

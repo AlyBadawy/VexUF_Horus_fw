@@ -2,7 +2,6 @@
 #define INC_VEXUF_TIMERS_H_
 
 #include "vexuf.h"
-#include "vexuf_helpers.h"
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 

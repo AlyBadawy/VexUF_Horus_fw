@@ -20,10 +20,12 @@ void ACT_Init(ActuatorsConfiguration* newActConf) {
 UF_STATUS ACTUATORS_setPin(ActuatorPin pin) {
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
   actuatorsData |= (1 << (pin));
+  return UF_OK;
 }
 UF_STATUS ACTUATORS_resetPin(ActuatorPin pin) {
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
   actuatorsData &= ~(1 << (pin));
+  return UF_OK;
 }
 
 UF_STATUS ACTUATORS_Update(void) {
@@ -64,17 +66,19 @@ UF_STATUS ACTUATORS_trigger(ActuatorsValues values) {
 
 UF_STATUS ACT_DeInit(void) {
   actuatorsData = 0;
+  // TODO: Check if the return status is OK
   SHIFTREG_74HC595D_update(actuatorsData);
   ACTUATORS_setLights(0);
   actConf.actuators_enabled = 0;
   actConf.actuators_lights_enabled = 0;
+  return UF_OK;
 }
 
 void ACTUATORS_Test(void) {
-  ActuatorsConfiguration newconf;
-  newconf.actuators_enabled = 1;
-  newconf.actuators_lights_enabled = 1;
-  ACT_Init(&newconf);
+  ActuatorsConfiguration newConf;
+  newConf.actuators_enabled = 1;
+  newConf.actuators_lights_enabled = 1;
+  ACT_Init(&newConf);
 
   ACTUATORS_setLights(1);
   for (ActuatorPin pin = ACT_PIN_A1; pin <= ACT_PIN_A8; pin++) {

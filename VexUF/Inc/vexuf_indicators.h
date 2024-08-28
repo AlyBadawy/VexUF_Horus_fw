@@ -9,7 +9,6 @@
 #define INC_VEXUF_INDICATORS_H_
 
 #include "vexuf.h"
-#include "vexuf_helpers.h"
 
 typedef struct {
   GPIO_TypeDef* port;

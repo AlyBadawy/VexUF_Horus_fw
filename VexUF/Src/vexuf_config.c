@@ -14,7 +14,7 @@ extern char serialNumber[24];
 
 UF_STATUS CONFIG_IsConfigured(void) {
   uint16_t data;
-  if (EEPROM_93C86_Read(EEPROM_CONFIG_FLAG_ADDRESS, &data) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_CONFIG_FLAG_ADDRESS, &data) != UF_OK)
     return UF_ERROR;
 
   if (data == CONFIG_FLAG) {
@@ -29,9 +29,9 @@ UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount) {
     return UF_NOT_CONFIGURED;
   }
 
-  if (EEPROM_93C86_Read(EEPROM_CONFIG_VERSION_ADDRESS, version) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_CONFIG_VERSION_ADDRESS, version) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Read(EEPROM_CONFIG_COUNT_ADDRESS, configCount) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_CONFIG_COUNT_ADDRESS, configCount) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -39,9 +39,9 @@ UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount) {
 UF_STATUS CONFIG_SetIsConfigured(void) {
   uint16_t confFlag = CONFIG_FLAG;
   uint16_t confVer = CONFIG_VERSION;
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_FLAG_ADDRESS, confFlag) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_FLAG_ADDRESS, confFlag) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_VERSION_ADDRESS, confVer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_VERSION_ADDRESS, confVer) != UF_OK)
     return UF_ERROR;
   if (CONFIG_WriteSerialNumber() != UF_OK) return UF_ERROR;
 
@@ -51,7 +51,7 @@ UF_STATUS CONFIG_SetIsConfigured(void) {
 
   confCount++;
 
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_COUNT_ADDRESS, confCount) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_COUNT_ADDRESS, confCount) != UF_OK)
     return UF_ERROR;
 
   vexufStatus.isConfigured = 1;
@@ -61,7 +61,7 @@ UF_STATUS CONFIG_SetIsConfigured(void) {
 UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]) {
   uint16_t buffer[12] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
-                                     EEPROM_SERIAL_NUMBER_LENGTH) != EEPROM_OK)
+                                     EEPROM_SERIAL_NUMBER_LENGTH) != UF_OK)
     return UF_ERROR;
 
   for (int i = 0; i < 12; i++) {
@@ -81,10 +81,10 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
         (serialNumber[2 * i] & 0xFF) | ((serialNumber[2 * i + 1] & 0xFF) << 8);
   }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
-                                      EEPROM_SERIAL_NUMBER_LENGTH) != EEPROM_OK)
+                                      EEPROM_SERIAL_NUMBER_LENGTH) != UF_OK)
     return UF_ERROR;
 
-  if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, vexufSerial) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, vexufSerial) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -93,7 +93,7 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
 UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber) {
   uint16_t buffer[2];
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_REGISTRATION_NUMBER_ADDRESS, buffer,
-                                     2) != EEPROM_OK)
+                                     2) != UF_OK)
     return UF_ERROR;
   *regNumber = ((uint32_t)buffer[1] << 16) | buffer[0];
   return UF_OK;
@@ -103,7 +103,7 @@ UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber) {
   buffer[0] = (uint16_t)(*regNumber & 0xFFFF);          // Lower 16 bits
   buffer[1] = (uint16_t)((*regNumber >> 16) & 0xFFFF);  // Upper 16 bits
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_REGISTRATION_NUMBER_ADDRESS,
-                                      buffer, 2) != EEPROM_OK)
+                                      buffer, 2) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -112,7 +112,7 @@ UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber) {
 UF_STATUS CONFIG_LoadCallSign(char* callsign[CALLSIGN_LENGTH]) {
   uint16_t buffer[EEPROM_CALLSIGN_LENGTH] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
-                                     EEPROM_CALLSIGN_LENGTH) != EEPROM_OK)
+                                     EEPROM_CALLSIGN_LENGTH) != UF_OK)
     return UF_ERROR;
   for (int i = 0; i < EEPROM_CALLSIGN_LENGTH; i++) {
     *callsign[2 * i] = buffer[i] & 0xFF;
@@ -127,20 +127,20 @@ UF_STATUS CONFIG_SetCallSign(const char* newCallSign[CALLSIGN_LENGTH]) {
         (*newCallSign[2 * i] & 0xFF) | ((*newCallSign[2 * i + 1] & 0xFF) << 8);
   }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
-                                      EEPROM_CALLSIGN_LENGTH) != EEPROM_OK)
+                                      EEPROM_CALLSIGN_LENGTH) != UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
 
 UF_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer) {
   uint16_t pwm1Enabled, pwm2Enabled, pwm1Value, pwm2Value;
-  if (EEPROM_93C86_Read(EEPROM_PWM1_ENABLED_ADDRESS, &pwm1Enabled) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_PWM1_ENABLED_ADDRESS, &pwm1Enabled) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Read(EEPROM_PWM1_DEFAULT_ADDRESS, &pwm1Value) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_PWM1_DEFAULT_ADDRESS, &pwm1Value) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Read(EEPROM_PWM2_ENABLED_ADDRESS, &pwm2Enabled) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_PWM2_ENABLED_ADDRESS, &pwm2Enabled) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Read(EEPROM_PWM2_DEFAULT_ADDRESS, &pwm2Value) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_PWM2_DEFAULT_ADDRESS, &pwm2Value) != UF_OK)
     return UF_ERROR;
 
   pwmConfigBuffer->pwm1Enabled = pwm1Enabled == 1 ? 1 : 0;
@@ -155,13 +155,13 @@ UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig) {
   uint16_t pwm1Value = pwmConfig->pwm1Value;
   uint16_t pwm2Value = pwmConfig->pwm2Value;
 
-  if (EEPROM_93C86_Write(EEPROM_PWM1_ENABLED_ADDRESS, pwm1Enabled) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM1_ENABLED_ADDRESS, pwm1Enabled) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_PWM1_DEFAULT_ADDRESS, pwm1Value) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM1_DEFAULT_ADDRESS, pwm1Value) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_PWM2_ENABLED_ADDRESS, pwm2Enabled) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM2_ENABLED_ADDRESS, pwm2Enabled) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Write(EEPROM_PWM2_DEFAULT_ADDRESS, pwm2Value) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_PWM2_DEFAULT_ADDRESS, pwm2Value) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -171,7 +171,7 @@ UF_STATUS CONFIG_getActuators(ActuatorsConfiguration* actConf,
                               ActuatorsValues* ActValues) {
   uint16_t buffer[2];
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_ACTUATORS_CONF_ADDRESS, buffer,
-                                     2) != EEPROM_OK)
+                                     2) != UF_OK)
     return UF_ERROR;
 
   actConf->actuators_enabled = buffer[0] & 0x1;
@@ -198,14 +198,14 @@ UF_STATUS CONFIG_setActuators(const ActuatorsConfiguration* actConf,
               ((actValues->act7 & 0x3) << 12) | ((actValues->act8 & 0x3) << 14);
 
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_ACTUATORS_CONF_ADDRESS, buffer,
-                                      2) != EEPROM_OK)
+                                      2) != UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
 
 UF_STATUS CONFIG_getSerialConf(SerialConfiguration* serialConf) {
   uint16_t buffer;
-  if (EEPROM_93C86_Read(EEPROM_SERIAL_INTERFACE_ADDRESS, &buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_SERIAL_INTERFACE_ADDRESS, &buffer) != UF_OK)
     return UF_ERROR;
 
   serialConf->ttl_enabled = buffer & 0x1;
@@ -225,7 +225,7 @@ UF_STATUS CONFIG_setSerialConf(const SerialConfiguration* serialConf) {
                     ((serialConf->tnc_enabled & 0x1) << 9) |
                     ((serialConf->tnc__baud & 0xF) << 10);
 
-  if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
@@ -233,7 +233,7 @@ UF_STATUS CONFIG_setSerialConf(const SerialConfiguration* serialConf) {
 UF_STATUS CONFIG_getI2cConf(I2CConfiguration* i2cConf) {
   uint16_t buffer[2];
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_I2C_TYPE_ADDRESS, buffer, 2) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
 
   i2cConf->i2cAdd = buffer[0];
@@ -247,14 +247,14 @@ UF_STATUS CONFIG_setI2cConf(const I2CConfiguration* i2cConf) {
   buffer[1] = i2cConf->i2cType;
 
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_I2C_TYPE_ADDRESS, buffer, 2) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
 UF_STATUS CONFIG_getLcdConf(LcdConfiguration* lcdConf) {
   uint16_t buffer[3];
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_LCD_TYPE_ADDRESS, buffer, 3) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
 
   lcdConf->lcdAdd = buffer[0];
@@ -270,21 +270,21 @@ UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* lcdConf) {
   buffer[2] = lcdConf->lcdPwm;
 
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_LCD_TYPE_ADDRESS, buffer, 3) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
 
 UF_STATUS CONFIG_getSPIType(SpiType* spiType) {
   uint16_t buffer;
-  if (EEPROM_93C86_Read(EEPROM_SPI_TYPE_ADDRESS, &buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_SPI_TYPE_ADDRESS, &buffer) != UF_OK)
     return UF_ERROR;
   *spiType = (SpiType)buffer;
   return UF_OK;
 }
 UF_STATUS CONFIG_setSPIType(const SpiType* spiType) {
   uint16_t buffer = (uint16_t)*spiType;
-  if (EEPROM_93C86_Write(EEPROM_SPI_TYPE_ADDRESS, buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_SPI_TYPE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
@@ -293,7 +293,7 @@ UF_STATUS CONFIG_setSPIType(const SpiType* spiType) {
 
 UF_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf) {
   uint16_t buffer;
-  if (EEPROM_93C86_Read(EEPROM_INDICATORS_ADDRESS, &buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Read(EEPROM_INDICATORS_ADDRESS, &buffer) != UF_OK)
     return UF_ERROR;
 
   indConf->globalIndicatorEnabled = buffer & 0x1;
@@ -320,7 +320,7 @@ UF_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf) {
                     ((indConf->Av2IndEnabled & 0x1) << 8) |
                     ((indConf->Av3IndEnabled & 0x1) << 9);
 
-  if (EEPROM_93C86_Write(EEPROM_INDICATORS_ADDRESS, buffer) != EEPROM_OK)
+  if (EEPROM_93C86_Write(EEPROM_INDICATORS_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
   return UF_OK;
 }
@@ -331,7 +331,7 @@ UF_STATUS CONFIG_getAvSensor(AvSensor* av, uint8_t idx) {
   uint16_t buffer[16];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_AV_ENABLED_ADDRESS + (EEPROM_AV_SHIFT * idx), buffer, 16) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
 
   av->enabled = buffer[0] & 0x1;
@@ -364,7 +364,7 @@ UF_STATUS CONFIG_SetAvSensor(const AvSensor* av, uint8_t idx) {
 
   if (EEPROM_93C86_WriteMultipleWords(
           EEPROM_AV_ENABLED_ADDRESS + (EEPROM_AV_SHIFT * idx), buffer, 16) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -375,7 +375,7 @@ UF_STATUS CONFIG_getAlarmConf(AlarmConfiguration* alarm, uint8_t idx) {
   uint16_t buffer[8];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_ALARM_ENABLED_ADDRESS + (EEPROM_ALARM_ENABLED_ADDRESS * idx),
-          buffer, 8) != EEPROM_OK)
+          buffer, 8) != UF_OK)
     return UF_ERROR;
 
   alarm->enabled = buffer[0] & 0x1;
@@ -422,7 +422,7 @@ UF_STATUS CONFIG_SetAlarmConf(const AlarmConfiguration* alarm, uint8_t idx) {
 
   if (EEPROM_93C86_WriteMultipleWords(
           EEPROM_ALARM_ENABLED_ADDRESS + (EEPROM_ALARM_ENABLED_ADDRESS * idx),
-          buffer, 8) != EEPROM_OK)
+          buffer, 8) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -434,7 +434,7 @@ UF_STATUS CONFIG_getTrigConf(TriggerConfiguration* trigConf, uint8_t idx) {
   uint16_t buffer[16];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_TRIG_STATUS_ADDRESS + (EEPROM_TRIG_SHIFT * idx), buffer, 16) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
 
   trigConf->status = buffer[0] & 0xF;
@@ -500,7 +500,7 @@ UF_STATUS CONFIG_setTrigConf(const TriggerConfiguration* trigConf,
 
   if (EEPROM_93C86_WriteMultipleWords(
           EEPROM_TRIG_STATUS_ADDRESS + (EEPROM_TRIG_SHIFT * idx), buffer, 16) !=
-      EEPROM_OK)
+      UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -512,7 +512,7 @@ UF_STATUS CONFIG_getTncMessage(char* message, uint8_t idx) {
   uint16_t buffer[EEPROM_TNC_MESSAGE_LENGTH];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_TNC_MESSAGE_ADDRESS + (EEPROM_TNC_MESSAGE_LENGTH * idx),
-          buffer, EEPROM_TNC_MESSAGE_LENGTH) != EEPROM_OK)
+          buffer, EEPROM_TNC_MESSAGE_LENGTH) != UF_OK)
     return UF_ERROR;
 
   for (int i = 0; i < EEPROM_TNC_MESSAGE_LENGTH; i++) {
@@ -531,7 +531,7 @@ UF_STATUS CONFIG_setTncMessage(const char* message, uint8_t idx) {
 
   if (EEPROM_93C86_WriteMultipleWords(
           EEPROM_TNC_MESSAGE_ADDRESS + (EEPROM_TNC_MESSAGE_LENGTH * idx),
-          buffer, EEPROM_TNC_MESSAGE_LENGTH) != EEPROM_OK)
+          buffer, EEPROM_TNC_MESSAGE_LENGTH) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
@@ -543,7 +543,7 @@ UF_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx) {
   uint16_t buffer[EEPROM_TNC_PATH_LENGTH];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_TNC_PATH_ADDRESS + (EEPROM_TNC_PATH_LENGTH * idx), buffer,
-          EEPROM_TNC_MESSAGE_LENGTH) != EEPROM_OK)
+          EEPROM_TNC_MESSAGE_LENGTH) != UF_OK)
     return UF_ERROR;
 
   for (int i = 0; i < EEPROM_TNC_MESSAGE_LENGTH; i++) {
@@ -562,7 +562,7 @@ UF_STATUS CONFIG_setTncPath(const char* tncPath, uint8_t idx) {
 
   if (EEPROM_93C86_WriteMultipleWords(
           EEPROM_TNC_PATH_ADDRESS + (EEPROM_TNC_PATH_LENGTH * idx), buffer,
-          EEPROM_TNC_PATH_LENGTH) != EEPROM_OK)
+          EEPROM_TNC_PATH_LENGTH) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;

@@ -1,11 +1,4 @@
-/*
- * vexuf_helpers.c
- *
- *  Created on: Aug 10, 2024
- *      Author: Aly Badawy
- */
-
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char serialNumber[24];

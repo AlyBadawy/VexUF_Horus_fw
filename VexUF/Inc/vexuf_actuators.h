@@ -9,7 +9,6 @@
 #define INC_ACTUATORS_H_
 
 #include "vexuf.h"
-#include "vexuf_helpers.h"
 
 #define NUMBER_OF_Actuators 8
 

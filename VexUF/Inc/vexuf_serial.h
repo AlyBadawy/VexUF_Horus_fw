@@ -1,7 +1,7 @@
 #ifndef VEXUF_SERIAL_H
 #define VEXUF_SERIAL_H
 
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 
 #define SERIAL_BUFFER_SIZE 1024
 

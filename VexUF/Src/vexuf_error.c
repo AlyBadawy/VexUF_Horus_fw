@@ -8,7 +8,7 @@
 #include "vexuf_error.h"
 
 #include "iwdg.h"
-#include "vexuf_helpers.h"
+#include "vexuf.h"
 #include "vexuf_indicators.h"
 #include "vexuf_outputs.h"
 #include "vexuf_pwm.h"
