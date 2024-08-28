@@ -37,10 +37,6 @@ typedef struct {
 
 UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues, float* AVsVoltages);
 
-#if defined(DEBUG)
-
 void ADC_Test(void);
-
-#endif  // DEBUG
 
 #endif /* INC_VEXUF_ADC_AVS_H_ */

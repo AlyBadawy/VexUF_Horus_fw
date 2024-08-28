@@ -42,9 +42,9 @@ int main(void) {
     Enable indicators for the duration of the startup routine.
     This makes sure that the initial WARN is turned on, and you
     can show the NO-CONF error sequence.
+    TODO: Review the need for this before release.
   */
   indConfig.globalIndicatorEnabled = 1;
-  indConfig.statusIndicatorsEnabled = 1;
   indConfig.sdCardIndicatorEnabled = 1;
   outputConfig.haltOnSdCardErrors = 1;
 
@@ -110,6 +110,7 @@ int main(void) {
     SDCard_checkCard();
     ERROR_handleSdError();
 
+    // Run this routine every 100ms
     if (vexufStatus.timer_10hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndFAST);
       vexufStatus.timer_10hz_ticked = 0;
@@ -117,15 +118,35 @@ int main(void) {
       }
     }
 
+    // Run this routine every 1s
     if (vexufStatus.timer_1hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndSLOW);
-      vexufStatus.timer_1hz_ticked = 0;
+      // TODO: Run ADC Scan
+
       // TODO: toggle SDCARD indicator if full and no halt on error
+      vexufStatus.timer_1hz_ticked = 0;
     }
+
+    // Run this routine every 10s
     if (vexufStatus.timer_0d1hz_ticked == 1) {
       TRIGS_runAll();
       vexufStatus.timer_0d1hz_ticked = 0;
     }
+
+    // if (vexufStatus.ttlBuffered == 1) {
+    //   if (COMMANDS_handleCommand(TtlUart) == UF_ERROR) {
+    //     // todo: handle error
+    //   }
+    //   vexufStatus.ttlBuffered = 0;
+    // }
+    // if (vexufStatus.tncBuffered == 1) {
+    //   if (COMMANDS_handleCommand(TncUart) == UF_ERROR) {
+    //     // todo: handle error
+    //   }
+    //   vexufStatus.ttlBuffered = 0;
+    // }
+
+    // Run this routine every iteration.
     HAL_IWDG_Refresh(&hiwdg);
   }
 }
