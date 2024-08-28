@@ -1,6 +1,7 @@
 #include "vexuf_cli.h"
 
 #include <ctype.h>
+#include <string.h>
 
 #include "aht20.h"
 #include "vexuf_config.h"
@@ -19,8 +20,8 @@ void handle_get_time(const char *args);
 void handle_set_time(const char *args);
 void handle_buzzer(const char *args);
 
-extern uint8_t ttlRxData[SERIAL_BUFFER_SIZE];
-extern uint8_t tncRxData[SERIAL_BUFFER_SIZE];
+extern char ttlRxData[SERIAL_BUFFER_SIZE];
+extern char tncRxData[SERIAL_BUFFER_SIZE];
 extern uint16_t ttlRxIdx;
 extern uint16_t tncRxIdx;
 
@@ -38,11 +39,11 @@ static char invalid[] =
 
 Command commands[] = {
     {"get callsign", handle_get_callsign},
-    {"set callsign ", handle_set_callsign},
-    {"get temperature ", handle_get_temperature},
+    {"set callsign", handle_set_callsign},
+    {"get temperature", handle_get_temperature},
     {"get time", handle_get_time},
-    {"set time ", handle_set_time},
-    {"buzzer ", handle_buzzer}
+    {"set time", handle_set_time},
+    {"buzzer", handle_buzzer}
     // ... add more commands as needed ...
 };
 
@@ -50,36 +51,35 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
   char command[SERIAL_BUFFER_SIZE];
 
   memset(&serialTxBuffer[0], 0, sizeof(serialTxBuffer));
+  memset(&command[0], 0, sizeof(command));
 
   switch (interface) {
     case TtlUart:
       // Replace the trailing character with a null terminator
-      while (ttlRxData[ttlRxIdx - 1] == '\r' ||
-             ttlRxData[ttlRxIdx - 1] == '\n') {
-      }
-      ttlRxData[--ttlRxIdx] = '\0';
+      while (ttlRxData[ttlRxIdx - 1] == '\r' || ttlRxData[ttlRxIdx - 1] == '\n')
+        ttlRxData[--ttlRxIdx] = '\0';
       memcpy(&command, &ttlRxData, ttlRxIdx + 1);
       break;
     case TncUart:
       // Replace the trailing character with a null terminator
-      while (tncRxData[tncRxIdx - 1] == '\r' ||
-             tncRxData[tncRxIdx - 1] == '\n') {
+      while (tncRxData[tncRxIdx - 1] == '\r' || tncRxData[tncRxIdx - 1] == '\n')
         tncRxData[--tncRxIdx] = '\0';
-      }
       memcpy(&command, &tncRxData, tncRxIdx + 1);
       break;
     default:
       return UF_ERROR;
   }
 
-  for (int i = 0; command[i]; i++) {
-    command[i] = tolower(command[i]);
+  char tempCommand[SERIAL_BUFFER_SIZE];
+  for (int i = 0; command[i] != '\0'; i++) {
+    tempCommand[i] = tolower(command[i]);
   }
 
   for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
-    if (strncmp(command, commands[i].command_name,
+    if (strncmp(tempCommand, commands[i].command_name,
                 strlen(commands[i].command_name)) == 0) {
-      const char *args = command + strlen(commands[i].command_name);
+      char *args = command + strlen(commands[i].command_name);
+      trim(&args);
       commands[i].handler(args);
     }
   }

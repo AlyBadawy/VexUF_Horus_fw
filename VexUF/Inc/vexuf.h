@@ -45,4 +45,6 @@ typedef struct {
 void VexUF_GenerateSerialNumber();
 uint16_t getSerialBytes(void);
 
+void trim(char **str);
+
 #endif  // VEXUF_H
