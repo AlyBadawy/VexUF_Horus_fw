@@ -16,7 +16,7 @@
 #include "usb_device.h"
 #include "vexuf.h"
 #include "vexuf_actuators.h"
-#include "vexuf_adc_avs.h"
+#include "vexuf_avs.h"
 #include "vexuf_config.h"
 #include "vexuf_error.h"
 #include "vexuf_i2c_checker.h"
