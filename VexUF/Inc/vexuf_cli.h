@@ -1,6 +1,14 @@
 #ifndef VEXUF_CLI_H_
 #define VEXUF_CLI_H_
 
-// Your code goes here
+#include "vexuf.h"
+#include "vexuf_serial.h"
 
-#endif // VEXUF_CLI_H_
+typedef struct {
+  const char *command_name;
+  void (*handler)(const char *args);
+} Command;
+
+UF_STATUS CLI_handleCommand(SerialInterface interface);
+
+#endif  // VEXUF_CLI_H_

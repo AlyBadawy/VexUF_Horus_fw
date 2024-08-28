@@ -5,8 +5,8 @@
  *      Author: Aly Badawy
  */
 
-#ifndef INC_VEXUF_ADC_AVS_H_
-#define INC_VEXUF_ADC_AVS_H_
+#ifndef INC_VEXUF_AVS_H_
+#define INC_VEXUF_AVS_H_
 
 #include "vexuf.h"
 
@@ -35,8 +35,10 @@ typedef struct {
   uint16_t maxOn;
 } AvSensor;
 
-UF_STATUS ADC_Scan(float* cpuTempC, uint32_t* AVsRawValues, float* AVsVoltages);
+UF_STATUS ADC_getVref(float* vref);
+
+UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages);
 
 void ADC_Test(void);
 
-#endif /* INC_VEXUF_ADC_AVS_H_ */
+#endif /* INC_VEXUF_AVS_H_ */

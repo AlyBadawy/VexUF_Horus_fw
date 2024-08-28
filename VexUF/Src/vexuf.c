@@ -13,9 +13,6 @@ int _write(int file, char *ptr, int len) {
 
 void base32_encode(const uint8_t *data, size_t length, char *output);
 
-float cToF(float c) { return (c * (9.0 / 5.0)) + 32.0; }
-float fToC(float f) { return (f - 32.0) * (5.0 / 9.0); }
-
 uint16_t getSerialBytes(void) { return *(uint16_t *)0x08007FFD; }
 
 void base32_encode(const uint8_t *data, size_t length, char *output) {
