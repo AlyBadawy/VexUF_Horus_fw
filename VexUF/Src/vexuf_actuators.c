@@ -9,6 +9,8 @@
 
 #include "74hc595d.h"
 
+UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level);
+
 uint8_t actuatorsData = 0;
 ActuatorsConfiguration actConf = {0};
 
@@ -17,15 +19,20 @@ void ACT_Init(ActuatorsConfiguration* newActConf) {
   actConf.actuators_lights_enabled = newActConf->actuators_lights_enabled;
 }
 
-UF_STATUS ACTUATORS_setPin(ActuatorPin pin) {
+UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level) {
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
-  actuatorsData |= (1 << (pin));
-  return UF_OK;
-}
-UF_STATUS ACTUATORS_resetPin(ActuatorPin pin) {
-  if (actConf.actuators_enabled != 1) return UF_DISABLED;
-  actuatorsData &= ~(1 << (pin));
-  return UF_OK;
+  switch (level) {
+    case ActOn:
+      actuatorsData |= (1 << (pin));
+      return UF_OK;
+    case ActOff:
+      actuatorsData &= ~(1 << (pin));
+      return UF_OK;
+    case ActUnchanged:
+      return UF_OK;
+    default:
+      return UF_ERROR;
+  }
 }
 
 UF_STATUS ACTUATORS_Update(void) {
@@ -40,24 +47,16 @@ UF_STATUS ACTUATORS_setLights(uint8_t state) {
     return UF_DISABLED;
 
   HAL_GPIO_WritePin(ActInd_GPIO_Port, ActInd_Pin,
-                    state == 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+                    state ? GPIO_PIN_SET : GPIO_PIN_RESET);
   return UF_OK;
 }
 
 UF_STATUS ACTUATORS_trigger(ActuatorsValues values) {
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
 
-  const ActuatorPin pins[] = {ACT_PIN_A1, ACT_PIN_A2, ACT_PIN_A3, ACT_PIN_A4,
-                              ACT_PIN_A5, ACT_PIN_A6, ACT_PIN_A7, ACT_PIN_A8};
-  uint16_t actValues[] = {values.act1, values.act2, values.act3, values.act4,
-                          values.act5, values.act6, values.act7, values.act8};
-
-  for (int i = 0; i < 8; i++) {
-    if (actValues[i] == ActOn) {
-      if (ACTUATORS_setPin(pins[i]) != UF_OK) return UF_ERROR;
-    } else if (actValues[i] == ActOff) {
-      if (ACTUATORS_resetPin(pins[i]) != UF_OK) return UF_ERROR;
-    }
+  for (ActuatorPin pin = ACT_PIN_A1; pin <= ACT_PIN_A8; pin++) {
+    uint8_t value = ((uint16_t*)&values)[pin];
+    if (ACTUATORS_setPin(pin, value) != UF_OK) return UF_ERROR;
   }
   if (ACTUATORS_Update() != UF_OK) return UF_ERROR;
 
@@ -81,10 +80,10 @@ void ACTUATORS_Test(void) {
 
   ACTUATORS_setLights(1);
   for (ActuatorPin pin = ACT_PIN_A1; pin <= ACT_PIN_A8; pin++) {
-    ACTUATORS_setPin(pin);
+    ACTUATORS_setPin(pin, ActOn);
     ACTUATORS_Update();
     HAL_Delay(50);
-    ACTUATORS_resetPin(pin);
+    ACTUATORS_setPin(pin, ActOff);
     ACTUATORS_Update();
     HAL_Delay(50);
   }

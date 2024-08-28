@@ -48,8 +48,6 @@ typedef struct {
 // Function prototypes
 void ACT_Init(ActuatorsConfiguration* newActConf);
 
-UF_STATUS ACTUATORS_setPin(ActuatorPin pin);
-UF_STATUS ACTUATORS_resetPin(ActuatorPin pin);
 UF_STATUS ACTUATORS_Update(void);
 
 UF_STATUS ACTUATORS_lights(GPIO_PinState state);
