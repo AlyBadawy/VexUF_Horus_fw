@@ -2,9 +2,9 @@
 #define VEXUF_H
 
 #include <stdio.h>
+#include <string.h>
 
 #include "main.h"
-#include "string.h"
 
 #define SERIAL_NUMBER_LENGTH 24
 

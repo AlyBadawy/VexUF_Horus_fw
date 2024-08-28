@@ -1,6 +1,7 @@
 #include "vexuf_rtc.h"
 
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 
 extern RTC_HandleTypeDef hrtc;
 static const uint8_t list_mth[12] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
@@ -19,15 +20,12 @@ UF_STATUS RTC_getDateTime(char *datetime) {
   snprintf(datetime, 26, "%02d/%02d/%04d %02d:%02d:%02d", sDate.Month,
            sDate.Date, 2000 + sDate.Year, sTime.Hours, sTime.Minutes,
            sTime.Seconds);
-};
+  return UF_OK;
+}
 
 UF_STATUS RTC_setDateTime(const char *datetime) {
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;
-  RTC_AlarmTypeDef sAlarm;
-
-  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
-  sAlarm.AlarmDateWeekDay = 1;
 
   uint8_t dayOfWeek = 0;
   int tempYear = 0;
