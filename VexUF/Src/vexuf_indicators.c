@@ -29,12 +29,9 @@ static IndicatorPin indicatorPins[] = {
 void IND_applyOnOffLevelsToGPIO(void) {
   for (Indicator ind = IndError; ind <= IndSdio; ind++) {
     IndLevelOption level = IND_getCurrentLevel(ind);
-    if (level == IndON) {
+    if (level == IndON || level == IndOFF) {
       HAL_GPIO_WritePin(indicatorPins[ind].port, indicatorPins[ind].pin,
-                        GPIO_PIN_SET);
-    } else if (level == IndOFF) {
-      HAL_GPIO_WritePin(indicatorPins[ind].port, indicatorPins[ind].pin,
-                        GPIO_PIN_RESET);
+                        (level == IndON) ? GPIO_PIN_SET : GPIO_PIN_RESET);
     }
   }
 }
@@ -50,54 +47,48 @@ IndLevelOption IND_getCurrentLevel(Indicator ind) {
       indConf.AvGlobalIndEnabled != 1)
     return IndOFF;
 
+  // Indicator-specific checks and return levels
   switch (ind) {
-    case (IndError):
+    case IndError:
       return indLevels.indErrorLevel;
-    case (IndWarn):
+    case IndWarn:
       return indLevels.indWarnLevel;
-    case (IndInfo):
+    case IndInfo:
       return indLevels.indInfoLevel;
-    case (IndAv1):
-      if (indConf.Av1IndEnabled != 1) return IndOFF;
-      return indLevels.indAv1Level;
-    case (IndAv2):
-      if (indConf.Av2IndEnabled != 1) return IndOFF;
-      return indLevels.indAv2Level;
-    case (IndAv3):
-      if (indConf.Av3IndEnabled != 1) return IndOFF;
-      return indLevels.indAv3Level;
-    case (IndBuzzer):
-      if (indConf.buzzer1sEnabled != 1) return IndOFF;
-      return indLevels.indBuzzerLevel;
-    case (IndSdio):
-      if (indConf.sdCardIndicatorEnabled != 1) return IndOFF;
-      return indLevels.indSdioLevel;
+    case IndAv1:
+      return indConf.Av1IndEnabled ? indLevels.indAv1Level : IndOFF;
+    case IndAv2:
+      return indConf.Av2IndEnabled ? indLevels.indAv2Level : IndOFF;
+    case IndAv3:
+      return indConf.Av3IndEnabled ? indLevels.indAv3Level : IndOFF;
+    case IndBuzzer:
+      return indConf.buzzer1sEnabled ? indLevels.indBuzzerLevel : IndOFF;
+    case IndSdio:
+      return indConf.sdCardIndicatorEnabled ? indLevels.indSdioLevel : IndOFF;
     default:
       return IndOFF;
   }
 }
 
 UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
+  // Check if global indicator is disabled or current level is the same as
+  // requested
+  if (indConf.globalIndicatorEnabled != 1 || IND_getCurrentLevel(ind) == option)
+    return UF_DISABLED;
+
+  // Return early if the specific indicator is disabled
+  if ((ind == IndError || ind == IndWarn || ind == IndInfo) &&
+      !indConf.statusIndicatorsEnabled)
+    return UF_DISABLED;
+  if (ind == IndBuzzer && !indConf.buzzerEnabled) return UF_DISABLED;
+  if (ind == IndSdio && !indConf.sdCardIndicatorEnabled) return UF_DISABLED;
+  if ((ind == IndAv1 || ind == IndAv2 || ind == IndAv3) &&
+      !indConf.AvGlobalIndEnabled)
+    return UF_DISABLED;
+
   UF_STATUS status = UF_OK;
 
-  // Return if current status equals new status
-  if (IND_getCurrentLevel(ind) == option || indConf.globalIndicatorEnabled != 1)
-    return UF_DISABLED;
-
-  if ((indConf.statusIndicatorsEnabled != 1) &&
-      (ind == IndError || ind == IndWarn || ind == IndInfo))
-    return UF_DISABLED;
-
-  if (indConf.buzzerEnabled != 1 && ind == IndBuzzer) return UF_DISABLED;
-  if (indConf.sdCardIndicatorEnabled != 1 && ind == IndSdio) return UF_DISABLED;
-
-  if (indConf.AvGlobalIndEnabled != 1 &&
-      (ind == IndAv1 || ind == IndAv2 || ind == IndAv3))
-    return UF_DISABLED;
-
-  // TODO: check AV indicators individually for disabled status
-
-  // Special handling for mutual exclusivity
+  // Handle mutual exclusivity for status indicators
   if ((option != IndOFF) &&
       (ind == IndError || ind == IndWarn || ind == IndInfo)) {
     indLevels.indErrorLevel = IndOFF;
@@ -107,25 +98,25 @@ UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
   }
 
   switch (ind) {
-    case (IndError):
+    case IndError:
       indLevels.indErrorLevel = option;
       break;
-    case (IndWarn):
+    case IndWarn:
       indLevels.indWarnLevel = option;
       break;
-    case (IndInfo):
+    case IndInfo:
       indLevels.indInfoLevel = option;
       break;
-    case (IndAv1):
+    case IndAv1:
       indLevels.indAv1Level = option;
       break;
-    case (IndAv2):
+    case IndAv2:
       indLevels.indAv2Level = option;
       break;
-    case (IndAv3):
+    case IndAv3:
       indLevels.indAv3Level = option;
       break;
-    case (IndBuzzer):
+    case IndBuzzer:
       if (option == IndFAST) {
         indLevels.indBuzzerLevel = IndSLOW;
         status = UF_OVERWRITTEN;
@@ -133,7 +124,7 @@ UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
         indLevels.indBuzzerLevel = option;
       }
       break;
-    case (IndSdio):
+    case IndSdio:
       if (option == IndFAST || option == IndSLOW) {
         indLevels.indSdioLevel = IndON;
         status = UF_OVERWRITTEN;
@@ -142,7 +133,7 @@ UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
       }
       break;
     default:
-      break;
+      return UF_ERROR;
   }
   IND_applyOnOffLevelsToGPIO();
   return status;
@@ -152,8 +143,7 @@ UF_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
   if (option == IndON || option == IndOFF) return UF_ERROR;  // Invalid status
 
   for (Indicator ind = IndError; ind <= IndAv3; ind++) {
-    IndLevelOption lo = IND_getCurrentLevel(ind);
-    if (lo == option) {
+    if (IND_getCurrentLevel(ind) == option) {
       HAL_GPIO_TogglePin(indicatorPins[ind].port, indicatorPins[ind].pin);
     }
   }

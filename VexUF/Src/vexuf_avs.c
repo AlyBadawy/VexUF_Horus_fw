@@ -27,8 +27,6 @@ AvSensor avSensors[NUMBER_OF_AVS];
  * 4: AV3 Raw Value
  */
 
-UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue);
-
 UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
   *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
   return UF_OK;

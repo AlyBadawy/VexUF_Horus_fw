@@ -39,6 +39,7 @@ void ERROR_SdCardLoop(uint16_t delay) {
   IND_buzzOnError();
   TIMERS_Stop();
   PWM_deinit();
+
   while (status != UF_OK) {
     HAL_IWDG_Refresh(&hiwdg);
     while (HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) ==
@@ -55,6 +56,7 @@ void ERROR_SdCardLoop(uint16_t delay) {
     IND_setLevel(IndError, IndON);
     IND_setLevel(IndSdio, IndOFF);
     HAL_Delay(delay);
+
     if (!vexufStatus.sdCardEjected &&
         HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) == GPIO_PIN_SET) {
       vexufStatus.sdCardEjected = 1;
@@ -95,8 +97,8 @@ void ERROR_handleNoConfig(void) {
 }
 
 void ERROR_handleSdError(void) {
-  if (vexufStatus.sdCardError == 0 && vexufStatus.sdCardEjected == 0 &&
-      vexufStatus.sdCardFull == 0) {
+  if (!vexufStatus.sdCardError && !vexufStatus.sdCardEjected &&
+      !vexufStatus.sdCardFull) {
     IND_setLevel(IndSdio, IndOFF);
     return;
   }
