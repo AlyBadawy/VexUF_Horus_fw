@@ -5,6 +5,7 @@
 
 extern RTC_HandleTypeDef hrtc;
 static const uint8_t list_mth[12] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+AlarmConfiguration alarms[2];
 
 UF_STATUS RTC_getDateTime(char *datetime) {
   RTC_DateTypeDef sDate;

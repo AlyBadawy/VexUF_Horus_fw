@@ -6,3 +6,4 @@
  */
 
 #include "vexuf_lcd.h"
+LcdConfiguration lcdConf = {0};

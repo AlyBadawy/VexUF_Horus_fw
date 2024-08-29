@@ -18,7 +18,7 @@
 extern IWDG_HandleTypeDef hiwdg;
 
 extern VexufStatus vexufStatus;
-extern IndConfiguration indConfig;
+extern IndConfiguration indConf;
 extern OutputConfiguration outputConfig;
 
 void ERROR_ConfigLoop(void);
@@ -84,8 +84,8 @@ void Error_Handler(void) {
 void ERROR_handleNoConfig(void) {
   if (vexufStatus.isConfigured == 1) return;
 
-  indConfig.globalIndicatorEnabled = 1;
-  indConfig.statusIndicatorsEnabled = 1;
+  indConf.globalIndicatorEnabled = 1;
+  indConf.statusIndicatorsEnabled = 1;
 
   TIMERS_Stop();
   PWM_deinit();

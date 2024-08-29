@@ -14,7 +14,7 @@ void IND_applyOnOffLevelsToGPIO(void);
 IndLevelOption IND_getCurrentLevel(Indicator ind);
 
 IndLevels indLevels;
-IndConfiguration indConfig;
+IndConfiguration indConf;
 
 static IndicatorPin indicatorPins[] = {
     {ErrorInd_GPIO_Port, ErrorInd_Pin},
@@ -40,14 +40,14 @@ void IND_applyOnOffLevelsToGPIO(void) {
 }
 
 IndLevelOption IND_getCurrentLevel(Indicator ind) {
-  if (indConfig.globalIndicatorEnabled == 0) return IndOFF;
+  if (indConf.globalIndicatorEnabled == 0) return IndOFF;
 
   if ((ind == IndError || ind == IndWarn || ind == IndInfo) &&
-      indConfig.statusIndicatorsEnabled != 1)
+      indConf.statusIndicatorsEnabled != 1)
     return IndOFF;
 
   if ((ind == IndAv1 || ind == IndAv2 || ind == IndAv3) &&
-      indConfig.AvGlobalIndEnabled != 1)
+      indConf.AvGlobalIndEnabled != 1)
     return IndOFF;
 
   switch (ind) {
@@ -58,19 +58,19 @@ IndLevelOption IND_getCurrentLevel(Indicator ind) {
     case (IndInfo):
       return indLevels.indInfoLevel;
     case (IndAv1):
-      if (indConfig.Av1IndEnabled != 1) return IndOFF;
+      if (indConf.Av1IndEnabled != 1) return IndOFF;
       return indLevels.indAv1Level;
     case (IndAv2):
-      if (indConfig.Av2IndEnabled != 1) return IndOFF;
+      if (indConf.Av2IndEnabled != 1) return IndOFF;
       return indLevels.indAv2Level;
     case (IndAv3):
-      if (indConfig.Av3IndEnabled != 1) return IndOFF;
+      if (indConf.Av3IndEnabled != 1) return IndOFF;
       return indLevels.indAv3Level;
     case (IndBuzzer):
-      if (indConfig.buzzer1sEnabled != 1) return IndOFF;
+      if (indConf.buzzer1sEnabled != 1) return IndOFF;
       return indLevels.indBuzzerLevel;
     case (IndSdio):
-      if (indConfig.sdCardIndicatorEnabled != 1) return IndOFF;
+      if (indConf.sdCardIndicatorEnabled != 1) return IndOFF;
       return indLevels.indSdioLevel;
     default:
       return IndOFF;
@@ -81,19 +81,17 @@ UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
   UF_STATUS status = UF_OK;
 
   // Return if current status equals new status
-  if (IND_getCurrentLevel(ind) == option ||
-      indConfig.globalIndicatorEnabled != 1)
+  if (IND_getCurrentLevel(ind) == option || indConf.globalIndicatorEnabled != 1)
     return UF_DISABLED;
 
-  if ((indConfig.statusIndicatorsEnabled != 1) &&
+  if ((indConf.statusIndicatorsEnabled != 1) &&
       (ind == IndError || ind == IndWarn || ind == IndInfo))
     return UF_DISABLED;
 
-  if (indConfig.buzzerEnabled != 1 && ind == IndBuzzer) return UF_DISABLED;
-  if (indConfig.sdCardIndicatorEnabled != 1 && ind == IndSdio)
-    return UF_DISABLED;
+  if (indConf.buzzerEnabled != 1 && ind == IndBuzzer) return UF_DISABLED;
+  if (indConf.sdCardIndicatorEnabled != 1 && ind == IndSdio) return UF_DISABLED;
 
-  if (indConfig.AvGlobalIndEnabled != 1 &&
+  if (indConf.AvGlobalIndEnabled != 1 &&
       (ind == IndAv1 || ind == IndAv2 || ind == IndAv3))
     return UF_DISABLED;
 
@@ -163,8 +161,8 @@ UF_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
 }
 
 UF_STATUS IND_buzzOnError(void) {
-  if (indConfig.globalIndicatorEnabled && indConfig.buzzerEnabled &&
-      indConfig.buzzerHoldOnError) {
+  if (indConf.globalIndicatorEnabled && indConf.buzzerEnabled &&
+      indConf.buzzerHoldOnError) {
     IND_setLevel(IndBuzzer, IndON);
     return UF_OK;
   }
@@ -172,8 +170,8 @@ UF_STATUS IND_buzzOnError(void) {
 }
 
 UF_STATUS IND_BuzzOnStartUp(void) {
-  if (indConfig.globalIndicatorEnabled && indConfig.buzzerEnabled &&
-      indConfig.buzzer1sEnabled) {
+  if (indConf.globalIndicatorEnabled && indConf.buzzerEnabled &&
+      indConf.buzzer1sEnabled) {
     for (uint8_t i = 0; i < 3; i++) {
       if (IND_setLevel(IndBuzzer, IndON) != UF_OK) return UF_ERROR;
       HAL_Delay(20);

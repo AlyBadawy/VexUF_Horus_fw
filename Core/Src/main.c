@@ -28,11 +28,11 @@
 
 extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
-extern IndConfiguration indConfig;
+extern IndConfiguration indConf;
 extern OutputConfiguration outputConfig;
 
-extern uint8_t ttlRxData[SERIAL_BUFFER_SIZE];
-extern uint8_t tncRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 
 int main(void) {
   /*
@@ -41,8 +41,8 @@ int main(void) {
     can show the NO-CONF error sequence.
     TODO: Review the need for this before release.
   */
-  indConfig.globalIndicatorEnabled = 1;
-  indConfig.sdCardIndicatorEnabled = 1;
+  indConf.globalIndicatorEnabled = 1;
+  indConf.sdCardIndicatorEnabled = 1;
   outputConfig.haltOnSdCardErrors = 1;
 
   HAL_Init();

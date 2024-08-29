@@ -11,12 +11,14 @@
 
 UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level);
 
-uint8_t actuatorsData = 0;
 ActuatorsConfiguration actConf = {0};
+ActuatorsValues actValues;  // default values for the actuators
+uint8_t actuatorsData = 0;
 
 void ACT_Init(ActuatorsConfiguration* newActConf) {
   actConf.actuators_enabled = newActConf->actuators_enabled;
   actConf.actuators_lights_enabled = newActConf->actuators_lights_enabled;
+  // TODO: update the actuators values to the default values
 }
 
 UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level) {

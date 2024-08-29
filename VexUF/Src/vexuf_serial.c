@@ -5,8 +5,10 @@ extern UART_HandleTypeDef huart6;
 
 extern VexufStatus vexufStatus;
 
-char ttlRxData[SERIAL_BUFFER_SIZE];
-char tncRxData[SERIAL_BUFFER_SIZE];
+SerialConfiguration serialConf = {0};
+
+unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 uint16_t ttlRxIdx;
 uint16_t tncRxIdx;
 

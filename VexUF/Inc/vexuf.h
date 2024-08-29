@@ -7,6 +7,7 @@
 #include "main.h"
 
 #define SERIAL_NUMBER_LENGTH 24
+#define REGISTRATION_NUMBER_LENGTH 10  // 5 WORDS - 10 BYTES
 
 typedef enum {
   UF_OK,

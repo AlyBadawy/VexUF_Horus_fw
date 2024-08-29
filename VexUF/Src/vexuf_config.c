@@ -7,12 +7,29 @@
 
 #include "vexuf_config.h"
 
+#include <ctype.h>
 #include <string.h>
 
 #include "93c86.h"
 
+extern char serialNumber[SERIAL_NUMBER_LENGTH];
+extern char regNumber[REGISTRATION_NUMBER_LENGTH];
+extern char callsign[CALLSIGN_LENGTH];
+extern PwmConfiguration pwmConfig;
+extern ActuatorsConfiguration actConf;
+extern ActuatorsValues actValues;
+extern SerialConfiguration serialConf;
+extern I2CConfiguration i2cConf;
+extern LcdConfiguration lcdConf;
+extern SpiType spiConf;
+extern IndConfiguration indConf;
+extern AvSensor avSensors[3];
+extern AlarmConfiguration alarms[2];
+extern TriggerConfiguration triggers[NUMBER_OF_TRIGGERS];
+// extern char tncMessages[EEPROM_TNC_MESSAGE_COUNT][EEPROM_TNC_MESSAGE_LENGTH];
+// extern char tncPaths[EEPROM_TNC_PATH_COUNT][EEPROM_TNC_PATH_LENGTH];
+
 extern VexufStatus vexufStatus;
-extern char serialNumber[24];
 
 UF_STATUS CONFIG_IsConfigured(void) {
   uint16_t data;
@@ -63,7 +80,7 @@ UF_STATUS CONFIG_SetIsConfigured(void) {
 UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]) {
   uint16_t buffer[12] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
-                                     EEPROM_SERIAL_NUMBER_LENGTH) != UF_OK)
+                                     SERIAL_NUMBER_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
   for (int i = 0; i < 12; i++) {
@@ -76,14 +93,14 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
   // TODO: utilize generate serial number function instead.
   uint16_t vexufSerial = getSerialBytes();
 
-  uint16_t buffer[EEPROM_SERIAL_NUMBER_LENGTH] = {0};
-  for (int i = 0; i < EEPROM_SERIAL_NUMBER_LENGTH; i++) {
+  uint16_t buffer[SERIAL_NUMBER_LENGTH / 2] = {0};
+  for (int i = 0; i < SERIAL_NUMBER_LENGTH / 2; i++) {
     buffer[i] =
         (serialNumber[2 * i] & 0xFF) | ((serialNumber[2 * i + 1] & 0xFF) << 8);
   }
   // TODO: return if eeprom already has the correct serial.
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
-                                      EEPROM_SERIAL_NUMBER_LENGTH) != UF_OK)
+                                      SERIAL_NUMBER_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
   if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, vexufSerial) != UF_OK)
@@ -95,44 +112,45 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
 UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber) {
   uint16_t buffer[2];
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_REGISTRATION_NUMBER_ADDRESS, buffer,
-                                     2) != UF_OK)
+                                     REGISTRATION_NUMBER_LENGTH / 2) != UF_OK)
     return UF_ERROR;
   *regNumber = ((uint32_t)buffer[1] << 16) | buffer[0];
   return UF_OK;
 }
-UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber) {
+UF_STATUS CONFIG_SetRegNumber(const uint32_t* newRegNumber) {
   uint16_t buffer[2];
-  buffer[0] = (uint16_t)(*regNumber & 0xFFFF);          // Lower 16 bits
-  buffer[1] = (uint16_t)((*regNumber >> 16) & 0xFFFF);  // Upper 16 bits
+  buffer[0] = (uint16_t)(*newRegNumber & 0xFFFF);          // Lower 16 bits
+  buffer[1] = (uint16_t)((*newRegNumber >> 16) & 0xFFFF);  // Upper 16 bits
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_REGISTRATION_NUMBER_ADDRESS,
                                       buffer, 2) != UF_OK)
     return UF_ERROR;
-
+  memcpy(&regNumber, newRegNumber, REGISTRATION_NUMBER_LENGTH);
   return UF_OK;
 }
 
 UF_STATUS CONFIG_getCallSign(char* callsign) {
-  uint16_t buffer[EEPROM_CALLSIGN_LENGTH] = {0};
+  uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
-                                     EEPROM_CALLSIGN_LENGTH) != UF_OK)
+                                     CALLSIGN_LENGTH / 2) != UF_OK)
     return UF_ERROR;
-  for (int i = 0; i < EEPROM_CALLSIGN_LENGTH; i++) {
+  for (int i = 0; i < CALLSIGN_LENGTH / 2; i++) {
     callsign[2 * i] = buffer[i] & 0xFF;
     callsign[2 * i + 1] = (buffer[i] >> 8) & 0xFF;
   }
   return UF_OK;
 }
 UF_STATUS CONFIG_setCallSign(const char* newCallSign) {
-  uint16_t buffer[EEPROM_CALLSIGN_LENGTH] = {0};
-  for (int i = 0; i < EEPROM_CALLSIGN_LENGTH; i++) {
-    char upperChar1 = toupper((unsigned char)newCallSign[2 * i]);
-    char upperChar2 = toupper((unsigned char)newCallSign[2 * i + 1]);
+  uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
+  for (int i = 0; i < CALLSIGN_LENGTH / 2; i++) {
+    char upperChar = toupper((unsigned char)newCallSign[2 * i]);
+    char lowerChar = toupper((unsigned char)newCallSign[2 * i + 1]);
 
-    buffer[i] = (upperChar1 & 0xFF) | ((upperChar2 & 0xFF) << 8);
+    buffer[i] = (upperChar & 0xFF) | ((lowerChar & 0xFF) << 8);
   }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
-                                      EEPROM_CALLSIGN_LENGTH) != UF_OK)
+                                      CALLSIGN_LENGTH / 2) != UF_OK)
     return UF_ERROR;
+  memcpy(&callsign, newCallSign, CALLSIGN_LENGTH);
   return UF_OK;
 }
 
@@ -153,11 +171,11 @@ UF_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer) {
   pwmConfigBuffer->pwm1Value = pwm2Value;
   return UF_OK;
 }
-UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig) {
-  uint16_t pwm1Enabled = pwmConfig->pwm1Enabled ? 1 : 0;
-  uint16_t pwm2Enabled = pwmConfig->pwm2Enabled ? 1 : 0;
-  uint16_t pwm1Value = pwmConfig->pwm1Value;
-  uint16_t pwm2Value = pwmConfig->pwm2Value;
+UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* newPwmConfig) {
+  uint16_t pwm1Enabled = newPwmConfig->pwm1Enabled ? 1 : 0;
+  uint16_t pwm2Enabled = newPwmConfig->pwm2Enabled ? 1 : 0;
+  uint16_t pwm1Value = newPwmConfig->pwm1Value;
+  uint16_t pwm2Value = newPwmConfig->pwm2Value;
 
   if (EEPROM_93C86_Write(EEPROM_PWM1_ENABLED_ADDRESS, pwm1Enabled) != UF_OK)
     return UF_ERROR;
@@ -167,7 +185,7 @@ UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig) {
     return UF_ERROR;
   if (EEPROM_93C86_Write(EEPROM_PWM2_DEFAULT_ADDRESS, pwm2Value) != UF_OK)
     return UF_ERROR;
-
+  memcpy(&pwmConfig, newPwmConfig, sizeof(PwmConfiguration));
   return UF_OK;
 }
 
@@ -191,19 +209,24 @@ UF_STATUS CONFIG_getActuators(ActuatorsConfiguration* actConf,
 
   return UF_OK;
 }
-UF_STATUS CONFIG_setActuators(const ActuatorsConfiguration* actConf,
-                              const ActuatorsValues* actValues) {
+UF_STATUS CONFIG_setActuators(const ActuatorsConfiguration* newActConf,
+                              const ActuatorsValues* newActValues) {
   uint16_t buffer[2];
-  buffer[0] = (actConf->actuators_enabled & 0x1) |
-              ((actConf->actuators_lights_enabled & 0x1) << 1);
-  buffer[1] = (actValues->act1 & 0x3) | ((actValues->act2 & 0x3) << 2) |
-              ((actValues->act3 & 0x3) << 4) | ((actValues->act4 & 0x3) << 6) |
-              ((actValues->act5 & 0x3) << 8) | ((actValues->act6 & 0x3) << 10) |
-              ((actValues->act7 & 0x3) << 12) | ((actValues->act8 & 0x3) << 14);
+  buffer[0] = (newActConf->actuators_enabled & 0x1) |
+              ((newActConf->actuators_lights_enabled & 0x1) << 1);
+  // TODO: Check if we need those to be ActuatorsValues for the default?
+  buffer[1] =
+      (newActValues->act1 & 0x3) | ((newActValues->act2 & 0x3) << 2) |
+      ((newActValues->act3 & 0x3) << 4) | ((newActValues->act4 & 0x3) << 6) |
+      ((newActValues->act5 & 0x3) << 8) | ((newActValues->act6 & 0x3) << 10) |
+      ((newActValues->act7 & 0x3) << 12) | ((newActValues->act8 & 0x3) << 14);
 
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_ACTUATORS_CONF_ADDRESS, buffer,
                                       2) != UF_OK)
     return UF_ERROR;
+  memcpy(&actConf, newActConf, sizeof(ActuatorsConfiguration));
+  memcpy(&actValues, newActValues, sizeof(ActuatorsValues));
+
   return UF_OK;
 }
 
@@ -221,16 +244,17 @@ UF_STATUS CONFIG_getSerialConf(SerialConfiguration* serialConf) {
 
   return UF_OK;
 }
-UF_STATUS CONFIG_setSerialConf(const SerialConfiguration* serialConf) {
-  uint16_t buffer = (serialConf->ttl_enabled & 0x1) |
-                    ((serialConf->ttl_led_enabled & 0x1) << 1) |
-                    ((serialConf->ttl_baud & 0xF) << 2) |
-                    ((serialConf->ttlConf & 0x7) << 6) |
-                    ((serialConf->tnc_enabled & 0x1) << 9) |
-                    ((serialConf->tnc__baud & 0xF) << 10);
+UF_STATUS CONFIG_setSerialConf(const SerialConfiguration* newSerialConf) {
+  uint16_t buffer = (newSerialConf->ttl_enabled & 0x1) |
+                    ((newSerialConf->ttl_led_enabled & 0x1) << 1) |
+                    ((newSerialConf->ttl_baud & 0xF) << 2) |
+                    ((newSerialConf->ttlConf & 0x7) << 6) |
+                    ((newSerialConf->tnc_enabled & 0x1) << 9) |
+                    ((newSerialConf->tnc__baud & 0xF) << 10);
 
   if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
+  memcpy(&serialConf, newSerialConf, sizeof(SerialConfiguration));
   return UF_OK;
 }
 
@@ -245,14 +269,15 @@ UF_STATUS CONFIG_getI2cConf(I2CConfiguration* i2cConf) {
 
   return UF_OK;
 }
-UF_STATUS CONFIG_setI2cConf(const I2CConfiguration* i2cConf) {
+UF_STATUS CONFIG_setI2cConf(const I2CConfiguration* newI2cConf) {
   uint16_t buffer[2];
-  buffer[0] = i2cConf->i2cAdd;
-  buffer[1] = i2cConf->i2cType;
+  buffer[0] = newI2cConf->i2cAdd;
+  buffer[1] = newI2cConf->i2cType;
 
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_I2C_TYPE_ADDRESS, buffer, 2) !=
       UF_OK)
     return UF_ERROR;
+  memcpy(&i2cConf, newI2cConf, sizeof(I2CConfiguration));
   return UF_OK;
 }
 UF_STATUS CONFIG_getLcdConf(LcdConfiguration* lcdConf) {
@@ -267,15 +292,16 @@ UF_STATUS CONFIG_getLcdConf(LcdConfiguration* lcdConf) {
 
   return UF_OK;
 }
-UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* lcdConf) {
+UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* newLcdConf) {
   uint16_t buffer[3];
-  buffer[0] = lcdConf->lcdAdd;
-  buffer[1] = lcdConf->lcdType & 0x3;
-  buffer[2] = lcdConf->lcdPwm;
+  buffer[0] = newLcdConf->lcdAdd;
+  buffer[1] = newLcdConf->lcdType & 0x3;
+  buffer[2] = newLcdConf->lcdPwm;
 
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_LCD_TYPE_ADDRESS, buffer, 3) !=
       UF_OK)
     return UF_ERROR;
+  memcpy(&lcdConf, newLcdConf, sizeof(LcdConfiguration));
   return UF_OK;
 }
 
@@ -286,10 +312,11 @@ UF_STATUS CONFIG_getSPIType(SpiType* spiType) {
   *spiType = (SpiType)buffer;
   return UF_OK;
 }
-UF_STATUS CONFIG_setSPIType(const SpiType* spiType) {
-  uint16_t buffer = (uint16_t)*spiType;
+UF_STATUS CONFIG_setSPIType(const SpiType* newSpiType) {
+  uint16_t buffer = (uint16_t)*newSpiType;
   if (EEPROM_93C86_Write(EEPROM_SPI_TYPE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
+  memcpy(&spiConf, newSpiType, sizeof(SpiType));
   return UF_OK;
 }
 
@@ -312,20 +339,21 @@ UF_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf) {
   indConf->Av3IndEnabled = (buffer >> 9) & 0x1;
   return UF_OK;
 }
-UF_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf) {
-  uint16_t buffer = (indConf->globalIndicatorEnabled & 0x1) |
-                    ((indConf->buzzerEnabled & 0x1) << 1) |
-                    ((indConf->buzzer1sEnabled & 0x1) << 2) |
-                    ((indConf->buzzerHoldOnError & 0x1) << 3) |
-                    ((indConf->statusIndicatorsEnabled & 0x1) << 4) |
-                    ((indConf->sdCardIndicatorEnabled & 0x1) << 5) |
-                    ((indConf->AvGlobalIndEnabled & 0x1) << 6) |
-                    ((indConf->Av1IndEnabled & 0x1) << 7) |
-                    ((indConf->Av2IndEnabled & 0x1) << 8) |
-                    ((indConf->Av3IndEnabled & 0x1) << 9);
+UF_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* newIndConf) {
+  uint16_t buffer = (newIndConf->globalIndicatorEnabled & 0x1) |
+                    ((newIndConf->buzzerEnabled & 0x1) << 1) |
+                    ((newIndConf->buzzer1sEnabled & 0x1) << 2) |
+                    ((newIndConf->buzzerHoldOnError & 0x1) << 3) |
+                    ((newIndConf->statusIndicatorsEnabled & 0x1) << 4) |
+                    ((newIndConf->sdCardIndicatorEnabled & 0x1) << 5) |
+                    ((newIndConf->AvGlobalIndEnabled & 0x1) << 6) |
+                    ((newIndConf->Av1IndEnabled & 0x1) << 7) |
+                    ((newIndConf->Av2IndEnabled & 0x1) << 8) |
+                    ((newIndConf->Av3IndEnabled & 0x1) << 9);
 
   if (EEPROM_93C86_Write(EEPROM_INDICATORS_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
+  memcpy(&indConf, newIndConf, sizeof(IndConfiguration));
   return UF_OK;
 }
 
@@ -370,7 +398,7 @@ UF_STATUS CONFIG_SetAvSensor(const AvSensor* av, uint8_t idx) {
           EEPROM_AV_ENABLED_ADDRESS + (EEPROM_AV_SHIFT * idx), buffer, 16) !=
       UF_OK)
     return UF_ERROR;
-
+  memcpy(&avSensors[idx], av, sizeof(AvSensor));
   return UF_OK;
 }
 
@@ -428,7 +456,7 @@ UF_STATUS CONFIG_SetAlarmConf(const AlarmConfiguration* alarm, uint8_t idx) {
           EEPROM_ALARM_ENABLED_ADDRESS + (EEPROM_ALARM_ENABLED_ADDRESS * idx),
           buffer, 8) != UF_OK)
     return UF_ERROR;
-
+  memcpy(&alarms[idx], alarm, sizeof(AlarmConfiguration));
   return UF_OK;
 }
 
@@ -506,7 +534,7 @@ UF_STATUS CONFIG_setTrigConf(const TriggerConfiguration* trigConf,
           EEPROM_TRIG_STATUS_ADDRESS + (EEPROM_TRIG_SHIFT * idx), buffer, 16) !=
       UF_OK)
     return UF_ERROR;
-
+  memcpy(&triggers[idx], trigConf, sizeof(TriggerConfiguration));
   return UF_OK;
 }
 
