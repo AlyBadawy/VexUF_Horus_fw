@@ -31,9 +31,6 @@ static char serialTxBuffer[SERIAL_BUFFER_SIZE];
 
 static char *prompt = "\r\nVexUF:Horus > ";
 static char *ok = "\r\nOk!";
-static char *no = "\r\nNo!";
-static char *invalid =
-    "Invalid Command!\r\nType 'help' or '?' for list of commands.";
 
 const Command commands[] = {
     {"get callsign", handle_get_callsign},
@@ -117,26 +114,6 @@ void handle_set_time(const char *args) {
   sprintf(serialTxBuffer, "Date and Time set...%s", ok);
 }
 
-void handle_get_temperature(const char *args) {
-  float temp, humid;
-
-  if (strlen(args) == 0) {
-    // TODO: logic to show all temperatures
-  } else if ((strncmp(args, "internal", 8)) == 0) {
-    AHT20_ReadTemperatureHumidity(&temp, &humid);
-    sprintf(serialTxBuffer,
-            "Temperature (Internal): %0.2fC (%0.2fF) - Humidity: %0.2f%%%s",
-            temp, TEMPERATURE_cToF(temp), humid, ok);
-  } else if ((strncmp(args, "external", 8)) == 0) {
-    // TODO: implement external temperature
-  } else if ((strncmp(args, "cpu", 3)) == 0) {
-    float cpuTempC;
-    TEMPERATURE_getCpuTempC(&cpuTempC);  // todo: implement this function
-    sprintf(serialTxBuffer, "Temperature (CPU): %0.2fC (%0.2fF)%s", cpuTempC,
-            TEMPERATURE_cToF(cpuTempC), ok);
-  }
-}
-
 void handle_get_callsign(const char *args) {
   UNUSED(args);
   char callsign[CALLSIGN_LENGTH];
@@ -149,3 +126,6 @@ void handle_set_callsign(const char *args) {
 }
 
 void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
+void handle_get_temperature(const char *args) {
+  TEMPERATURE_handleCli(args, serialTxBuffer);
+}
