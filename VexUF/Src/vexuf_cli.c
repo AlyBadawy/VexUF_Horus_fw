@@ -4,9 +4,8 @@
 #include <string.h>
 
 #include "aht20.h"
+#include "vexuf_buzzer.h"
 #include "vexuf_config.h"
-#include "vexuf_indicators.h"
-#include "vexuf_outputs.h"
 #include "vexuf_rtc.h"
 #include "vexuf_temperature.h"
 
@@ -20,24 +19,20 @@ void handle_get_time(const char *args);
 void handle_set_time(const char *args);
 void handle_buzzer(const char *args);
 
-extern char ttlRxData[SERIAL_BUFFER_SIZE];
-extern char tncRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 extern uint16_t ttlRxIdx;
 extern uint16_t tncRxIdx;
 
 extern OutputConfiguration outputConfig;
-extern IndConfiguration indConfig;
+extern IndConfiguration indConf;
 
 static char serialTxBuffer[SERIAL_BUFFER_SIZE];
 
-static char prompt[] = "\r\nVexUF:Horus > ";
-static char ok[] = "\r\nOk!";
-static char no[] = "\r\nNo!";
-static char buzzerDisabled[] = "Buzzer is disabled. Can't configure buzzer.";
-static char invalid[] =
-    "Invalid Command!\r\nType 'help' or '?' for list of commands.";
+static char *prompt = "\r\nVexUF:Horus > ";
+static char *ok = "\r\nOk!";
 
-Command commands[] = {
+const Command commands[] = {
     {"get callsign", handle_get_callsign},
     {"set callsign", handle_set_callsign},
     {"get temperature", handle_get_temperature},
@@ -49,26 +44,29 @@ Command commands[] = {
 
 UF_STATUS CLI_handleCommand(SerialInterface interface) {
   char command[SERIAL_BUFFER_SIZE];
+  unsigned char *rxData;
+  uint16_t *rxIdx;
+  UART_HandleTypeDef *uartHandle;
 
-  memset(&serialTxBuffer[0], 0, sizeof(serialTxBuffer));
-  memset(&command[0], 0, sizeof(command));
+  memset(serialTxBuffer, 0, sizeof(serialTxBuffer));
+  memset(command, 0, sizeof(command));
 
   switch (interface) {
     case TtlUart:
-      // Replace the trailing character with a null terminator
-      while (ttlRxData[ttlRxIdx - 1] == '\r' || ttlRxData[ttlRxIdx - 1] == '\n')
-        ttlRxData[--ttlRxIdx] = '\0';
-      memcpy(&command, &ttlRxData, ttlRxIdx + 1);
+      rxData = ttlRxData;
+      rxIdx = &ttlRxIdx;
       break;
     case TncUart:
-      // Replace the trailing character with a null terminator
-      while (tncRxData[tncRxIdx - 1] == '\r' || tncRxData[tncRxIdx - 1] == '\n')
-        tncRxData[--tncRxIdx] = '\0';
-      memcpy(&command, &tncRxData, tncRxIdx + 1);
+      rxData = tncRxData;
+      rxIdx = &tncRxIdx;
       break;
     default:
       return UF_ERROR;
   }
+  while (rxData[*rxIdx - 1] == '\r' || rxData[*rxIdx - 1] == '\n')
+    rxData[--(*rxIdx)] = '\0';
+
+  memcpy(command, rxData, *rxIdx + 1);
 
   char tempCommand[SERIAL_BUFFER_SIZE];
   for (int i = 0; command[i] != '\0'; i++) {
@@ -87,25 +85,21 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
 
   switch (interface) {
     case TtlUart:
-      if (strlen(serialTxBuffer) > 0) {
-        HAL_UART_Transmit_DMA(&huart1, (uint8_t *)serialTxBuffer,
-                              strlen(serialTxBuffer));
-        HAL_Delay(100);
-      }
-      HAL_UART_Transmit_DMA(&huart1, (uint8_t *)prompt, strlen(prompt));
+      uartHandle = &huart1;
       break;
     case TncUart:
-      if (strlen(serialTxBuffer) > 0) {
-        HAL_UART_Transmit_DMA(&huart6, (uint8_t *)serialTxBuffer,
-                              strlen(serialTxBuffer));
-        HAL_Delay(100);
-      }
-      HAL_UART_Transmit_DMA(&huart6, (uint8_t *)prompt, strlen(prompt));
+      uartHandle = &huart6;
       break;
     default:
       return UF_ERROR;
   }
-  serialTxBuffer[0] = '\0';
+
+  if (strlen(serialTxBuffer) > 0) {
+    HAL_UART_Transmit_DMA(uartHandle, (uint8_t *)serialTxBuffer,
+                          strlen(serialTxBuffer));
+    HAL_Delay(100);
+  }
+  HAL_UART_Transmit_DMA(uartHandle, (uint8_t *)prompt, strlen(prompt));
   return UF_OK;
 }
 
@@ -120,29 +114,6 @@ void handle_set_time(const char *args) {
   sprintf(serialTxBuffer, "Date and Time set...%s", ok);
 }
 
-void handle_get_temperature(const char *args) {
-  if (strlen(args) == 0) {
-    // TODO: logic to show all temperatures
-  }
-  if ((strncmp(args, "internal", 8)) == 0) {
-    float temp;
-    float humid;
-    AHT20_ReadTemperatureHumidity(&temp, &humid);
-    sprintf(serialTxBuffer,
-            "Temperature (Internal): %0.2fC (%0.2fF) - Humidity: %0.2f%%%s",
-            temp, TEMPERATURE_cToF(temp), humid, ok);
-  }
-  if ((strncmp(args, "external", 8)) == 0) {
-    // TODO: implement external temperature
-  }
-  if ((strncmp(args, "cpu", 3)) == 0) {
-    float cpuTempC;
-    TEMPERATURE_getCpuTempC(&cpuTempC);  // todo: implement this function
-    sprintf(serialTxBuffer, "Temperature (CPU): %0.2fC (%0.2fF)%s", cpuTempC,
-            TEMPERATURE_cToF(cpuTempC), ok);
-  }
-}
-
 void handle_get_callsign(const char *args) {
   UNUSED(args);
   char callsign[CALLSIGN_LENGTH];
@@ -152,63 +123,9 @@ void handle_get_callsign(const char *args) {
 void handle_set_callsign(const char *args) {
   CONFIG_setCallSign(args);
   sprintf(serialTxBuffer, "%s", ok);
-  //	memcpy(serialTxBuffer, &ok, strlen(ok) + 1);
 }
 
-void handle_buzzer(const char *args) {
-  // TODO: Refactor this function.
-  IndConfiguration newIndConfig;
-  memcpy(&newIndConfig, &indConfig, sizeof(indConfig));
-  if ((strncmp(args, "enable", 6)) == 0) {
-    newIndConfig.buzzerEnabled = 1;
-    CONFIG_setIndicatorsConf(&newIndConfig);
-    sprintf(serialTxBuffer, "Buzzer Enabled.%s", ok);
-  } else if ((strncmp(args, "disable", 7)) == 0) {
-    newIndConfig.buzzerEnabled = 0;
-    CONFIG_setIndicatorsConf(&newIndConfig);
-    sprintf(serialTxBuffer, "Buzzer Disabled.%s", ok);
-  } else if ((strncmp(args, "start beep on", 13)) == 0) {
-    if (newIndConfig.buzzerEnabled == 1) {
-      newIndConfig.buzzer1sEnabled = 1;
-      CONFIG_setIndicatorsConf(&newIndConfig);
-      sprintf(serialTxBuffer, "Buzzer start beep Enabled.%s", ok);
-    } else {
-      sprintf(serialTxBuffer, "%s%s", buzzerDisabled, no);
-    }
-  } else if ((strncmp(args, "start beep off", 14)) == 0) {
-    if (indConfig.buzzer1sEnabled == 1) {
-      newIndConfig.buzzer1sEnabled = 0;
-      CONFIG_setIndicatorsConf(&newIndConfig);
-      sprintf(serialTxBuffer, "Buzzer start beep Disabled.%s", ok);
-    } else {
-      sprintf(serialTxBuffer, "%s%s", buzzerDisabled, no);
-    }
-  } else if ((strncmp(args, "error on", 8)) == 0) {
-    if (indConfig.buzzerEnabled == 1) {
-      newIndConfig.buzzerHoldOnError = 1;
-      CONFIG_setIndicatorsConf(&newIndConfig);
-      sprintf(serialTxBuffer, "Buzzer beep on error Enabled.%s", ok);
-    } else {
-      sprintf(serialTxBuffer, "%s%s", buzzerDisabled, no);
-    }
-  } else if ((strncmp(args, "error off", 9)) == 0) {
-    if (indConfig.buzzerEnabled == 1) {
-      newIndConfig.buzzerHoldOnError = 0;
-      CONFIG_setIndicatorsConf(&newIndConfig);
-      sprintf(serialTxBuffer, "Buzzer beep on error Disabled.%s", ok);
-    } else {
-      sprintf(serialTxBuffer, "%s%s", buzzerDisabled, no);
-    }
-  } else if (strlen(args) == 0) {
-    if (indConfig.buzzerEnabled == 1) {
-      sprintf(serialTxBuffer,
-              "Buzzer is Enabled. Buzzer start beep is %s. Buzzer beep on "
-              "error %s.%s",
-              indConfig.buzzer1sEnabled == 1 ? "Enabled" : "Disabled",
-              indConfig.buzzerHoldOnError == 1 ? "Enabled" : "Disabled", ok);
-    } else {
-      sprintf(serialTxBuffer, "Buzzer is disabled.%s", ok);
-    }
-  } else {
-  }
+void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
+void handle_get_temperature(const char *args) {
+  TEMPERATURE_handleCli(args, serialTxBuffer);
 }

@@ -54,6 +54,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./VexUF/Src/vexuf.c"
     "./VexUF/Src/vexuf_actuators.c"
     "./VexUF/Src/vexuf_avs.c"
+    "./VexUF/Src/vexuf_buzzer.c"
     "./VexUF/Src/vexuf_cli.c"
     "./VexUF/Src/vexuf_config.c"
     "./VexUF/Src/vexuf_error.c"

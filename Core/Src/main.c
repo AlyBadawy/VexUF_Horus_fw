@@ -22,17 +22,18 @@
 #include "vexuf_error.h"
 #include "vexuf_i2c_checker.h"
 #include "vexuf_indicators.h"
+#include "vexuf_lcd.h"
 #include "vexuf_pwm.h"
 #include "vexuf_sd_card.h"
 #include "vexuf_timers.h"
 
 extern IWDG_HandleTypeDef hiwdg;
 extern VexufStatus vexufStatus;
-extern IndConfiguration indConfig;
+extern IndConfiguration indConf;
 extern OutputConfiguration outputConfig;
 
-extern uint8_t ttlRxData[SERIAL_BUFFER_SIZE];
-extern uint8_t tncRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 
 int main(void) {
   /*
@@ -41,8 +42,8 @@ int main(void) {
     can show the NO-CONF error sequence.
     TODO: Review the need for this before release.
   */
-  indConfig.globalIndicatorEnabled = 1;
-  indConfig.sdCardIndicatorEnabled = 1;
+  indConf.globalIndicatorEnabled = 1;
+  indConf.sdCardIndicatorEnabled = 1;
   outputConfig.haltOnSdCardErrors = 1;
 
   HAL_Init();
@@ -89,7 +90,8 @@ int main(void) {
   HAL_Delay(500);
   IND_BuzzOnStartUp();
 
-  // TODO: Init the screen with the number of rows as configured.
+  // TODO: change number of rows to as configured
+  LCD_Init();
 
   // TODO: remove the following tests before release
   ADC_Test();

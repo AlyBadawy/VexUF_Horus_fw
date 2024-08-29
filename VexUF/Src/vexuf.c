@@ -1,7 +1,12 @@
 #include "vexuf.h"
 
+#include <ctype.h>
+
+#include "vexuf_config.h"
+
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char serialNumber[24];
+char regNumber[REGISTRATION_NUMBER_LENGTH];
 VexufStatus vexufStatus;
 
 extern UART_HandleTypeDef huart1;

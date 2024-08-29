@@ -18,4 +18,6 @@ typedef struct {
   uint16_t lcdPwm;
 } LcdConfiguration;
 
+UF_STATUS LCD_Init(void);
+
 #endif  // INC_VEXUF_LCD_H

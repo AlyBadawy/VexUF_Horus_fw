@@ -37,21 +37,14 @@ UF_STATUS AHT20_ReadTemperatureHumidity(float *temperature, float *humidity) {
   uint8_t data[6];
   uint8_t triggerCmd[] = {AHT20_TRIGGER_MEASUREMENT_CMD, 0x33, 0x00};
 
-  // Try to reset the I2C peripheral if it is busy
-  if (hi2c1.State == HAL_I2C_STATE_BUSY) {
-    if (I2C_Reset() != HAL_OK) return UF_ERROR;
-  }
-
-  // Trigger measurement
-  if (HAL_I2C_Master_Transmit(&hi2c1, 0x38 << 1, triggerCmd, sizeof(triggerCmd),
-                              HAL_MAX_DELAY) != HAL_OK)
+  // Reset I2C if busy
+  if (hi2c1.State == HAL_I2C_STATE_BUSY && I2C_Reset() != HAL_OK)
     return UF_ERROR;
 
-  // Wait for the measurement to complete
-  HAL_Delay(AHT20_MEASUREMENT_DELAY);
-
-  // Read measurement data
-  if (HAL_I2C_Master_Receive(&hi2c1, 0x38 << 1, data, sizeof(data),
+  // Trigger measurement and read data
+  if (HAL_I2C_Master_Transmit(&hi2c1, 0x38 << 1, triggerCmd, sizeof(triggerCmd),
+                              HAL_MAX_DELAY) != HAL_OK ||
+      HAL_I2C_Master_Receive(&hi2c1, 0x38 << 1, data, sizeof(data),
                              HAL_MAX_DELAY) != HAL_OK)
     return UF_ERROR;
 

@@ -20,7 +20,6 @@ UF_STATUS EEPROM_93C86_TransmitReceive(uint8_t tx, uint8_t* rx);
 UF_STATUS EEPROM_93C86_init(GPIO_TypeDef* cs_port, uint16_t cs_pin) {
   eeprom_cs_port = cs_port;
   eeprom_cs_pin = cs_pin;
-  return UF_OK;
 }
 
 void EEPROM_93C86_CS_UNSELECT(void) {
