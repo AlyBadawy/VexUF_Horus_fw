@@ -87,8 +87,7 @@ UF_STATUS CONFIG_SetIsConfigured(void) {
   if (CONFIG_WriteSerialNumber() != UF_OK) return UF_ERROR;
 
   uint16_t version = 0, confCount = 0;
-  UF_STATUS status = CONFIG_GetConfigValues(&version, &confCount);
-  if (status == UF_ERROR) return UF_ERROR;
+  if (CONFIG_GetConfigValues(&version, &confCount) == UF_ERROR) return UF_ERROR;
 
   confCount++;
 
@@ -99,34 +98,48 @@ UF_STATUS CONFIG_SetIsConfigured(void) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]) {
-  uint16_t buffer[12] = {0};
+UF_STATUS CONFIG_ReadSerialNumber(unsigned char* serialNumberBuffer) {
+  uint16_t buffer[SERIAL_NUMBER_LENGTH / 2] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
                                      SERIAL_NUMBER_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
   for (int i = 0; i < 12; i++) {
-    *serialNumberBuffer[2 * i] = (char)(buffer[i] & 0xFF);
-    *serialNumberBuffer[2 * i + 1] = (char)((buffer[i] >> 8) & 0xFF);
+    serialNumberBuffer[2 * i] = (char)(buffer[i] & 0xFF);
+    serialNumberBuffer[2 * i + 1] = (char)((buffer[i] >> 8) & 0xFF);
   }
   return UF_OK;
 }
 UF_STATUS CONFIG_WriteSerialNumber(void) {
-  // TODO: utilize generate serial number function instead.
   uint16_t vexufSerial = getSerialBytes();
+  uint16_t eepromVexufSerial;
+  if (EEPROM_93C86_Read(EEPROM_VEXUF_SERIAL_ADDRESS, &eepromVexufSerial) !=
+      UF_OK)
+    return UF_ERROR;
+
+  if (vexufSerial != eepromVexufSerial) {
+    if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, vexufSerial) != UF_OK)
+      return UF_ERROR;
+  }
+
+  unsigned char serialNumberString[SERIAL_NUMBER_LENGTH];
+  VexUF_GenerateSerialNumber(serialNumberString);
 
   uint16_t buffer[SERIAL_NUMBER_LENGTH / 2] = {0};
   for (int i = 0; i < SERIAL_NUMBER_LENGTH / 2; i++) {
-    buffer[i] =
-        (serialNumber[2 * i] & 0xFF) | ((serialNumber[2 * i + 1] & 0xFF) << 8);
+    buffer[i] = (serialNumberString[2 * i] & 0xFF) |
+                ((serialNumberString[2 * i + 1] & 0xFF) << 8);
   }
-  // TODO: return if eeprom already has the correct serial.
-  if (EEPROM_93C86_WriteMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
-                                      SERIAL_NUMBER_LENGTH / 2) != UF_OK)
+
+  unsigned char eepromSerialNumberString[SERIAL_NUMBER_LENGTH];
+  if (CONFIG_ReadSerialNumber(eepromSerialNumberString) != UF_OK)
     return UF_ERROR;
 
-  if (EEPROM_93C86_Write(EEPROM_VEXUF_SERIAL_ADDRESS, vexufSerial) != UF_OK)
-    return UF_ERROR;
+  if (memcmp(buffer, eepromSerialNumberString, SERIAL_NUMBER_LENGTH) != 0) {
+    if (EEPROM_93C86_WriteMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
+                                        SERIAL_NUMBER_LENGTH / 2) != UF_OK)
+      return UF_ERROR;
+  }
 
   return UF_OK;
 }
@@ -150,7 +163,7 @@ UF_STATUS CONFIG_SetRegNumber(const uint32_t* newRegNumber) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_getCallSign(char* callsign) {
+UF_STATUS CONFIG_getCallSign(unsigned char* callsign) {
   uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                      CALLSIGN_LENGTH / 2) != UF_OK)
