@@ -44,7 +44,7 @@ typedef struct {
 } ActuatorsConfiguration;
 
 // Function prototypes
-void ACT_Init(ActuatorsConfiguration* newActConf);
+UF_STATUS ACT_Init(void);
 
 UF_STATUS ACTUATORS_Update(void);
 

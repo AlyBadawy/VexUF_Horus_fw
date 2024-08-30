@@ -65,6 +65,7 @@ UF_STATUS CONFIG_IsConfigured(void) {
   vexufStatus.isConfigured = 0;
   return UF_NOT_CONFIGURED;
 }
+
 UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount) {
   if (!CONFIG_IsConfigured()) {
     return UF_NOT_CONFIGURED;

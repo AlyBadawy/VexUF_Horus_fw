@@ -140,12 +140,18 @@ int main(void) {
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_SET);
   EEPROM_93C86_init(&hspi1, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
-  if (CONFIG_IsConfigured() != UF_OK) ERROR_handleNoConfig();
+  TIMERS_init(&TIMER_10HZ_HANDLER, &TIMER_1HZ_HANDLER, &TIMER_0D1HZ_HANDLER);
+  TIMERS_Start();
+
+  PWM_init(&TIMER_PWM1_HANDLER, &TIMER_PWM2_HANDLER);
+
+  if (CONFIG_IsConfigured() == UF_OK) {
+    ERROR_handleNoConfig();
+  }
   if (CONFIG_WriteSerialNumber() != UF_OK) Error_Handler();
   // TODO: Check for registration number and handle it.
   if (CONFIG_getCallSign(&callsign) != UF_OK) Error_Handler();
   if (CONFIG_getPwmConfigurations(&pwmConfig) != UF_OK) Error_Handler();
-  if (CONFIG_getActuators(&actConf, &actValues) != UF_OK) Error_Handler();
   if (CONFIG_getSerialConf(&serialConf) != UF_OK) Error_Handler();
   if (CONFIG_getI2cConf(&i2cConf) != UF_OK) Error_Handler();
   if (CONFIG_getLcdConf(&lcdConf) != UF_OK) Error_Handler();
@@ -157,18 +163,13 @@ int main(void) {
   // TODO: Load Trigger configurations
 
   AHT20_Init(&hi2c1, AHT20_ADDRESS);
-  // TODO: Init actuators.
+  ACT_Init();
   // TODO: Init AV Sensors
   // TODO: Init Alarms
   // TODO: Init Triggers
 
   CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
   SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
-
-  PWM_init(&TIMER_PWM1_HANDLER, &TIMER_PWM2_HANDLER);
-
-  TIMERS_init(&TIMER_10HZ_HANDLER, &TIMER_1HZ_HANDLER, &TIMER_0D1HZ_HANDLER);
-  TIMERS_Start();
 
   // TODO: change number of rows to as configured
   LCD_Init();
@@ -202,9 +203,9 @@ int main(void) {
     // Run this routine every 100ms
     if (vexufStatus.timer_10hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndFAST);
-      vexufStatus.timer_10hz_ticked = 0;
       if (vexufStatus.sdCardError == 1 || vexufStatus.sdCardEjected == 1) {
       }
+      vexufStatus.timer_10hz_ticked = 0;
     }
 
     // Run this routine every 1s
