@@ -1,12 +1,42 @@
+/**
+ ******************************************************************************
+ * @file          : vexuf_rtc.c
+ * @brief        : VexUF RTC Implementation
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_rtc.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+/* TypeDef -------------------------------------------------------------------*/
 extern RTC_HandleTypeDef hrtc;
+
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+
+/* Variables -----------------------------------------------------------------*/
 static const uint8_t list_mth[12] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 AlarmConfiguration alarms[2];
 
+/* Prototypes ----------------------------------------------------------------*/
+
+/* Code ----------------------------------------------------------------------*/
 UF_STATUS RTC_getDateTime(char *datetime) {
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;

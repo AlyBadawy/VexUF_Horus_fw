@@ -41,7 +41,6 @@ typedef struct {
 } VexufStatus;
 
 #define SERIAL_NUMBER_LENGTH 24
-#define CALLSIGN_LENGTH 20
 
 // void VexUF_CurrentDateTimeString(char *string);
 void VexUF_GenerateSerialNumber();

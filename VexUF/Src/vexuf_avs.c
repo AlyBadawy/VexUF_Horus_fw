@@ -1,31 +1,50 @@
-/*
- * adc_avs.c
+/**
+ ******************************************************************************
+ * @file          : vexuf_avs.c
+ * @brief        : VexUF AVs Implementation
+ ******************************************************************************
+ * @attention
  *
- *  Created on: Jul 27, 2024
- *      Author: Aly Badawy
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_avs.h"
 
 #include "vexuf.h"
 #include "vexuf_indicators.h"
 #include "vexuf_temperature.h"
 
+/* TypeDef -------------------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
+
+/* Defines -------------------------------------------------------------------*/
+#define ADC_RESOLUTION 4095.0  // 12-bit ADC
+#define VREFINT 1.22           // VREFINT is 1.22V
+
+#define adcR1 33000.0
+#define adcR2 3300.0
+#define adcRatio (adcR2 / (adcR1 + adcR2))
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
 extern IndConfiguration indConf;
 
+/* Variables -----------------------------------------------------------------*/
 float AVsVoltages[3];
 uint32_t AVsRawValues[3];
 AvSensor avSensors[NUMBER_OF_AVS];
 
-/*
- * avsBuffer:
- * 0: VrefValue
- * 1: CPU raw value
- * 2: AV1 Raw Value
- * 3: AV2 Raw Value
- * 4: AV3 Raw Value
- */
+/* Prototypes ----------------------------------------------------------------*/
+
+/* Code ----------------------------------------------------------------------*/
 
 UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
   *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;

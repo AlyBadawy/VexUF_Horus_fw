@@ -1,7 +1,26 @@
+/**
+ ******************************************************************************
+ * @file          : main.c
+ * @brief         : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 #include "93c86.h"
 #include "adc.h"
+#include "aht20.h"
 #include "clock.h"
 #include "dma.h"
 #include "fatfs.h"
@@ -24,10 +43,27 @@
 #include "vexuf_indicators.h"
 #include "vexuf_lcd.h"
 #include "vexuf_pwm.h"
-#include "vexuf_sd_card.h"
+#include "vexuf_sdcard.h"
 #include "vexuf_timers.h"
 
+/* TypeDef -------------------------------------------------------------------*/
 extern IWDG_HandleTypeDef hiwdg;
+extern SPI_HandleTypeDef hspi1;
+
+extern TIM_HandleTypeDef htim4;  // 10Hz
+extern TIM_HandleTypeDef htim5;  // 0.1Hz
+extern TIM_HandleTypeDef htim9;  // 1Hz
+
+extern TIM_HandleTypeDef htim10;  // PWM2
+extern TIM_HandleTypeDef htim11;  // PWM1
+
+/* Defines -------------------------------------------------------------------*/
+// Define macros and constants here
+
+/* Macros --------------------------------------------------------------------*/
+// Define macro functions here
+
+/* Extern Variables ----------------------------------------------------------*/
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConf;
 extern OutputConfiguration outputConfig;
@@ -35,6 +71,13 @@ extern OutputConfiguration outputConfig;
 extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
 extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 
+/* Variables -----------------------------------------------------------------*/
+// Declare static or global variables here
+
+/* Prototypes ----------------------------------------------------------------*/
+// Declare function prototypes here
+
+/* Code ----------------------------------------------------------------------*/
 int main(void) {
   /*
     Enable indicators for the duration of the startup routine.
@@ -73,16 +116,22 @@ int main(void) {
   // MX_USB_DEVICE_Init();
 
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_SET);
-  EEPROM_93C86_init(EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
+  EEPROM_93C86_init(&hspi1, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
   VexUF_GenerateSerialNumber();
   CONFIG_SetIsConfigured();
   if (CONFIG_IsConfigured() != UF_OK) ERROR_handleNoConfig();
-
   // TODO: Apply configurations
+
   if (CONFIG_WriteSerialNumber() != UF_OK) Error_Handler();
 
-  PWM_init();
+  AHT20_Init(&hi2c1, 0x38);
+
+  CLI_init(&huart1, &huart6);
+  SERIAL_init(&huart1, &huart6);
+
+  PWM_init(&htim11, &htim10);
+  TIMERS_init(&htim4, &htim9, &htim5);
   TIMERS_Start();
 
   // TODO: Start listening to TTL and TNC interrupts.
@@ -139,13 +188,13 @@ int main(void) {
     }
 
     if (vexufStatus.ttlBuffered == 1) {
-      if (CLI_handleCommand(TtlUart) == UF_ERROR) {
+      if (CLI_handleCommand(TTL) == UF_ERROR) {
         // todo: handle error
       }
       vexufStatus.ttlBuffered = 0;
     }
     if (vexufStatus.tncBuffered == 1) {
-      if (CLI_handleCommand(TncUart) == UF_ERROR) {
+      if (CLI_handleCommand(TNC) == UF_ERROR) {
         // todo: handle error
       }
       vexufStatus.ttlBuffered = 0;

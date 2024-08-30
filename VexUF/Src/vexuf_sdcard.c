@@ -1,18 +1,46 @@
-#include "vexuf_sd_card.h"
+/**
+ ******************************************************************************
+ * @file          : vexuf_sd_card.c
+ * @brief        : Brief description
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
+#include "vexuf_sdcard.h"
 
 #include "fatfs.h"
 #include "sdio.h"
 
+/* TypeDef -------------------------------------------------------------------*/
+
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
 extern VexufStatus vexufStatus;
 extern SD_HandleTypeDef hsd;
 
-FATFS FatFs;
-FIL Fil;
+/* Variables -----------------------------------------------------------------*/
+static FATFS FatFs;
+static FIL Fil;
+static FATFS *FS_Ptr;
+static UINT RWC, WWC;
+static DWORD FreeClusters;
 
-FATFS *FS_Ptr;
-UINT RWC, WWC;
-DWORD FreeClusters;
+/* Prototypes ----------------------------------------------------------------*/
 
+/* Code ----------------------------------------------------------------------*/
 UF_STATUS SDCard_MountFS() {
   char cardLabel[12];
   // Add a delay to ensure the SD card is ready
@@ -99,3 +127,5 @@ UF_STATUS SDCARD_hasEnoughSpace(void) {
   vexufStatus.sdCardError = 0;
   return UF_OK;
 }
+
+/* Private Methods -----------------------------------------------------------*/

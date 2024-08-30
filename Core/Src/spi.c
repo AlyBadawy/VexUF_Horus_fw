@@ -1,12 +1,42 @@
+/**
+ ******************************************************************************
+ * @file          : spi.c
+ * @brief         : SPI Initialization and configuration
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "spi.h"
 
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
+/* TypeDef -------------------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 
-/* SPI1 init function */
+/* Defines -------------------------------------------------------------------*/
+// Define macros and constants here
+
+/* Macros --------------------------------------------------------------------*/
+// Define macro functions here
+
+/* Extern Variables ----------------------------------------------------------*/
+// Declare external variables here
+
+/* Variables -----------------------------------------------------------------*/
+// Declare static or global variables here
+
+/* Prototypes ----------------------------------------------------------------*/
+// Declare function prototypes here
+
+/* Code ----------------------------------------------------------------------*/
 void MX_SPI1_Init(void) {
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
@@ -26,7 +56,7 @@ void MX_SPI1_Init(void) {
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  if(spiHandle->Instance==SPI1) {
+  if (spiHandle->Instance == SPI1) {
     __HAL_RCC_SPI1_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**SPI1 GPIO Configuration
@@ -34,7 +64,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle) {
     PA6     ------> SPI1_MISO
     PA7     ------> SPI1_MOSI
     */
-    GPIO_InitStruct.Pin = SPI_CK_Pin|SPI_MISO_Pin|SPI_MOSI_Pin;
+    GPIO_InitStruct.Pin = SPI_CK_Pin | SPI_MISO_Pin | SPI_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -47,7 +77,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle) {
 }
 
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle) {
-  if(spiHandle->Instance==SPI1) {
+  if (spiHandle->Instance == SPI1) {
     __HAL_RCC_SPI1_CLK_DISABLE();
 
     /**SPI1 GPIO Configuration
@@ -55,7 +85,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle) {
     PA6     ------> SPI1_MISO
     PA7     ------> SPI1_MOSI
     */
-    HAL_GPIO_DeInit(GPIOA, SPI_CK_Pin|SPI_MISO_Pin|SPI_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOA, SPI_CK_Pin | SPI_MISO_Pin | SPI_MOSI_Pin);
 
     HAL_NVIC_DisableIRQ(SPI1_IRQn);
   }

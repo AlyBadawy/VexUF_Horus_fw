@@ -65,7 +65,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./VexUF/Src/vexuf_outputs.c"
     "./VexUF/Src/vexuf_pwm.c"
     "./VexUF/Src/vexuf_rtc.c"
-    "./VexUF/Src/vexuf_sd_card.c"
+    "./VexUF/Src/vexuf_sdcard.c"
     "./VexUF/Src/vexuf_serial.c"
     "./VexUF/Src/vexuf_spi.c"
     "./VexUF/Src/vexuf_temperature.c"

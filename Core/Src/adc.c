@@ -1,7 +1,52 @@
+/**
+ ******************************************************************************
+ * @file          : adc.c
+ * @brief         : ADC Initialization and Callbacks
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "adc.h"
 
+/* TypeDef -------------------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
+
+/* Defines -------------------------------------------------------------------*/
+// Define macros and constants here
+
+/* Macros --------------------------------------------------------------------*/
+// Define macro functions here
+
+/* Extern Variables ----------------------------------------------------------*/
+// Declare external variables here
+
+/* Variables -----------------------------------------------------------------*/
+// Declare static or global variables here
+
+/* Prototypes ----------------------------------------------------------------*/
+// Declare function prototypes here
+
+/* Code ----------------------------------------------------------------------*/
+
+/*
+ * adcBuffer:
+ * 0: VrefValue
+ * 1: CPU raw value
+ * 2: AV1 Raw Value
+ * 3: AV2 Raw Value
+ * 4: AV3 Raw Value
+ */
 
 void MX_ADC1_Init(void) {
   ADC_ChannelConfTypeDef sConfig = {0};
@@ -47,7 +92,7 @@ void MX_ADC1_Init(void) {
 void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  if(adcHandle->Instance==ADC1) {
+  if (adcHandle->Instance == ADC1) {
     __HAL_RCC_ADC1_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -62,7 +107,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(Av1_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = Av2_Pin|Av3_Pin;
+    GPIO_InitStruct.Pin = Av2_Pin | Av3_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -79,7 +124,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle) {
     hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_adc1) != HAL_OK) Error_Handler();
 
-    __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc1);
+    __HAL_LINKDMA(adcHandle, DMA_Handle, hdma_adc1);
 
     HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(ADC_IRQn);
@@ -87,10 +132,10 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle) {
 }
 
 void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle) {
-  if(adcHandle->Instance==ADC1) {
+  if (adcHandle->Instance == ADC1) {
     __HAL_RCC_ADC1_CLK_DISABLE();
     HAL_GPIO_DeInit(Av1_GPIO_Port, Av1_Pin);
-    HAL_GPIO_DeInit(GPIOB, Av2_Pin|Av3_Pin);
+    HAL_GPIO_DeInit(GPIOB, Av2_Pin | Av3_Pin);
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
     HAL_NVIC_DisableIRQ(ADC_IRQn);
   }

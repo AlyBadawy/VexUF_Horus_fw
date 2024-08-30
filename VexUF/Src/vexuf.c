@@ -1,13 +1,47 @@
+/**
+ ******************************************************************************
+ * @file          : vexuf.c
+ * @brief        : VexUF Implementation
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf.h"
 
 #include <ctype.h>
 
 #include "vexuf_config.h"
 
+/* TypeDef -------------------------------------------------------------------*/
+
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+
+/* Variables -----------------------------------------------------------------*/
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char serialNumber[24];
 char regNumber[REGISTRATION_NUMBER_LENGTH];
 VexufStatus vexufStatus;
+
+/* Prototypes ----------------------------------------------------------------*/
+void base32_encode(const uint8_t *data, size_t length, char *output);
+
+/* Code ----------------------------------------------------------------------*/
+
+/* Private Methods -----------------------------------------------------------*/
 
 extern UART_HandleTypeDef huart1;
 int _write(int file, char *ptr, int len) {
@@ -15,8 +49,6 @@ int _write(int file, char *ptr, int len) {
   HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 200);
   return len;
 }
-
-void base32_encode(const uint8_t *data, size_t length, char *output);
 
 uint16_t getSerialBytes(void) { return *(uint16_t *)0x08007FFD; }
 

@@ -1,13 +1,43 @@
+/**
+ ******************************************************************************
+ * @file          : vexuf_temperature.c
+ * @brief        : VexUF Temperature Implementation
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_temperature.h"
 
 #include "aht20.h"
 #include "vexuf_avs.h"
 
-extern uint32_t adcBuffer[5];
+/* TypeDef -------------------------------------------------------------------*/
 
+/* Defines -------------------------------------------------------------------*/
+#define ADC_RESOLUTION 4095.0  // 12-bit ADC
+#define ADC_TEMP_SLOPE 0.0025  // 2.5mV/°C
+#define ADC_VOLT_AT_25C 0.76   // 0.76V at 25°C
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+
+/* Variables -----------------------------------------------------------------*/
 float cpuTempC = 0, internalTempC = 0;
 float internalHumidity;
 
+/* Prototypes ----------------------------------------------------------------*/
+
+/* Code ----------------------------------------------------------------------*/
 float TEMPERATURE_cToF(float c) { return (c * (9.0 / 5.0)) + 32.0; }
 float TEMPERATURE_fToC(float f) { return (f - 32.0) * (5.0 / 9.0); }
 
@@ -18,7 +48,7 @@ UF_STATUS TEMPERATURE_getCpuTempC(void) {
   if (ADC_run(adcBuffer, &vref) == UF_ERROR) return UF_ERROR;
 
   float temp_sense = (adcBuffer[1] / ADC_RESOLUTION) * vref;
-  cpuTempC = ((temp_sense - VOLT_AT_25C) / TEMP_SLOPE) + 25.0;
+  cpuTempC = ((temp_sense - ADC_VOLT_AT_25C) / ADC_TEMP_SLOPE) + 25.0;
 
   return UF_OK;
 }
@@ -46,3 +76,5 @@ void TEMPERATURE_handleCli(const char *args, char *responseBuffer) {
             TEMPERATURE_cToF(cpuTempC), ok);
   }
 }
+
+/* Private Methods -----------------------------------------------------------*/

@@ -1,7 +1,42 @@
+/**
+ ******************************************************************************
+ * @file          : i2c.c
+ * @brief         : I2C Initialization and Callbacks
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 
+/* TypeDef -------------------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+/* Defines -------------------------------------------------------------------*/
+// Define macros and constants here
+
+/* Macros --------------------------------------------------------------------*/
+// Define macro functions here
+
+/* Extern Variables ----------------------------------------------------------*/
+// Declare external variables here
+
+/* Variables -----------------------------------------------------------------*/
+// Declare static or global variables here
+
+/* Prototypes ----------------------------------------------------------------*/
+// Declare function prototypes here
+
+/* Code ----------------------------------------------------------------------*/
 void MX_I2C1_Init(void) {
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;

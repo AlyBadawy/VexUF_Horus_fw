@@ -1,17 +1,46 @@
+/**
+ ******************************************************************************
+ * @file          : vexuf_trigs.c
+ * @brief        : VexUF Triggers Implementation
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_trigs.h"
 
+/* TypeDef -------------------------------------------------------------------*/
+
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
 extern PwmConfiguration pwmConfig;
 extern float cpuTempC;
 extern uint32_t AVsRawValues[3];
 extern float AVsVoltages[3];
 
+/* Variables -----------------------------------------------------------------*/
 TriggerConfiguration triggers[NUMBER_OF_TRIGGERS];
 
+/* Prototypes ----------------------------------------------------------------*/
 UF_STATUS TRIGS_checkTriggerRule(TrigComparison comparison,
                                  TrigCompareTest test, uint32_t fromValue,
                                  uint32_t toValue);
 UF_STATUS TRIGS_compare(uint32_t ref, TrigCompareTest test, uint32_t fromValue,
                         uint32_t toValue);
+
+/* Code ----------------------------------------------------------------------*/
 
 UF_STATUS TRIGS_runAll(void) {
   for (int i = 0; i < NUMBER_OF_TRIGGERS; i++) {
@@ -58,6 +87,7 @@ UF_STATUS TRIGS_runTrigger(uint8_t idx) {
   return UF_TRIGGERED;
 }
 
+/* Private Methods -----------------------------------------------------------*/
 UF_STATUS TRIGS_checkTriggerRule(TrigComparison comparison,
                                  TrigCompareTest test, uint32_t fromValue,
                                  uint32_t toValue) {
