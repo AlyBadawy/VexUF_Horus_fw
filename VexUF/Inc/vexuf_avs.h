@@ -10,15 +10,6 @@
 
 #include "vexuf.h"
 
-#define ADC_RESOLUTION 4095.0  // 12-bit ADC
-#define VREFINT 1.22           // VREFINT is 1.22V
-#define TEMP_SLOPE 0.0025      // 2.5mV/°C
-#define VOLT_AT_25C 0.76       // 0.76V at 25°C
-
-#define adcR1 33000.0
-#define adcR2 3300.0
-#define adcRatio (adcR2 / (adcR1 + adcR2))
-
 #define NUMBER_OF_AVS 3
 
 typedef struct {

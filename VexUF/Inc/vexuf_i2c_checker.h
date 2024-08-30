@@ -10,7 +10,9 @@
 
 #include "vexuf.h"
 
-UF_STATUS I2C_Scan(uint8_t *foundDevices, uint8_t *foundDevicesCount);
+UF_STATUS I2C_Scan(I2C_HandleTypeDef *hi2c, uint8_t *foundDevices,
+                   uint8_t *foundDevicesCount);
+
 void I2C_ScanTest(void);
 
 #endif /* INC_VEXUF_I2C_CHECKER_H_ */

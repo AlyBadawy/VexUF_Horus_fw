@@ -10,8 +10,6 @@
 
 #include "vexuf.h"
 
-#define NUMBER_OF_Actuators 8
-
 typedef enum { ActOff = 0, ActOn = 1, ActUnchanged = 2 } ActLevel;
 
 // Define an enum for the shift register pins

@@ -24,7 +24,8 @@
   for (uint16_t i = 0; i < MEM_DelayNUM; i++) asm("NOP")
 #define MEM_Timeout 1000
 
-UF_STATUS EEPROM_93C86_init(GPIO_TypeDef* cs_port, uint16_t cs_pin);
+void EEPROM_93C86_init(SPI_HandleTypeDef* spi, GPIO_TypeDef* cs_port,
+                       uint16_t cs_pin);
 
 UF_STATUS EEPROM_93C86_Read(uint16_t address, uint16_t* data);
 UF_STATUS EEPROM_93C86_ReadMultipleWords(uint16_t startAddress,

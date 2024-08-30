@@ -1,17 +1,34 @@
-/*
- * config.c
+/**
+ ******************************************************************************
+ * @file          : vexuf_config.c
+ * @brief        : Configuration functions for VexUF
+ ******************************************************************************
+ * @attention
  *
- *  Created on: Jul 31, 2024
- *      Author: Aly Badawy
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_config.h"
 
 #include <ctype.h>
 #include <string.h>
 
 #include "93c86.h"
+/* TypeDef -------------------------------------------------------------------*/
 
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
 extern char serialNumber[SERIAL_NUMBER_LENGTH];
 extern char regNumber[REGISTRATION_NUMBER_LENGTH];
 extern char callsign[CALLSIGN_LENGTH];
@@ -29,7 +46,12 @@ extern TriggerConfiguration triggers[NUMBER_OF_TRIGGERS];
 // extern char tncMessages[EEPROM_TNC_MESSAGE_COUNT][EEPROM_TNC_MESSAGE_LENGTH];
 // extern char tncPaths[EEPROM_TNC_PATH_COUNT][EEPROM_TNC_PATH_LENGTH];
 
+/* Variables -----------------------------------------------------------------*/
 extern VexufStatus vexufStatus;
+
+/* Prototypes ----------------------------------------------------------------*/
+
+/* Code ----------------------------------------------------------------------*/
 
 UF_STATUS CONFIG_IsConfigured(void) {
   uint16_t data;

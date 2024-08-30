@@ -1,14 +1,40 @@
+/**
+ ******************************************************************************
+ * @file          : 93c86.c
+ * @brief         : 93C86 EEPROM Implementation
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "93c86.h"
 
-// SPI handle (assuming it is defined and initialized elsewhere)
-extern SPI_HandleTypeDef hspi1;
+/* TypeDef -------------------------------------------------------------------*/
+static SPI_HandleTypeDef hspi;
+static GPIO_TypeDef* eeprom_cs_port;
+/* Defines -------------------------------------------------------------------*/
 
+/* Macros --------------------------------------------------------------------*/
+// Define macro functions here
+
+/* Extern Variables ----------------------------------------------------------*/
+// Declare external variables here
+
+/* Variables -----------------------------------------------------------------*/
+static uint16_t eeprom_cs_pin;
 int16_t MEMrData[1];
 int16_t MEMsData[1];
 
-static GPIO_TypeDef* eeprom_cs_port;
-static uint16_t eeprom_cs_pin;
-
+/* Prototypes ----------------------------------------------------------------*/
 void EEPROM_93C86_CS_UNSELECT(void);
 void EEPROM_93C86_CS_SELECT(void);
 UF_STATUS EEPROM_93C86_getStatus(void);
@@ -17,69 +43,12 @@ UF_STATUS EEPROM_93C86_WriteEnable(void);
 UF_STATUS EEPROM_93C86_WriteDisable(void);
 UF_STATUS EEPROM_93C86_TransmitReceive(uint8_t tx, uint8_t* rx);
 
-UF_STATUS EEPROM_93C86_init(GPIO_TypeDef* cs_port, uint16_t cs_pin) {
+/* Code ----------------------------------------------------------------------*/
+void EEPROM_93C86_init(SPI_HandleTypeDef* spi, GPIO_TypeDef* cs_port,
+                       uint16_t cs_pin) {
+  hspi = *spi;
   eeprom_cs_port = cs_port;
   eeprom_cs_pin = cs_pin;
-}
-
-void EEPROM_93C86_CS_UNSELECT(void) {
-  HAL_GPIO_WritePin(eeprom_cs_port, eeprom_cs_pin, GPIO_PIN_RESET);
-}
-
-void EEPROM_93C86_CS_SELECT(void) {
-  HAL_GPIO_WritePin(eeprom_cs_port, eeprom_cs_pin, GPIO_PIN_SET);
-}
-
-UF_STATUS EEPROM_93C86_WriteEnable(void) {
-  // Wait until EEPROM is not busy
-  while (EEPROM_93C86_getStatus() == UF_BUSY);
-
-  EEPROM_93C86_CS_SELECT();
-  UF_STATUS status = EEPROM_93C86_SendCommand(EEPROM_CMD_WREN);
-  HAL_Delay(1);  // Ensure some delay as per datasheet
-  EEPROM_93C86_CS_UNSELECT();
-
-  return status;
-}
-
-UF_STATUS EEPROM_93C86_WriteDisable(void) {
-  while (EEPROM_93C86_getStatus() == UF_BUSY);
-
-  EEPROM_93C86_CS_SELECT();
-  UF_STATUS status = EEPROM_93C86_SendCommand(EEPROM_CMD_WRDI);
-  HAL_Delay(1);
-  EEPROM_93C86_CS_UNSELECT();
-
-  return status;
-}
-
-UF_STATUS EEPROM_93C86_getStatus(void) {
-  EEPROM_93C86_CS_SELECT();
-  UF_STATUS status =
-      (HAL_GPIO_ReadPin(SPI_MISO_GPIO_Port, SPI_MISO_Pin) == GPIO_PIN_RESET)
-          ? UF_BUSY
-          : UF_OK;
-  EEPROM_93C86_CS_UNSELECT();
-  return status;
-}
-
-UF_STATUS EEPROM_93C86_TransmitReceive(uint8_t tx, uint8_t* rx) {
-  if (HAL_SPI_TransmitReceive(&hspi1, &tx, rx, 1, 150) != HAL_OK) {
-    return UF_ERROR;
-  };
-  return UF_OK;
-}
-
-UF_STATUS EEPROM_93C86_SendCommand(uint16_t command) {
-  uint8_t receivedData;
-  UF_STATUS status = UF_OK;
-  uint8_t cmdHigh = (command >> 8) & 0xFF;
-  uint8_t cmdLow = command & 0xFF;
-  status = EEPROM_93C86_TransmitReceive(cmdHigh, &receivedData);
-  if (status != UF_OK) return status;
-  status = EEPROM_93C86_TransmitReceive(cmdLow, &receivedData);
-
-  return status;
 }
 
 UF_STATUS EEPROM_93C86_Read(uint16_t address, uint16_t* data) {
@@ -130,6 +99,17 @@ UF_STATUS EEPROM_93C86_Read(uint16_t address, uint16_t* data) {
 
   return status;
 }
+UF_STATUS EEPROM_93C86_ReadMultipleWords(uint16_t startAddress,
+                                         uint16_t* buffer, uint16_t length) {
+  UF_STATUS status = UF_OK;
+  for (uint16_t i = 0; i < length; i++) {
+    status = EEPROM_93C86_Read(startAddress + i, &buffer[i]);
+    if (status != UF_OK)
+      return status;  // Return immediately if any read operation fails
+  }
+
+  return status;  // Return OK if all read operations were successful
+}
 
 UF_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t data) {
   UF_STATUS status = UF_OK;
@@ -171,6 +151,17 @@ UF_STATUS EEPROM_93C86_Write(uint16_t address, uint16_t data) {
 
   return status;
 }
+UF_STATUS EEPROM_93C86_WriteMultipleWords(uint16_t startAddress,
+                                          uint16_t* buffer, uint16_t length) {
+  UF_STATUS status = UF_OK;
+  for (uint16_t i = 0; i < length; i++) {
+    status = EEPROM_93C86_Write(startAddress + i, buffer[i]);
+    if (status != UF_OK)
+      return status;  // Return immediately if any read operation fails
+  }
+
+  return status;
+}
 
 UF_STATUS EEPROM_93C86_Erase(uint16_t address) {
   UF_STATUS status = UF_OK;
@@ -194,7 +185,6 @@ UF_STATUS EEPROM_93C86_Erase(uint16_t address) {
 
   return UF_OK;
 }
-
 UF_STATUS EEPROM_93C86_EraseAll(void) {
   UF_STATUS status = UF_OK;
 
@@ -209,30 +199,6 @@ UF_STATUS EEPROM_93C86_EraseAll(void) {
   if (status != UF_OK) return status;
   HAL_Delay(2);  // Wait for erase cycle to complete
   status = EEPROM_93C86_WriteDisable();
-  return status;
-}
-
-UF_STATUS EEPROM_93C86_ReadMultipleWords(uint16_t startAddress,
-                                         uint16_t* buffer, uint16_t length) {
-  UF_STATUS status = UF_OK;
-  for (uint16_t i = 0; i < length; i++) {
-    status = EEPROM_93C86_Read(startAddress + i, &buffer[i]);
-    if (status != UF_OK)
-      return status;  // Return immediately if any read operation fails
-  }
-
-  return status;  // Return OK if all read operations were successful
-}
-
-UF_STATUS EEPROM_93C86_WriteMultipleWords(uint16_t startAddress,
-                                          uint16_t* buffer, uint16_t length) {
-  UF_STATUS status = UF_OK;
-  for (uint16_t i = 0; i < length; i++) {
-    status = EEPROM_93C86_Write(startAddress + i, buffer[i]);
-    if (status != UF_OK)
-      return status;  // Return immediately if any read operation fails
-  }
-
   return status;
 }
 
@@ -299,4 +265,59 @@ void EEPROM_Test(void) {
 
   // Print the read data
   printf("Read Data: %s\r\n", readData);
+}
+
+/* Private Methods -----------------------------------------------------------*/
+void EEPROM_93C86_CS_UNSELECT(void) {
+  HAL_GPIO_WritePin(eeprom_cs_port, eeprom_cs_pin, GPIO_PIN_RESET);
+}
+void EEPROM_93C86_CS_SELECT(void) {
+  HAL_GPIO_WritePin(eeprom_cs_port, eeprom_cs_pin, GPIO_PIN_SET);
+}
+UF_STATUS EEPROM_93C86_getStatus(void) {
+  EEPROM_93C86_CS_SELECT();
+  UF_STATUS status =
+      (HAL_GPIO_ReadPin(SPI_MISO_GPIO_Port, SPI_MISO_Pin) == GPIO_PIN_RESET)
+          ? UF_BUSY
+          : UF_OK;
+  EEPROM_93C86_CS_UNSELECT();
+  return status;
+}
+UF_STATUS EEPROM_93C86_SendCommand(uint16_t command) {
+  uint8_t receivedData;
+  UF_STATUS status = UF_OK;
+  uint8_t cmdHigh = (command >> 8) & 0xFF;
+  uint8_t cmdLow = command & 0xFF;
+  status = EEPROM_93C86_TransmitReceive(cmdHigh, &receivedData);
+  if (status != UF_OK) return status;
+  status = EEPROM_93C86_TransmitReceive(cmdLow, &receivedData);
+
+  return status;
+}
+UF_STATUS EEPROM_93C86_WriteEnable(void) {
+  // Wait until EEPROM is not busy
+  while (EEPROM_93C86_getStatus() == UF_BUSY);
+
+  EEPROM_93C86_CS_SELECT();
+  UF_STATUS status = EEPROM_93C86_SendCommand(EEPROM_CMD_WREN);
+  HAL_Delay(1);  // Ensure some delay as per datasheet
+  EEPROM_93C86_CS_UNSELECT();
+
+  return status;
+}
+UF_STATUS EEPROM_93C86_WriteDisable(void) {
+  while (EEPROM_93C86_getStatus() == UF_BUSY);
+
+  EEPROM_93C86_CS_SELECT();
+  UF_STATUS status = EEPROM_93C86_SendCommand(EEPROM_CMD_WRDI);
+  HAL_Delay(1);
+  EEPROM_93C86_CS_UNSELECT();
+
+  return status;
+}
+UF_STATUS EEPROM_93C86_TransmitReceive(uint8_t tx, uint8_t* rx) {
+  if (HAL_SPI_TransmitReceive(&hspi, &tx, rx, 1, 150) != HAL_OK) {
+    return UF_ERROR;
+  };
+  return UF_OK;
 }

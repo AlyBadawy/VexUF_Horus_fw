@@ -105,8 +105,6 @@
 #define EEPROM_TNC_PATH_LENGTH 16
 #define EEPROM_TNC_PATH_COUNT 5
 
-typedef enum { CONFIG_OK, CONFIG_ERROR, CONFIG_NOT_CONFIGURED } CONFIG_STATUS;
-
 UF_STATUS CONFIG_IsConfigured(void);
 UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount);
 UF_STATUS CONFIG_SetIsConfigured(void);

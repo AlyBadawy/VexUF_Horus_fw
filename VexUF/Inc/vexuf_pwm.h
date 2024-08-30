@@ -22,7 +22,7 @@ typedef struct {
   uint16_t pwm2Value;
 } PwmConfiguration;
 
-UF_STATUS PWM_init(void);
+UF_STATUS PWM_init(TIM_HandleTypeDef *pwm1, TIM_HandleTypeDef *pwm2);
 UF_STATUS PWM_enable(PwmChannel channel);
 UF_STATUS PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle);
 UF_STATUS PWM_disable(PwmChannel channel);

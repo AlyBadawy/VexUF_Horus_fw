@@ -3,7 +3,10 @@
 
 #include "vexuf.h"
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim);
+
+void TIMERS_init(TIM_HandleTypeDef* t10hz, TIM_HandleTypeDef* t1hz,
+                 TIM_HandleTypeDef* t0d1hz);
 
 UF_STATUS TIMERS_Start(void);
 UF_STATUS TIMERS_Stop(void);

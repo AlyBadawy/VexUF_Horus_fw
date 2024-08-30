@@ -1,3 +1,21 @@
+/**
+ ******************************************************************************
+ * @file          : vexuf_cli.c
+ * @brief        : VexUF CLI Implementation
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_cli.h"
 
 #include <ctype.h>
@@ -9,9 +27,35 @@
 #include "vexuf_rtc.h"
 #include "vexuf_temperature.h"
 
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart6;
+/* TypeDef -------------------------------------------------------------------*/
+static UART_HandleTypeDef ttlUart;
+static UART_HandleTypeDef tncUart;
 
+typedef void (*CommandHandler)(const char *args);
+
+typedef struct {
+  const char *command_name;
+  CommandHandler handler;
+} Command;
+
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
+extern uint16_t ttlRxIdx;
+extern uint16_t tncRxIdx;
+extern OutputConfiguration outputConfig;
+extern IndConfiguration indConf;
+
+/* Variables -----------------------------------------------------------------*/
+static char serialTxBuffer[SERIAL_BUFFER_SIZE];
+static char *prompt = "\r\nVexUF:Horus > ";
+static char *ok = "\r\nOk!";
+
+/* Prototypes ----------------------------------------------------------------*/
 void handle_get_callsign(const char *args);
 void handle_set_callsign(const char *args);
 void handle_get_temperature(const char *args);
@@ -19,18 +63,7 @@ void handle_get_time(const char *args);
 void handle_set_time(const char *args);
 void handle_buzzer(const char *args);
 
-extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
-extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
-extern uint16_t ttlRxIdx;
-extern uint16_t tncRxIdx;
-
-extern OutputConfiguration outputConfig;
-extern IndConfiguration indConf;
-
-static char serialTxBuffer[SERIAL_BUFFER_SIZE];
-
-static char *prompt = "\r\nVexUF:Horus > ";
-static char *ok = "\r\nOk!";
+/* Code ----------------------------------------------------------------------*/
 
 const Command commands[] = {
     {"get callsign", handle_get_callsign},
@@ -42,6 +75,11 @@ const Command commands[] = {
     // ... add more commands as needed ...
 };
 
+void CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
+  ttlUart = *ttl;
+  tncUart = *tnc;
+}
+
 UF_STATUS CLI_handleCommand(SerialInterface interface) {
   char command[SERIAL_BUFFER_SIZE];
   unsigned char *rxData;
@@ -52,11 +90,11 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
   memset(command, 0, sizeof(command));
 
   switch (interface) {
-    case TtlUart:
+    case TTL:
       rxData = ttlRxData;
       rxIdx = &ttlRxIdx;
       break;
-    case TncUart:
+    case TNC:
       rxData = tncRxData;
       rxIdx = &tncRxIdx;
       break;
@@ -84,11 +122,11 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
   // TODO: handle unknown commands
 
   switch (interface) {
-    case TtlUart:
-      uartHandle = &huart1;
+    case TTL:
+      uartHandle = &ttlUart;
       break;
-    case TncUart:
-      uartHandle = &huart6;
+    case TNC:
+      uartHandle = &tncUart;
       break;
     default:
       return UF_ERROR;
@@ -102,6 +140,8 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
   HAL_UART_Transmit_DMA(uartHandle, (uint8_t *)prompt, strlen(prompt));
   return UF_OK;
 }
+
+/* Private Methods -----------------------------------------------------------*/
 
 void handle_get_time(const char *args) {
   UNUSED(args);

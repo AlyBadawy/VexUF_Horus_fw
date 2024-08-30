@@ -16,7 +16,7 @@ typedef enum {
   Baud115200
 } BaudRate;
 
-typedef enum { TtlUart, TncUart, CDC } SerialInterface;
+typedef enum { TTL, TNC, CDC } SerialInterface;
 typedef enum { debugOnly, cliOnly, debugAndCli } TtlLogConfiguration;
 
 typedef struct {
@@ -28,5 +28,7 @@ typedef struct {
   BaudRate tnc__baud : 4;
   uint16_t reserved : 2;
 } SerialConfiguration;
+
+void SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc);
 
 #endif  // VEXUF_SERIAL_H

@@ -1,12 +1,47 @@
+/**
+ ******************************************************************************
+ * @file          : usart.c
+ * @brief         : Brief description
+ ******************************************************************************
+ * @attention
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
+ */
+
+/* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
+/* TypeDef -------------------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_usart1_rx;
-DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
+/* Defines -------------------------------------------------------------------*/
+// Define macros and constants here
+
+/* Macros --------------------------------------------------------------------*/
+// Define macro functions here
+
+/* Extern Variables ----------------------------------------------------------*/
+// Declare external variables here
+
+/* Variables -----------------------------------------------------------------*/
+// Declare static or global variables here
+
+/* Prototypes ----------------------------------------------------------------*/
+// Declare function prototypes here
+
+/* Code ----------------------------------------------------------------------*/
 void MX_USART1_UART_Init(void) {
   huart1.Instance = USART1;
   huart1.Init.BaudRate = 115200;
@@ -34,15 +69,15 @@ void MX_USART6_UART_Init(void) {
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  if(uartHandle->Instance==USART1) {
+  if (uartHandle->Instance == USART1) {
     __HAL_RCC_USART1_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**
      * USART1 GPIO Configuration
      * PA9     ------> USART1_TX
      * PA10     ------> USART1_RX
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
+     */
+    GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -60,8 +95,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
     hdma_usart1_rx.Init.Priority = DMA_PRIORITY_LOW;
     hdma_usart1_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart1_rx) != HAL_OK) Error_Handler();
-    
-    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart1_rx);
+
+    __HAL_LINKDMA(uartHandle, hdmarx, hdma_usart1_rx);
 
     hdma_usart1_tx.Instance = DMA2_Stream7;
     hdma_usart1_tx.Init.Channel = DMA_CHANNEL_4;
@@ -74,22 +109,22 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
     hdma_usart1_tx.Init.Priority = DMA_PRIORITY_LOW;
     hdma_usart1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart1_tx) != HAL_OK) Error_Handler();
-    
-    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart1_tx);
+
+    __HAL_LINKDMA(uartHandle, hdmatx, hdma_usart1_tx);
 
     HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
   }
-  
-  else if(uartHandle->Instance==USART6) {
+
+  else if (uartHandle->Instance == USART6) {
     __HAL_RCC_USART6_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /**
      * USART6 GPIO Configuration
      * PC6     ------> USART6_TX
      * PC7     ------> USART6_RX
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+     */
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -108,7 +143,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
     hdma_usart6_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart6_rx) != HAL_OK) Error_Handler();
 
-    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart6_rx);
+    __HAL_LINKDMA(uartHandle, hdmarx, hdma_usart6_rx);
 
     hdma_usart6_tx.Instance = DMA2_Stream6;
     hdma_usart6_tx.Init.Channel = DMA_CHANNEL_5;
@@ -122,7 +157,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
     hdma_usart6_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart6_tx) != HAL_OK) Error_Handler();
 
-    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart6_tx);
+    __HAL_LINKDMA(uartHandle, hdmatx, hdma_usart6_tx);
 
     HAL_NVIC_SetPriority(USART6_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART6_IRQn);
@@ -130,10 +165,10 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle) {
-  if(uartHandle->Instance==USART1) {
+  if (uartHandle->Instance == USART1) {
     __HAL_RCC_USART1_CLK_DISABLE();
 
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
 
     HAL_DMA_DeInit(uartHandle->hdmarx);
     HAL_DMA_DeInit(uartHandle->hdmatx);
@@ -141,9 +176,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle) {
     HAL_NVIC_DisableIRQ(USART1_IRQn);
   }
 
-  else if(uartHandle->Instance==USART6) {
+  else if (uartHandle->Instance == USART6) {
     __HAL_RCC_USART6_CLK_DISABLE();
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6|GPIO_PIN_7);
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
 
     HAL_DMA_DeInit(uartHandle->hdmarx);
     HAL_DMA_DeInit(uartHandle->hdmatx);

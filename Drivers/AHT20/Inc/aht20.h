@@ -10,7 +10,7 @@
 
 #include "vexuf.h"
 
-UF_STATUS AHT20_Init(void);
+UF_STATUS AHT20_Init(I2C_HandleTypeDef *i2c, uint16_t i2cAddress);
 UF_STATUS AHT20_ReadTemperatureHumidity(float *temperature, float *humidity);
 
 #endif /* INC_VEXUF_I2C_AHT20_H_ */

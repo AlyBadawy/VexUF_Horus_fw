@@ -1,21 +1,43 @@
-/*
- * indicators.c
+/**
+ ******************************************************************************
+ * @file          : vexuf_indicators.c
+ * @brief        : Indicator control functions for VexUF
+ ******************************************************************************
+ * @attention
  *
- *  Created on: Jul 29, 2024
- *      Author: Aly Badawy
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_indicators.h"
 
 #include "vexuf.h"
 #include "vexuf_avs.h"
 
-void IND_applyOnOffLevelsToGPIO(void);
-IndLevelOption IND_getCurrentLevel(Indicator ind);
+/* TypeDef -------------------------------------------------------------------*/
 
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+
+/* Variables -----------------------------------------------------------------*/
 IndLevels indLevels;
 IndConfiguration indConf;
 
+/* Prototypes ----------------------------------------------------------------*/
+void IND_applyOnOffLevelsToGPIO(void);
+IndLevelOption IND_getCurrentLevel(Indicator ind);
+
+/* Code ----------------------------------------------------------------------*/
 static IndicatorPin indicatorPins[] = {
     {ErrorInd_GPIO_Port, ErrorInd_Pin},
     {WarnInd_GPIO_Port, WarnInd_Pin},
@@ -25,50 +47,6 @@ static IndicatorPin indicatorPins[] = {
     {Av3Indicator_GPIO_Port, Av3Indicator_Pin},
     {Buzzer_GPIO_Port, Buzzer_Pin},
     {SdioInd_GPIO_Port, SdioInd_Pin}};
-
-void IND_applyOnOffLevelsToGPIO(void) {
-  for (Indicator ind = IndError; ind <= IndSdio; ind++) {
-    IndLevelOption level = IND_getCurrentLevel(ind);
-    if (level == IndON || level == IndOFF) {
-      HAL_GPIO_WritePin(indicatorPins[ind].port, indicatorPins[ind].pin,
-                        (level == IndON) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    }
-  }
-}
-
-IndLevelOption IND_getCurrentLevel(Indicator ind) {
-  if (indConf.globalIndicatorEnabled == 0) return IndOFF;
-
-  if ((ind == IndError || ind == IndWarn || ind == IndInfo) &&
-      indConf.statusIndicatorsEnabled != 1)
-    return IndOFF;
-
-  if ((ind == IndAv1 || ind == IndAv2 || ind == IndAv3) &&
-      indConf.AvGlobalIndEnabled != 1)
-    return IndOFF;
-
-  // Indicator-specific checks and return levels
-  switch (ind) {
-    case IndError:
-      return indLevels.indErrorLevel;
-    case IndWarn:
-      return indLevels.indWarnLevel;
-    case IndInfo:
-      return indLevels.indInfoLevel;
-    case IndAv1:
-      return indConf.Av1IndEnabled ? indLevels.indAv1Level : IndOFF;
-    case IndAv2:
-      return indConf.Av2IndEnabled ? indLevels.indAv2Level : IndOFF;
-    case IndAv3:
-      return indConf.Av3IndEnabled ? indLevels.indAv3Level : IndOFF;
-    case IndBuzzer:
-      return indConf.buzzer1sEnabled ? indLevels.indBuzzerLevel : IndOFF;
-    case IndSdio:
-      return indConf.sdCardIndicatorEnabled ? indLevels.indSdioLevel : IndOFF;
-    default:
-      return IndOFF;
-  }
-}
 
 UF_STATUS IND_setLevel(Indicator ind, IndLevelOption option) {
   // Check if global indicator is disabled or current level is the same as
@@ -150,25 +128,46 @@ UF_STATUS IND_toggleIndWithLevelOption(IndLevelOption option) {
   return UF_OK;
 }
 
-UF_STATUS IND_buzzOnError(void) {
-  if (indConf.globalIndicatorEnabled && indConf.buzzerEnabled &&
-      indConf.buzzerHoldOnError) {
-    IND_setLevel(IndBuzzer, IndON);
-    return UF_OK;
-  }
-  return UF_DISABLED;
-}
-
-UF_STATUS IND_BuzzOnStartUp(void) {
-  if (indConf.globalIndicatorEnabled && indConf.buzzerEnabled &&
-      indConf.buzzer1sEnabled) {
-    for (uint8_t i = 0; i < 3; i++) {
-      if (IND_setLevel(IndBuzzer, IndON) != UF_OK) return UF_ERROR;
-      HAL_Delay(20);
-      if (IND_setLevel(IndBuzzer, IndOFF) != UF_OK) return UF_ERROR;
-      HAL_Delay(40);
+/* Private Methods -----------------------------------------------------------*/
+void IND_applyOnOffLevelsToGPIO(void) {
+  for (Indicator ind = IndError; ind <= IndSdio; ind++) {
+    IndLevelOption level = IND_getCurrentLevel(ind);
+    if (level == IndON || level == IndOFF) {
+      HAL_GPIO_WritePin(indicatorPins[ind].port, indicatorPins[ind].pin,
+                        (level == IndON) ? GPIO_PIN_SET : GPIO_PIN_RESET);
     }
-    return UF_OK;
   }
-  return UF_DISABLED;
+}
+IndLevelOption IND_getCurrentLevel(Indicator ind) {
+  if (indConf.globalIndicatorEnabled == 0) return IndOFF;
+
+  if ((ind == IndError || ind == IndWarn || ind == IndInfo) &&
+      indConf.statusIndicatorsEnabled != 1)
+    return IndOFF;
+
+  if ((ind == IndAv1 || ind == IndAv2 || ind == IndAv3) &&
+      indConf.AvGlobalIndEnabled != 1)
+    return IndOFF;
+
+  // Indicator-specific checks and return levels
+  switch (ind) {
+    case IndError:
+      return indLevels.indErrorLevel;
+    case IndWarn:
+      return indLevels.indWarnLevel;
+    case IndInfo:
+      return indLevels.indInfoLevel;
+    case IndAv1:
+      return indConf.Av1IndEnabled ? indLevels.indAv1Level : IndOFF;
+    case IndAv2:
+      return indConf.Av2IndEnabled ? indLevels.indAv2Level : IndOFF;
+    case IndAv3:
+      return indConf.Av3IndEnabled ? indLevels.indAv3Level : IndOFF;
+    case IndBuzzer:
+      return indConf.buzzer1sEnabled ? indLevels.indBuzzerLevel : IndOFF;
+    case IndSdio:
+      return indConf.sdCardIndicatorEnabled ? indLevels.indSdioLevel : IndOFF;
+    default:
+      return IndOFF;
+  }
 }

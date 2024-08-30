@@ -4,12 +4,7 @@
 #include "vexuf.h"
 #include "vexuf_serial.h"
 
-typedef void (*CommandHandler)(const char *args);
-
-typedef struct {
-  const char *command_name;
-  CommandHandler handler;
-} Command;
+void CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc);
 
 UF_STATUS CLI_handleCommand(SerialInterface interface);
 

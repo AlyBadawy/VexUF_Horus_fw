@@ -1,19 +1,42 @@
-/*
- * actuators.c
+/**
+ ******************************************************************************
+ * @file          : vexuf_actuators.c
+ * @brief        : VexUF Actuators Implementation
+ ******************************************************************************
+ * @attention
  *
- *  Created on: Jul 22, 2024
- *      Author: Aly Badawy
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_actuators.h"
 
-#include "74hc595d.h"
+#include "74hc595d.h"  // 74HC595D Shift Register
+/* TypeDef -------------------------------------------------------------------*/
 
-UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level);
+/* Defines -------------------------------------------------------------------*/
+#define NUMBER_OF_Actuators 8
 
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+
+/* Variables -----------------------------------------------------------------*/
 ActuatorsConfiguration actConf = {0};
 ActuatorsValues actValues;  // default values for the actuators
-uint8_t actuatorsData = 0;
+static uint8_t actuatorsData = 0;
+
+/* Prototypes ----------------------------------------------------------------*/
+
+/* Code
+   ----------------------------------------------------------------------*/
 
 void ACT_Init(ActuatorsConfiguration* newActConf) {
   actConf.actuators_enabled = newActConf->actuators_enabled;

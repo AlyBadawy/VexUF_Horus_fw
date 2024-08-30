@@ -1,21 +1,48 @@
-/*
- * vexuf_pwm.c
+/**
+ ******************************************************************************
+ * @file          : vexuf_pwm.c
+ * @brief        : VexUF PWM Implementation
+ ******************************************************************************
+ * @attention
  *
- *  Created on: Aug 12, 2024
- *      Author: Aly Badawy
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ * @copyright     : Aly Badawy
+ * @author website: https://alybadawy.com
+ ******************************************************************************
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "vexuf_pwm.h"
 
-extern TIM_HandleTypeDef htim10;  // Servo 2 Timer
-extern TIM_HandleTypeDef htim11;  // Servo 1 Timer
+/* TypeDef -------------------------------------------------------------------*/
+static TIM_HandleTypeDef *pwm1Timer;
+static TIM_HandleTypeDef *pwm2Timer;
 
+/* Defines -------------------------------------------------------------------*/
+
+/* Macros --------------------------------------------------------------------*/
+
+/* Extern Variables ----------------------------------------------------------*/
+
+/* Variables -----------------------------------------------------------------*/
+PwmConfiguration pwmConfig;
+
+/* Prototypes ----------------------------------------------------------------*/
 UF_STATUS PWM_Start(PwmChannel channel);
 UF_STATUS PWM_Stop(PwmChannel channel);
 
-PwmConfiguration pwmConfig;
+/* Code ----------------------------------------------------------------------*/
 
-UF_STATUS PWM_init(void) {
+/* Private Methods -----------------------------------------------------------*/
+
+UF_STATUS PWM_init(TIM_HandleTypeDef *pwm1, TIM_HandleTypeDef *pwm2) {
+  pwm1Timer = pwm1;
+  pwm2Timer = pwm2;
+
   if (pwmConfig.pwm1Enabled == 1 && pwmConfig.pwm1Value <= 1000) {
     if (PWM_Start(PwmChannel1) == UF_ERROR) return UF_ERROR;
     if (PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value) == UF_ERROR)
@@ -40,7 +67,7 @@ UF_STATUS PWM_enable(PwmChannel channel) {
     default:
       return UF_ERROR;
   }
-  return PWM_init();
+  return PWM_init(pwm1Timer, pwm2Timer);
 }
 
 UF_STATUS PWM_Start(PwmChannel channel) {
@@ -48,11 +75,11 @@ UF_STATUS PWM_Start(PwmChannel channel) {
   uint8_t enabled;
   switch (channel) {
     case PwmChannel1:
-      htim = &htim11;
+      htim = pwm1Timer;
       enabled = pwmConfig.pwm1Enabled;
       break;
     case PwmChannel2:
-      htim = &htim10;
+      htim = pwm2Timer;
       enabled = pwmConfig.pwm2Enabled;
       break;
     default:
@@ -73,11 +100,11 @@ UF_STATUS PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle) {
 
   switch (channel) {
     case PwmChannel1:
-      htim = &htim11;
+      htim = pwm1Timer;
       enabled = pwmConfig.pwm1Enabled;
       break;
     case PwmChannel2:
-      htim = &htim10;
+      htim = pwm1Timer;
       enabled = pwmConfig.pwm2Enabled;
       break;
     default:
@@ -95,11 +122,11 @@ UF_STATUS PWM_Stop(PwmChannel channel) {
 
   switch (channel) {
     case PwmChannel1:
-      htim = &htim11;
+      htim = pwm1Timer;
       tim_channel = TIM_CHANNEL_1;
       break;
     case PwmChannel2:
-      htim = &htim10;
+      htim = pwm2Timer;
       tim_channel = TIM_CHANNEL_2;
       break;
     default:
