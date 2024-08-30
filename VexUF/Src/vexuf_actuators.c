@@ -19,6 +19,7 @@
 #include "vexuf_actuators.h"
 
 #include "74hc595d.h"  // 74HC595D Shift Register
+#include "vexuf_config.h"
 /* TypeDef -------------------------------------------------------------------*/
 
 /* Defines -------------------------------------------------------------------*/
@@ -38,10 +39,19 @@ static uint8_t actuatorsData = 0;
 /* Code
    ----------------------------------------------------------------------*/
 
-void ACT_Init(ActuatorsConfiguration* newActConf) {
-  actConf.actuators_enabled = newActConf->actuators_enabled;
-  actConf.actuators_lights_enabled = newActConf->actuators_lights_enabled;
-  // TODO: update the actuators values to the default values
+UF_STATUS ACT_Init(void) {
+  if (CONFIG_getActuators(&actConf, &actValues) != UF_OK) Error_Handler();
+
+  if (actConf.actuators_enabled != 1) return UF_DISABLED;
+
+  actuatorsData = 0;
+  for (ActuatorPin pin = ACT_PIN_A1; pin <= ACT_PIN_A8; pin++) {
+    if (((uint16_t*)&actValues)[pin] == ActOn) {
+      actuatorsData |= (1 << (pin));
+    }
+  }
+
+  return ACTUATORS_Update();
 }
 
 UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level) {
@@ -101,9 +111,11 @@ void ACTUATORS_Test(void) {
   ActuatorsConfiguration newConf;
   newConf.actuators_enabled = 1;
   newConf.actuators_lights_enabled = 1;
-  ACT_Init(&newConf);
+  CONFIG_setActuators(&newConf, 0b10101010);
+  ACT_Init();
 
-  ACTUATORS_setLights(1);
+  HAL_Delay(1000);
+
   for (ActuatorPin pin = ACT_PIN_A1; pin <= ACT_PIN_A8; pin++) {
     ACTUATORS_setPin(pin, ActOn);
     ACTUATORS_Update();
@@ -112,6 +124,6 @@ void ACTUATORS_Test(void) {
     ACTUATORS_Update();
     HAL_Delay(50);
   }
-  ACTUATORS_setLights(0);
+  CONFIG_setActuators(0, 0);
   ACT_DeInit();
 }
