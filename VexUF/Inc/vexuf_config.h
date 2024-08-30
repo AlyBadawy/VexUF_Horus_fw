@@ -109,13 +109,13 @@ UF_STATUS CONFIG_IsConfigured(void);
 UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount);
 UF_STATUS CONFIG_SetIsConfigured(void);
 
-UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer[24]);
+UF_STATUS CONFIG_ReadSerialNumber(unsigned char* serialNumberBuffer);
 UF_STATUS CONFIG_WriteSerialNumber(void);
 
 UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber);
 UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber);
 
-UF_STATUS CONFIG_getCallSign(char* callsign);
+UF_STATUS CONFIG_getCallSign(unsigned char* callsign);
 UF_STATUS CONFIG_setCallSign(const char* newCallSign);
 
 UF_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer);

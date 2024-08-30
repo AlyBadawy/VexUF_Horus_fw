@@ -32,8 +32,9 @@
 
 /* Variables -----------------------------------------------------------------*/
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
-char serialNumber[24];
-char regNumber[REGISTRATION_NUMBER_LENGTH];
+// char serialNumber[24];
+uint32_t regNumber;
+
 VexufStatus vexufStatus;
 
 /* Prototypes ----------------------------------------------------------------*/
@@ -72,7 +73,7 @@ void base32_encode(const uint8_t *data, size_t length, char *output) {
   output[index] = '\0';
 }
 
-void VexUF_GenerateSerialNumber() {
+void VexUF_GenerateSerialNumber(unsigned char *serialNumberString) {
   uint32_t uid[3] = {HAL_GetUIDw2(), HAL_GetUIDw1(), HAL_GetUIDw0()};
   uint8_t uid_bytes[12];
   char serial[20];
@@ -88,10 +89,10 @@ void VexUF_GenerateSerialNumber() {
 
   int i = 0, j = 0;
   for (i = 0; serial[i] != '\0'; ++i) {
-    if (i > 0 && i % 5 == 0) serialNumber[j++] = '-';
-    serialNumber[j++] = serial[i];
+    if (i > 0 && i % 5 == 0) serialNumberString[j++] = '-';
+    serialNumberString[j++] = serial[i];
   }
-  serialNumber[j] = '\0';
+  serialNumberString[j] = '\0';
 }
 
 void trim(char **str) {

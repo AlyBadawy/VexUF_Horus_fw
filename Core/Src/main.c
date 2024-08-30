@@ -44,21 +44,35 @@
 #include "vexuf_lcd.h"
 #include "vexuf_pwm.h"
 #include "vexuf_sdcard.h"
+#include "vexuf_spi.h"
 #include "vexuf_timers.h"
+#include "vexuf_tnc.h"
 
 /* TypeDef -------------------------------------------------------------------*/
 extern IWDG_HandleTypeDef hiwdg;
 extern SPI_HandleTypeDef hspi1;
 
-extern TIM_HandleTypeDef htim4;  // 10Hz
-extern TIM_HandleTypeDef htim5;  // 0.1Hz
-extern TIM_HandleTypeDef htim9;  // 1Hz
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim9;
+extern TIM_HandleTypeDef htim10;
+extern TIM_HandleTypeDef htim11;
 
-extern TIM_HandleTypeDef htim10;  // PWM2
-extern TIM_HandleTypeDef htim11;  // PWM1
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart6;
 
 /* Defines -------------------------------------------------------------------*/
-// Define macros and constants here
+#define AHT20_ADDRESS 0x38
+
+#define TIMER_10HZ_HANDLER htim4
+#define TIMER_1HZ_HANDLER htim9
+#define TIMER_0D1HZ_HANDLER htim5
+
+#define TIMER_PWM1_HANDLER htim11
+#define TIMER_PWM2_HANDLER htim10
+
+#define UART_TTL_HANDLER huart1
+#define UART_TNC_HANDLER huart6
 
 /* Macros --------------------------------------------------------------------*/
 // Define macro functions here
@@ -67,9 +81,18 @@ extern TIM_HandleTypeDef htim11;  // PWM1
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConf;
 extern OutputConfiguration outputConfig;
+extern PwmConfiguration pwmConfig;
+extern ActuatorsConfiguration actConf;
+extern ActuatorsValues actValues;
+extern SerialConfiguration serialConf;
+extern I2CConfiguration i2cConf;
+extern LcdConfiguration lcdConf;
+extern SpiType spiType;
 
+extern unsigned char regNumber[REGISTRATION_NUMBER_LENGTH];
 extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
 extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char callsign[CALLSIGN_LENGTH];
 
 /* Variables -----------------------------------------------------------------*/
 // Declare static or global variables here
@@ -111,36 +134,47 @@ int main(void) {
   MX_TIM11_Init();
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
-
   // TODO: Enable before release
   // MX_USB_DEVICE_Init();
 
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_SET);
   EEPROM_93C86_init(&hspi1, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
-  VexUF_GenerateSerialNumber();
-  CONFIG_SetIsConfigured();
   if (CONFIG_IsConfigured() != UF_OK) ERROR_handleNoConfig();
-  // TODO: Apply configurations
-
   if (CONFIG_WriteSerialNumber() != UF_OK) Error_Handler();
+  // TODO: Check for registration number and handle it.
+  if (CONFIG_getCallSign(&callsign) != UF_OK) Error_Handler();
+  if (CONFIG_getPwmConfigurations(&pwmConfig) != UF_OK) Error_Handler();
+  if (CONFIG_getActuators(&actConf, &actValues) != UF_OK) Error_Handler();
+  if (CONFIG_getSerialConf(&serialConf) != UF_OK) Error_Handler();
+  if (CONFIG_getI2cConf(&i2cConf) != UF_OK) Error_Handler();
+  if (CONFIG_getLcdConf(&lcdConf) != UF_OK) Error_Handler();
+  if (CONFIG_getSPIType(&spiType) != UF_OK) Error_Handler();
+  // TODO: Implement Output Configuration
+  if (CONFIG_getIndicatorsConf(&indConf) != UF_OK) Error_Handler();
+  // TODO: Load AV Sensors configurations
+  // TODO: Load Alarm configurations
+  // TODO: Load Trigger configurations
 
-  AHT20_Init(&hi2c1, 0x38);
+  AHT20_Init(&hi2c1, AHT20_ADDRESS);
+  // TODO: Init actuators.
+  // TODO: Init AV Sensors
+  // TODO: Init Alarms
+  // TODO: Init Triggers
 
-  CLI_init(&huart1, &huart6);
-  SERIAL_init(&huart1, &huart6);
+  CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
+  SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
 
-  PWM_init(&htim11, &htim10);
-  TIMERS_init(&htim4, &htim9, &htim5);
+  PWM_init(&TIMER_PWM1_HANDLER, &TIMER_PWM2_HANDLER);
+
+  TIMERS_init(&TIMER_10HZ_HANDLER, &TIMER_1HZ_HANDLER, &TIMER_0D1HZ_HANDLER);
   TIMERS_Start();
-
-  // TODO: Start listening to TTL and TNC interrupts.
-
-  HAL_Delay(500);
-  IND_BuzzOnStartUp();
 
   // TODO: change number of rows to as configured
   LCD_Init();
+
+  HAL_Delay(500);
+  IND_BuzzOnStartUp();
 
   // TODO: remove the following tests before release
   ADC_Test();
@@ -148,10 +182,11 @@ int main(void) {
   I2C_ScanTest();
   // END OF TESTS
 
-  HAL_Delay(500);
+  // Start listening to the Serial interfaces
+  HAL_UARTEx_ReceiveToIdle_IT(&UART_TTL_HANDLER, ttlRxData, SERIAL_BUFFER_SIZE);
+  HAL_UARTEx_ReceiveToIdle_IT(&UART_TNC_HANDLER, tncRxData, SERIAL_BUFFER_SIZE);
 
-  HAL_UARTEx_ReceiveToIdle_IT(&huart1, ttlRxData, SERIAL_BUFFER_SIZE);
-  HAL_UARTEx_ReceiveToIdle_IT(&huart6, tncRxData, SERIAL_BUFFER_SIZE);
+  HAL_Delay(500);
 
   printf("VexUF Horus is ready.\n");
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_RESET);
