@@ -31,7 +31,7 @@
 /* Extern Variables ----------------------------------------------------------*/
 extern char serialNumber[SERIAL_NUMBER_LENGTH];
 extern char regNumber[REGISTRATION_NUMBER_LENGTH];
-extern unsigned char callsign[CALLSIGN_LENGTH];
+extern char callsign[CALLSIGN_LENGTH];
 extern PwmConfiguration pwmConfig;
 extern ActuatorsConfiguration actConf;
 extern ActuatorsValues actValues;
@@ -99,7 +99,7 @@ UF_STATUS CONFIG_SetIsConfigured(void) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_ReadSerialNumber(unsigned char* serialNumberBuffer) {
+UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer) {
   uint16_t buffer[SERIAL_NUMBER_LENGTH / 2] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
                                      SERIAL_NUMBER_LENGTH / 2) != UF_OK)
@@ -123,7 +123,7 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
       return UF_ERROR;
   }
 
-  unsigned char serialNumberString[SERIAL_NUMBER_LENGTH];
+  char serialNumberString[SERIAL_NUMBER_LENGTH];
   VexUF_GenerateSerialNumber(serialNumberString);
 
   uint16_t buffer[SERIAL_NUMBER_LENGTH / 2] = {0};
@@ -132,7 +132,7 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
                 ((serialNumberString[2 * i + 1] & 0xFF) << 8);
   }
 
-  unsigned char eepromSerialNumberString[SERIAL_NUMBER_LENGTH];
+  char eepromSerialNumberString[SERIAL_NUMBER_LENGTH];
   if (CONFIG_ReadSerialNumber(eepromSerialNumberString) != UF_OK)
     return UF_ERROR;
 
@@ -164,7 +164,7 @@ UF_STATUS CONFIG_SetRegNumber(const uint32_t* newRegNumber) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_getCallSign(unsigned char* callsign) {
+UF_STATUS CONFIG_getCallSign(char* callsign) {
   uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                      CALLSIGN_LENGTH / 2) != UF_OK)
@@ -175,11 +175,11 @@ UF_STATUS CONFIG_getCallSign(unsigned char* callsign) {
   }
   return UF_OK;
 }
-UF_STATUS CONFIG_setCallSign(const unsigned char* newCallSign) {
+UF_STATUS CONFIG_setCallSign(const char* newCallSign) {
   uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
   for (int i = 0; i < CALLSIGN_LENGTH / 2; i++) {
-    char upperChar = toupper((unsigned char)newCallSign[2 * i]);
-    char lowerChar = toupper((unsigned char)newCallSign[2 * i + 1]);
+    char upperChar = toupper(newCallSign[2 * i]);
+    char lowerChar = toupper(newCallSign[2 * i + 1]);
 
     buffer[i] = (upperChar & 0xFF) | ((lowerChar & 0xFF) << 8);
   }

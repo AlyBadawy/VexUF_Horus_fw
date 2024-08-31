@@ -91,10 +91,8 @@ extern I2CConfiguration i2cConf;
 extern LcdConfiguration lcdConf;
 extern SpiConfiguration spiConf;
 
-extern unsigned char regNumber[REGISTRATION_NUMBER_LENGTH];
-extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
-extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
-extern unsigned char callsign[CALLSIGN_LENGTH];
+extern char regNumber[REGISTRATION_NUMBER_LENGTH];
+extern char callsign[CALLSIGN_LENGTH];
 
 /* Variables -----------------------------------------------------------------*/
 
@@ -184,10 +182,6 @@ int main(void) {
   ACTUATORS_Test();
   I2C_ScanTest();
   // END OF TESTS
-
-  // Start listening to the Serial interfaces
-  HAL_UARTEx_ReceiveToIdle_IT(&UART_TTL_HANDLER, ttlRxData, SERIAL_BUFFER_SIZE);
-  HAL_UARTEx_ReceiveToIdle_IT(&UART_TNC_HANDLER, tncRxData, SERIAL_BUFFER_SIZE);
 
   HAL_Delay(500);
 

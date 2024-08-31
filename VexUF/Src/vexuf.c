@@ -73,7 +73,7 @@ void base32_encode(const uint8_t *data, size_t length, char *output) {
   output[index] = '\0';
 }
 
-void VexUF_GenerateSerialNumber(unsigned char *serialNumberString) {
+void VexUF_GenerateSerialNumber(char *serialNumberString) {
   uint32_t uid[3] = {HAL_GetUIDw2(), HAL_GetUIDw1(), HAL_GetUIDw0()};
   uint8_t uid_bytes[12];
   char serial[20];
@@ -95,12 +95,12 @@ void VexUF_GenerateSerialNumber(unsigned char *serialNumberString) {
   serialNumberString[j] = '\0';
 }
 
-void trim(unsigned char **str) {
-  unsigned char *start = *str;
-  unsigned char *end;
+void trim(char **str) {
+  char *start = *str;
+  char *end;
 
   // Skip leading spaces
-  while (isspace((unsigned char)*start)) start++;
+  while (isspace((char)*start)) start++;
 
   // If the string is all spaces or empty
   if (*start == '\0') {
@@ -110,7 +110,7 @@ void trim(unsigned char **str) {
 
   // Find the last non-space character
   end = start + strlen((const char *)start) - 1;
-  while (end > start && isspace((unsigned char)*end)) end--;
+  while (end > start && isspace((char)*end)) end--;
 
   // Set the character after the last non-space character to '\0'
   *(end + 1) = '\0';

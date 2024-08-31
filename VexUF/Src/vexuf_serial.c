@@ -17,6 +17,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "vexuf_serial.h"
+
+#include "vexuf_config.h"
+
 /* TypeDef -------------------------------------------------------------------*/
 static UART_HandleTypeDef *ttlUart;
 static UART_HandleTypeDef *tncUart;
@@ -38,9 +41,65 @@ uint16_t tncRxIdx;
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
-void SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
+UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
   ttlUart = ttl;
   tncUart = tnc;
+
+  if (serialConf.ttl_enabled) {
+    if (SERIAL_setBaudRate(ttlUart, serialConf.ttl_baud) != UF_OK)
+      return UF_ERROR;
+    if (HAL_UARTEx_ReceiveToIdle_IT(ttlUart, ttlRxData, SERIAL_BUFFER_SIZE) !=
+        HAL_OK) {
+      return UF_ERROR;
+    }
+  }
+
+  if (serialConf.tnc_enabled) {
+    if (SERIAL_setBaudRate(tncUart, serialConf.ttl_baud) != UF_OK)
+      return UF_ERROR;
+    if (HAL_UARTEx_ReceiveToIdle_IT(tncUart, tncRxData, SERIAL_BUFFER_SIZE) !=
+        HAL_OK) {
+      return UF_ERROR;
+    }
+  }
+  return UF_OK;
+}
+
+UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, BaudRate baud) {
+  uint32_t newBaudRate = 0;
+  switch (baud) {
+    case Baud300:
+      newBaudRate = 300;
+      break;
+    case Baud600:
+      newBaudRate = 600;
+      break;
+    case Baud1200:
+      newBaudRate = 1200;
+      break;
+    case Baud4800:
+      newBaudRate = 4800;
+      break;
+    case Baud9600:
+      newBaudRate = 9600;
+      break;
+    case Baud19200:
+      newBaudRate = 19200;
+      break;
+    case Baud57600:
+      newBaudRate = 57600;
+      break;
+    case Baud115200:
+      newBaudRate = 115200;
+      break;
+    default:
+      return UF_ERROR;
+  }
+
+  huart->Init.BaudRate = newBaudRate;
+  if (HAL_UART_Init(huart) != HAL_OK) return UF_ERROR;
+
+  return UF_OK;
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
@@ -63,5 +122,3 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
   rxData[size] = '\0';
   HAL_UARTEx_ReceiveToIdle_IT(huart, rxData, SERIAL_BUFFER_SIZE);
 }
-
-/* Private Methods -----------------------------------------------------------*/

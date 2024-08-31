@@ -43,9 +43,9 @@ typedef struct {
 #define SERIAL_NUMBER_LENGTH 24
 
 // void VexUF_CurrentDateTimeString(char *string);
-void VexUF_GenerateSerialNumber(unsigned char *serialNumberString);
+void VexUF_GenerateSerialNumber(char *serialNumberString);
 uint16_t getSerialBytes(void);
 
-void trim(unsigned char **str);
+void trim(char **str);
 
 #endif  // VEXUF_H
