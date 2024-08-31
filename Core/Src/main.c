@@ -159,14 +159,13 @@ int main(void) {
   // TODO: Implement Output Configuration
   if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
   // TODO: Load Alarm configurations
-  // TODO: Load Trigger configurations
 
   if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
   if (ACT_Init() == UF_ERROR) Error_Handler();
   if (ADC_Init() == UF_ERROR) Error_Handler();
 
   // TODO: Init Alarms
-  // TODO: Init Triggers
+  if (TRIGS_Init() == UF_ERROR) Error_Handler();
 
   CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
   SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
