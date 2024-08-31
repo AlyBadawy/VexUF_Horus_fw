@@ -19,6 +19,7 @@
 #include "vexuf_avs.h"
 
 #include "vexuf.h"
+#include "vexuf_config.h"
 #include "vexuf_indicators.h"
 #include "vexuf_temperature.h"
 
@@ -32,19 +33,26 @@ extern ADC_HandleTypeDef hadc1;
 #define adcR1 33000.0
 #define adcR2 3300.0
 #define adcRatio (adcR2 / (adcR1 + adcR2))
+
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
 extern IndConfiguration indConf;
 
 /* Variables -----------------------------------------------------------------*/
-float AVsVoltages[3];
-uint32_t AVsRawValues[3];
+float AVsVoltages[NUMBER_OF_AVS];
+uint32_t AVsRawValues[NUMBER_OF_AVS];
 AvSensor avSensors[NUMBER_OF_AVS];
 
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
+UF_STATUS ADC_Init(void) {
+  for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
+    if (CONFIG_getAvSensor(&avSensors[i], i) != UF_OK) return UF_ERROR;
+  }
+  return UF_OK;
+}
 
 UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
   *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;

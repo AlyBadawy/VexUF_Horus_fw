@@ -148,23 +148,23 @@ int main(void) {
   if (CONFIG_IsConfigured() == UF_OK) {
     ERROR_handleNoConfig();
   }
-  if (CONFIG_WriteSerialNumber() != UF_OK) Error_Handler();
+  if (CONFIG_WriteSerialNumber() == UF_ERROR) Error_Handler();
   // TODO: Check for registration number and handle it.
-  if (CONFIG_getCallSign(&callsign) != UF_OK) Error_Handler();
-  if (CONFIG_getPwmConfigurations(&pwmConfig) != UF_OK) Error_Handler();
-  if (CONFIG_getSerialConf(&serialConf) != UF_OK) Error_Handler();
-  if (CONFIG_getI2cConf(&i2cConf) != UF_OK) Error_Handler();
-  if (CONFIG_getLcdConf(&lcdConf) != UF_OK) Error_Handler();
-  if (CONFIG_getSPIType(&spiType) != UF_OK) Error_Handler();
+  if (CONFIG_getCallSign(&callsign) == UF_ERROR) Error_Handler();
+  if (CONFIG_getPwmConfigurations(&pwmConfig) == UF_ERROR) Error_Handler();
+  if (CONFIG_getSerialConf(&serialConf) == UF_ERROR) Error_Handler();
+  if (CONFIG_getI2cConf(&i2cConf) == UF_ERROR) Error_Handler();
+  if (CONFIG_getLcdConf(&lcdConf) == UF_ERROR) Error_Handler();
+  if (CONFIG_getSPIType(&spiType) == UF_ERROR) Error_Handler();
   // TODO: Implement Output Configuration
-  if (CONFIG_getIndicatorsConf(&indConf) != UF_OK) Error_Handler();
-  // TODO: Load AV Sensors configurations
+  if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
   // TODO: Load Alarm configurations
   // TODO: Load Trigger configurations
 
-  AHT20_Init(&hi2c1, AHT20_ADDRESS);
-  ACT_Init();
-  // TODO: Init AV Sensors
+  if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
+  if (ACT_Init() == UF_ERROR) Error_Handler();
+  if (ADC_Init() == UF_ERROR) Error_Handler();
+
   // TODO: Init Alarms
   // TODO: Init Triggers
 
