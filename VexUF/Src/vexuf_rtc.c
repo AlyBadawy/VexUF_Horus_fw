@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "vexuf_config.h"
+
 /* TypeDef -------------------------------------------------------------------*/
 extern RTC_HandleTypeDef hrtc;
 
@@ -37,6 +39,13 @@ AlarmConfiguration alarms[2];
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
+UF_STATUS RTC_InitAlarms(void) {
+  if (CONFIG_getAlarmConf(&alarms[0], 0) != UF_OK) return UF_ERROR;
+  if (CONFIG_getAlarmConf(&alarms[1], 1) != UF_OK) return UF_ERROR;
+
+  return UF_OK;
+}
+
 UF_STATUS RTC_getDateTime(char *datetime) {
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;

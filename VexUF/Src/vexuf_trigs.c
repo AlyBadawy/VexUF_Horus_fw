@@ -59,10 +59,9 @@ UF_STATUS TRIGS_runAll(void) {
     return UF_ERROR;
   }
 
-  // TODO: Check the status of PWM calls.
-  // If any of them fails, return UF_ERROR.
-  PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value);
-  PWM_setDutyCycle(PwmChannel2, pwmConfig.pwm2Value);
+  if (PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value) == UF_ERROR ||
+      PWM_setDutyCycle(PwmChannel2, pwmConfig.pwm2Value) == UF_ERROR)
+    return UF_ERROR;
 
   return UF_OK;
 }
@@ -128,21 +127,23 @@ UF_STATUS TRIGS_compare(uint32_t ref, TrigCompareTest test, uint32_t fromValue,
   switch (test) {
     case lessThan:
       // TODO: Use different return values when true than UF_OK
-      return ref < fromValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref < fromValue ? UF_TRIGGERED : UF_NOT_TRIGGERED;
     case lessThanOrEqual:
-      return ref <= fromValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref <= fromValue ? UF_TRIGGERED : UF_NOT_TRIGGERED;
     case Equal:
-      return ref == fromValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref == fromValue ? UF_TRIGGERED : UF_NOT_TRIGGERED;
     case GreaterThanOrEqual:
-      return ref >= fromValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref >= fromValue ? UF_TRIGGERED : UF_NOT_TRIGGERED;
     case GreaterThan:
-      return ref > fromValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref > fromValue ? UF_TRIGGERED : UF_NOT_TRIGGERED;
     case NotEqual:
-      return ref != fromValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref != fromValue ? UF_TRIGGERED : UF_NOT_TRIGGERED;
     case inRange:
-      return ref >= fromValue && ref <= toValue ? UF_OK : UF_NOT_TRIGGERED;
+      return ref >= fromValue && ref <= toValue ? UF_TRIGGERED
+                                                : UF_NOT_TRIGGERED;
     case outtaRange:
-      return (ref < fromValue || ref > toValue) ? UF_OK : UF_NOT_TRIGGERED;
+      return (ref < fromValue || ref > toValue) ? UF_TRIGGERED
+                                                : UF_NOT_TRIGGERED;
     default:
       return UF_ERROR;
   }
