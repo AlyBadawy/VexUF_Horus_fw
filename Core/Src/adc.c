@@ -32,8 +32,6 @@ DMA_HandleTypeDef hdma_adc1;
 // Declare external variables here
 
 /* Variables -----------------------------------------------------------------*/
-// Declare static or global variables here
-
 /* Prototypes ----------------------------------------------------------------*/
 // Declare function prototypes here
 

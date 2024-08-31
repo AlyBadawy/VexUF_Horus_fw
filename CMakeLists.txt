@@ -53,6 +53,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./Drivers/HD44780/Src/hd44780.c"
     "./VexUF/Src/vexuf.c"
     "./VexUF/Src/vexuf_actuators.c"
+    "./VexUF/Src/vexuf_adc.c"
     "./VexUF/Src/vexuf_avs.c"
     "./VexUF/Src/vexuf_buzzer.c"
     "./VexUF/Src/vexuf_cli.c"

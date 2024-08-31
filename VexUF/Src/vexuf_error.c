@@ -37,7 +37,7 @@ extern TIM_HandleTypeDef htim11;  // Servo 1 Timer
 /* Extern Variables ----------------------------------------------------------*/
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConf;
-extern OutputConfiguration outputConfig;
+extern OutputConfiguration outputConf;
 
 /* Variables -----------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ void ERROR_handleSdError(void) {
 
   // Handle SD card ejection
   if (vexufStatus.sdCardEjected == 1) {
-    if (outputConfig.haltOnSdCardErrors == 1) {
+    if (outputConf.haltOnSdCardErrors == 1) {
       ERROR_SdCardLoop(300);
       return;
     }
@@ -83,7 +83,7 @@ void ERROR_handleSdError(void) {
 
   // Handle general SD card error
   if (vexufStatus.sdCardError == 1) {
-    if (outputConfig.haltOnSdCardErrors == 1) {
+    if (outputConf.haltOnSdCardErrors == 1) {
       ERROR_SdCardLoop(300);
       return;
     }
@@ -93,7 +93,7 @@ void ERROR_handleSdError(void) {
 
   // Handle SD card full error
   if (vexufStatus.sdCardFull == 1) {
-    if (outputConfig.haltOnSdCardErrors == 1) {
+    if (outputConf.haltOnSdCardErrors == 1) {
       ERROR_SdCardLoop(1000);
     }
     IND_setLevel(IndSdio, IndSLOW);
@@ -117,17 +117,21 @@ void ERROR_ConfigLoop() {
 void ERROR_SdCardLoop(uint16_t delay) {
   printf("SD card error detected\n");
   UF_STATUS status = UF_ERROR;
-  IND_buzzOnError();
+  // IND_buzzOnError();
   TIMERS_Stop();
   PWM_deinit();
+
+  vexufStatus.sdCardMounted = 0;
 
   while (status != UF_OK) {
     HAL_IWDG_Refresh(&hiwdg);
     while (HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) ==
-           GPIO_PIN_RESET) {
+               GPIO_PIN_RESET &&
+           vexufStatus.sdCardMounted == 0) {
       printf("SD card error detected while inserted\n");
       if (SDCard_MountFS() == UF_OK) {
         printf("SD card mounted successfully\n");
+        vexufStatus.sdCardMounted = 1;
         status = UF_OK;
       }
     }

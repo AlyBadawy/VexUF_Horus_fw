@@ -31,7 +31,7 @@
 /* Extern Variables ----------------------------------------------------------*/
 extern char serialNumber[SERIAL_NUMBER_LENGTH];
 extern char regNumber[REGISTRATION_NUMBER_LENGTH];
-extern unsigned char callsign;
+extern unsigned char callsign[CALLSIGN_LENGTH];
 extern PwmConfiguration pwmConfig;
 extern ActuatorsConfiguration actConf;
 extern ActuatorsValues actValues;

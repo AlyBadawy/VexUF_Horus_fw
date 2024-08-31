@@ -35,6 +35,7 @@
 #include "usb_device.h"
 #include "vexuf.h"
 #include "vexuf_actuators.h"
+#include "vexuf_adc.h"
 #include "vexuf_avs.h"
 #include "vexuf_cli.h"
 #include "vexuf_config.h"
@@ -45,6 +46,7 @@
 #include "vexuf_pwm.h"
 #include "vexuf_sdcard.h"
 #include "vexuf_spi.h"
+#include "vexuf_temperature.h"
 #include "vexuf_timers.h"
 #include "vexuf_tnc.h"
 
@@ -95,12 +97,13 @@ extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 extern unsigned char callsign[CALLSIGN_LENGTH];
 
 /* Variables -----------------------------------------------------------------*/
-// Declare static or global variables here
 
-/* Prototypes ----------------------------------------------------------------*/
+/* Prototypes
+   ----------------------------------------------------------------*/
 // Declare function prototypes here
 
-/* Code ----------------------------------------------------------------------*/
+/* Code
+   ----------------------------------------------------------------------*/
 int main(void) {
   /*
     Enable indicators for the duration of the startup routine.
@@ -162,7 +165,7 @@ int main(void) {
 
   if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
   if (ACT_Init() == UF_ERROR) Error_Handler();
-  if (ADC_Init() == UF_ERROR) Error_Handler();
+  if (AVS_Init() == UF_ERROR) Error_Handler();
 
   // TODO: Init Alarms
   if (TRIGS_Init() == UF_ERROR) Error_Handler();
@@ -177,12 +180,12 @@ int main(void) {
   IND_BuzzOnStartUp();
 
   // TODO: remove the following tests before release
-  ADC_Test();
+  AVS_Test();
   ACTUATORS_Test();
   I2C_ScanTest();
   // END OF TESTS
 
-    // Start listening to the Serial interfaces
+  // Start listening to the Serial interfaces
   HAL_UARTEx_ReceiveToIdle_IT(&UART_TTL_HANDLER, ttlRxData, SERIAL_BUFFER_SIZE);
   HAL_UARTEx_ReceiveToIdle_IT(&UART_TNC_HANDLER, tncRxData, SERIAL_BUFFER_SIZE);
 
@@ -199,6 +202,20 @@ int main(void) {
     SDCard_checkCard();
     ERROR_handleSdError();
 
+    if (vexufStatus.ttlBuffered == 1) {
+      if (CLI_handleCommand(TTL) == UF_ERROR) {
+        // todo: handle error
+      }
+      vexufStatus.ttlBuffered = 0;
+    }
+
+    if (vexufStatus.tncBuffered == 1) {
+      if (CLI_handleCommand(TNC) == UF_ERROR) {
+        // todo: handle error
+      }
+      vexufStatus.ttlBuffered = 0;
+    }
+
     // Run this routine every 100ms
     if (vexufStatus.timer_10hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndFAST);
@@ -209,31 +226,19 @@ int main(void) {
 
     // Run this routine every 1s
     if (vexufStatus.timer_1hz_ticked == 1) {
+      AVS_Scan();
       IND_toggleIndWithLevelOption(IndSLOW);
-      // TODO: Run ADC Scan
-      // TODO: Run CPU Temperature Scan
-      // TODO: Run AHT20 Scan
+
       // TODO: toggle SDCARD indicator if full and no halt on error
       vexufStatus.timer_1hz_ticked = 0;
     }
 
     // Run this routine every 10s
     if (vexufStatus.timer_0d1hz_ticked == 1) {
+      TEMPERATURE_getInternalTempC();
+      // TODO: Run AHT20 Scan
       TRIGS_runAll();
       vexufStatus.timer_0d1hz_ticked = 0;
-    }
-
-    if (vexufStatus.ttlBuffered == 1) {
-      if (CLI_handleCommand(TTL) == UF_ERROR) {
-        // todo: handle error
-      }
-      vexufStatus.ttlBuffered = 0;
-    }
-    if (vexufStatus.tncBuffered == 1) {
-      if (CLI_handleCommand(TNC) == UF_ERROR) {
-        // todo: handle error
-      }
-      vexufStatus.ttlBuffered = 0;
     }
 
     // Run this routine every iteration.

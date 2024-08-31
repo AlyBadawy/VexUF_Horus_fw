@@ -136,14 +136,14 @@ uint8_t convertToShiftRegisterValue(ActuatorsValues values) {
   uint8_t data = 0;
 
   // Check each actuator and set the corresponding bit if it's ActOn
-  if (actValues.act1 == ActOn) data |= (1 << 0);  // Set bit 0
-  if (actValues.act2 == ActOn) data |= (1 << 1);  // Set bit 1
-  if (actValues.act3 == ActOn) data |= (1 << 2);  // Set bit 2
-  if (actValues.act4 == ActOn) data |= (1 << 3);  // Set bit 3
-  if (actValues.act5 == ActOn) data |= (1 << 4);  // Set bit 4
-  if (actValues.act6 == ActOn) data |= (1 << 5);  // Set bit 5
-  if (actValues.act7 == ActOn) data |= (1 << 6);  // Set bit 6
-  if (actValues.act8 == ActOn) data |= (1 << 7);  // Set bit 7
+  if (values.act1 == ActOn) data |= (1 << 0);  // Set bit 0
+  if (values.act2 == ActOn) data |= (1 << 1);  // Set bit 1
+  if (values.act3 == ActOn) data |= (1 << 2);  // Set bit 2
+  if (values.act4 == ActOn) data |= (1 << 3);  // Set bit 3
+  if (values.act5 == ActOn) data |= (1 << 4);  // Set bit 4
+  if (values.act6 == ActOn) data |= (1 << 5);  // Set bit 5
+  if (values.act7 == ActOn) data |= (1 << 6);  // Set bit 6
+  if (values.act8 == ActOn) data |= (1 << 7);  // Set bit 7
 
   return data;
 }
