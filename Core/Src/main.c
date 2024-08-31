@@ -212,7 +212,8 @@ int main(void) {
     if (vexufStatus.timer_1hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndSLOW);
       // TODO: Run ADC Scan
-
+      // TODO: Run CPU Temperature Scan
+      // TODO: Run AHT20 Scan
       // TODO: toggle SDCARD indicator if full and no halt on error
       vexufStatus.timer_1hz_ticked = 0;
     }
