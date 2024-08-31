@@ -31,7 +31,7 @@
 /* Extern Variables ----------------------------------------------------------*/
 extern char serialNumber[SERIAL_NUMBER_LENGTH];
 extern char regNumber[REGISTRATION_NUMBER_LENGTH];
-extern char callsign;
+extern unsigned char callsign;
 extern PwmConfiguration pwmConfig;
 extern ActuatorsConfiguration actConf;
 extern ActuatorsValues actValues;
@@ -175,7 +175,7 @@ UF_STATUS CONFIG_getCallSign(unsigned char* callsign) {
   }
   return UF_OK;
 }
-UF_STATUS CONFIG_setCallSign(const char* newCallSign) {
+UF_STATUS CONFIG_setCallSign(const unsigned char* newCallSign) {
   uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
   for (int i = 0; i < CALLSIGN_LENGTH / 2; i++) {
     char upperChar = toupper((unsigned char)newCallSign[2 * i]);
@@ -356,7 +356,16 @@ UF_STATUS CONFIG_setSpiConfiguration(const SpiConfiguration* newSpiConf) {
   return UF_OK;
 }
 
-// TODO: implement getter and setter for the Output Configuration
+UF_STATUS CONFIG_getOutputConf(OutputConfiguration* outputConfig) {
+  uint16_t buffer;
+  if (EEPROM_93C86_Read(EEPROM_OUTPUT_ADDRESS, &buffer) != UF_OK)
+    return UF_ERROR;
+  outputConfig->haltOnSdCardErrors = buffer & 0x1;
+  outputConfig->log_info_to_sd = (buffer >> 1) & 0x1;
+  outputConfig->log_warn_to_sd = (buffer >> 2) & 0x1;
+  outputConfig->log_error_to_sd = (buffer >> 3) & 0x1;
+  return UF_OK;
+}
 
 UF_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf) {
   uint16_t buffer;

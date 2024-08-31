@@ -31,7 +31,7 @@
 static UART_HandleTypeDef ttlUart;
 static UART_HandleTypeDef tncUart;
 
-typedef void (*CommandHandler)(const char *args);
+typedef void (*CommandHandler)(const unsigned char *args);
 
 typedef struct {
   const char *command_name;
@@ -56,12 +56,12 @@ static char *prompt = "\r\nVexUF:Horus > ";
 static char *ok = "\r\nOk!";
 
 /* Prototypes ----------------------------------------------------------------*/
-void handle_get_callsign(const char *args);
-void handle_set_callsign(const char *args);
-void handle_get_temperature(const char *args);
-void handle_get_time(const char *args);
-void handle_set_time(const char *args);
-void handle_buzzer(const char *args);
+void handle_get_callsign(const unsigned char *args);
+void handle_set_callsign(const unsigned char *args);
+void handle_get_temperature(const unsigned char *args);
+void handle_get_time(const unsigned char *args);
+void handle_set_time(const unsigned char *args);
+void handle_buzzer(const unsigned char *args);
 
 /* Code ----------------------------------------------------------------------*/
 
@@ -114,7 +114,7 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
   for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
     if (strncmp(tempCommand, commands[i].command_name,
                 strlen(commands[i].command_name)) == 0) {
-      char *args = command + strlen(commands[i].command_name);
+      unsigned char *args = command + strlen(commands[i].command_name);
       trim(&args);
       commands[i].handler(args);
     }
@@ -143,29 +143,31 @@ UF_STATUS CLI_handleCommand(SerialInterface interface) {
 
 /* Private Methods -----------------------------------------------------------*/
 
-void handle_get_time(const char *args) {
+void handle_get_time(const unsigned char *args) {
   UNUSED(args);
   char datetime[20];
   RTC_getDateTime(datetime);
   sprintf(serialTxBuffer, "Date/Time: %s%s", datetime, ok);
 }
-void handle_set_time(const char *args) {
+void handle_set_time(const unsigned char *args) {
   RTC_setDateTime(args);
   sprintf(serialTxBuffer, "Date and Time set...%s", ok);
 }
 
-void handle_get_callsign(const char *args) {
+void handle_get_callsign(const unsigned char *args) {
   UNUSED(args);
   unsigned char callsignBuffer[CALLSIGN_LENGTH];
   CONFIG_getCallSign(callsignBuffer);
   sprintf(serialTxBuffer, "Callsign: %s%s", callsignBuffer, ok);
 }
-void handle_set_callsign(const char *args) {
+void handle_set_callsign(const unsigned char *args) {
   CONFIG_setCallSign(args);
   sprintf(serialTxBuffer, "%s", ok);
 }
 
-void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
-void handle_get_temperature(const char *args) {
+void handle_buzzer(const unsigned char *args) {
+  BUZZ_handleCli(args, serialTxBuffer);
+}
+void handle_get_temperature(const unsigned char *args) {
   TEMPERATURE_handleCli(args, serialTxBuffer);
 }

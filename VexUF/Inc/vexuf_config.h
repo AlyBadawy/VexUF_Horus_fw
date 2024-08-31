@@ -14,6 +14,7 @@
 #include "vexuf_i2c.h"
 #include "vexuf_indicators.h"
 #include "vexuf_lcd.h"
+#include "vexuf_outputs.h"
 #include "vexuf_pwm.h"
 #include "vexuf_rtc.h"
 #include "vexuf_serial.h"
@@ -116,7 +117,7 @@ UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber);
 UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber);
 
 UF_STATUS CONFIG_getCallSign(unsigned char* callsign);
-UF_STATUS CONFIG_setCallSign(const char* newCallSign);
+UF_STATUS CONFIG_setCallSign(const unsigned char* newCallSign);
 
 UF_STATUS CONFIG_getPwmConfigurations(PwmConfiguration* pwmConfigBuffer);
 UF_STATUS CONFIG_setPwmConfigurations(const PwmConfiguration* pwmConfig);
@@ -136,6 +137,9 @@ UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* lcdConf);
 
 UF_STATUS CONFIG_getSpiConfiguration(SpiConfiguration* spiConfBuffer);
 UF_STATUS CONFIG_setSspiConfiguration(const SpiConfiguration* newSpiConf);
+
+UF_STATUS CONFIG_getOutputConf(OutputConfiguration* outputConfig);
+UF_STATUS CONFIG_setOutputConf(OutputConfiguration* outputConfig);
 
 UF_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf);
 UF_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf);
