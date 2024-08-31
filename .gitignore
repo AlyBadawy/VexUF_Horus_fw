@@ -9,3 +9,5 @@ build.ninja
 cmake/stm32cubemx/cmake_install.cmake
 cmake_install.cmake
 compile_commands.json
+
+cmake-build-debug/
