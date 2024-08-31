@@ -26,8 +26,9 @@ typedef struct {
   uint16_t maxOn;
 } AvSensor;
 
-UF_STATUS ADC_run(uint32_t* adcBuffer, float* vref);
+UF_STATUS ADC_Init(void);
 
+UF_STATUS ADC_run(uint32_t* adcBuffer, float* vref);
 UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages);
 
 void ADC_Test(void);
