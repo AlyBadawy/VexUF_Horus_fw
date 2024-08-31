@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * @file          : vexuf_tnc.c
- * @brief        : VexUF TNC Implementation
+ * @file          : filename.c
+ * @brief        : Brief description
  ******************************************************************************
  * @attention
  *
@@ -16,19 +16,35 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "vexuf_tnc.h"
+#include "vexuf_adc.h"
+
 /* TypeDef -------------------------------------------------------------------*/
+extern ADC_HandleTypeDef hadc1;
 
 /* Defines -------------------------------------------------------------------*/
+#define VREFINT 1.22  // VREFINT is 1.22V
 
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
 
 /* Variables -----------------------------------------------------------------*/
-unsigned char callsign[CALLSIGN_LENGTH];
+uint32_t adcBuffer[5];
+float vref;
+
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
+UF_STATUS ADC_run(uint32_t* adcBuffer, float* vref) {
+  if (HAL_ADC_Start_DMA(&hadc1, adcBuffer, 5) == HAL_OK) {
+    HAL_Delay(50);
+    if (HAL_ADC_Stop_DMA(&hadc1) == HAL_OK && adcBuffer[0] != 0) {
+      *vref = (VREFINT * ADC_RESOLUTION) / adcBuffer[0];
+      return UF_OK;
+    }
+  }
+  *vref = 0;
+  return UF_ERROR;
+}
 
 /* Private Methods -----------------------------------------------------------*/

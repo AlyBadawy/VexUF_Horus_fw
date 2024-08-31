@@ -19,17 +19,13 @@
 #include "vexuf_avs.h"
 
 #include "vexuf.h"
+#include "vexuf_adc.h"
 #include "vexuf_config.h"
 #include "vexuf_indicators.h"
-#include "vexuf_temperature.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-extern ADC_HandleTypeDef hadc1;
 
 /* Defines -------------------------------------------------------------------*/
-#define ADC_RESOLUTION 4095.0  // 12-bit ADC
-#define VREFINT 1.22           // VREFINT is 1.22V
-
 #define adcR1 33000.0
 #define adcR2 3300.0
 #define adcRatio (adcR2 / (adcR1 + adcR2))
@@ -45,33 +41,17 @@ uint32_t AVsRawValues[NUMBER_OF_AVS];
 AvSensor avSensors[NUMBER_OF_AVS];
 
 /* Prototypes ----------------------------------------------------------------*/
+UF_STATUS AVS_rawToVoltage(float vref, uint32_t adcValue, float* voltValue);
 
 /* Code ----------------------------------------------------------------------*/
-UF_STATUS ADC_Init(void) {
+UF_STATUS AVS_Init(void) {
   for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
     if (CONFIG_getAvSensor(&avSensors[i], i) != UF_OK) return UF_ERROR;
   }
   return UF_OK;
 }
 
-UF_STATUS ADC_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
-  *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
-  return UF_OK;
-}
-
-UF_STATUS ADC_run(uint32_t* adcBuffer, float* vref) {
-  if (HAL_ADC_Start_DMA(&hadc1, adcBuffer, 5) == HAL_OK) {
-    HAL_Delay(50);
-    if (HAL_ADC_Stop_DMA(&hadc1) == HAL_OK && adcBuffer[0] != 0) {
-      *vref = (VREFINT * ADC_RESOLUTION) / adcBuffer[0];
-      return UF_OK;
-    }
-  }
-  *vref = 0;
-  return UF_ERROR;
-}
-
-UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
+UF_STATUS AVS_Scan(void) {
   float vref;
   Indicator ind;
   AvSensor av;
@@ -93,7 +73,9 @@ UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
     }
 
     value = adcBuffer[2 + i];
-    ADC_rawToVoltage(vref, adcBuffer[2 + i], &AVsVoltages[i]);
+    if (AVS_rawToVoltage(vref, adcBuffer[2 + i], &AVsVoltages[i]) == UF_ERROR)
+      return UF_ERROR;
+
     // TODO: Skip if indicator for that AV is disabled
     if (av.statusSlow && (value >= av.minSlow && value <= av.maxSlow)) {
       option = IndSLOW;
@@ -110,8 +92,8 @@ UF_STATUS ADC_Scan(uint32_t* AVsRawValues, float* AVsVoltages) {
   return UF_OK;
 }
 
-void ADC_Test(void) {
-  ADC_Scan(AVsRawValues, AVsVoltages);
+void AVS_Test(void) {
+  AVS_Scan();
 
   printf("\r\n");
   printf("Testing ADC functionality...\r\n");
@@ -121,4 +103,14 @@ void ADC_Test(void) {
   printf("  Av2 Volt: %0.03fV\r\n", AVsVoltages[1]);
   printf("  Av3 Raw: %lu\r\n", AVsRawValues[2]);
   printf("  Av4 Volt: %0.03fV\r\n", AVsVoltages[2]);
+}
+
+/* Private Methods -----------------------------------------------------------*/
+UF_STATUS AVS_rawToVoltage(float vref, uint32_t adcValue, float* voltValue) {
+  if (vref == 0) {
+    *voltValue = 0;
+    return UF_ERROR;
+  }
+  *voltValue = ((adcValue * vref) / ADC_RESOLUTION) / adcRatio;
+  return UF_OK;
 }

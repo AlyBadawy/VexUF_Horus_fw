@@ -19,6 +19,7 @@
 #include "vexuf_temperature.h"
 
 #include "aht20.h"
+#include "vexuf_adc.h"
 #include "vexuf_avs.h"
 
 /* TypeDef -------------------------------------------------------------------*/
