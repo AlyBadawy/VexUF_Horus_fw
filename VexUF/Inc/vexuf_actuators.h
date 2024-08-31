@@ -48,7 +48,7 @@ UF_STATUS ACT_Init(void);
 
 UF_STATUS ACTUATORS_Update(void);
 
-UF_STATUS ACTUATORS_lights(GPIO_PinState state);
+UF_STATUS ACTUATORS_setLights(uint8_t state);
 
 UF_STATUS ACTUATORS_trigger(ActuatorsValues values);
 

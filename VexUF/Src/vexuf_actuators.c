@@ -35,21 +35,15 @@ ActuatorsValues actValues;  // default values for the actuators
 static uint8_t actuatorsData = 0;
 
 /* Prototypes ----------------------------------------------------------------*/
+uint8_t convertToShiftRegisterValue(ActuatorsValues actValues);
 
-/* Code
-   ----------------------------------------------------------------------*/
-
+/* Code ----------------------------------------------------------------------*/
 UF_STATUS ACT_Init(void) {
-  if (CONFIG_getActuators(&actConf, &actValues) != UF_OK) Error_Handler();
+  if (CONFIG_getActuators(&actConf, &actValues) != UF_OK) return UF_ERROR;
 
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
 
-  actuatorsData = 0;
-  for (ActuatorPin pin = ACT_PIN_A1; pin <= ACT_PIN_A8; pin++) {
-    if (((uint16_t*)&actValues)[pin] == ActOn) {
-      actuatorsData |= (1 << (pin));
-    }
-  }
+  actuatorsData = convertToShiftRegisterValue(actValues);
 
   return ACTUATORS_Update();
 }
@@ -72,7 +66,7 @@ UF_STATUS ACTUATORS_setPin(ActuatorPin pin, ActLevel level) {
 
 UF_STATUS ACTUATORS_Update(void) {
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
-
+  ACTUATORS_setLights(actConf.actuators_lights_enabled);
   SHIFTREG_74HC595D_update(actuatorsData);
   return UF_OK;
 }
@@ -108,10 +102,19 @@ UF_STATUS ACT_DeInit(void) {
 }
 
 void ACTUATORS_Test(void) {
-  ActuatorsConfiguration newConf;
+  ActuatorsConfiguration newConf = {0};
   newConf.actuators_enabled = 1;
   newConf.actuators_lights_enabled = 1;
-  CONFIG_setActuators(&newConf, 0b10101010);
+  ActuatorsValues newValues = {0};
+  newValues = (ActuatorsValues){.act1 = ActOn,
+                                .act2 = ActOn,
+                                .act3 = ActOn,
+                                .act4 = ActOff,
+                                .act5 = ActOn,
+                                .act6 = ActOff,
+                                .act7 = ActOn,
+                                .act8 = ActOff};
+  CONFIG_setActuators(&newConf, &newValues);
   ACT_Init();
 
   HAL_Delay(1000);
@@ -126,4 +129,21 @@ void ACTUATORS_Test(void) {
   }
   CONFIG_setActuators(0, 0);
   ACT_DeInit();
+}
+
+/* Private Methods -----------------------------------------------------------*/
+uint8_t convertToShiftRegisterValue(ActuatorsValues values) {
+  uint8_t data = 0;
+
+  // Check each actuator and set the corresponding bit if it's ActOn
+  if (actValues.act1 == ActOn) data |= (1 << 0);  // Set bit 0
+  if (actValues.act2 == ActOn) data |= (1 << 1);  // Set bit 1
+  if (actValues.act3 == ActOn) data |= (1 << 2);  // Set bit 2
+  if (actValues.act4 == ActOn) data |= (1 << 3);  // Set bit 3
+  if (actValues.act5 == ActOn) data |= (1 << 4);  // Set bit 4
+  if (actValues.act6 == ActOn) data |= (1 << 5);  // Set bit 5
+  if (actValues.act7 == ActOn) data |= (1 << 6);  // Set bit 6
+  if (actValues.act8 == ActOn) data |= (1 << 7);  // Set bit 7
+
+  return data;
 }
