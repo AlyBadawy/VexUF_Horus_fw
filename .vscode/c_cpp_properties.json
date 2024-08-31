@@ -1,0 +1,27 @@
+{
+    "version": 4,
+    "configurations": [
+        {
+            "name": "STM32",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "intelliSenseMode": "${default}",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}/Core/Inc",
+                "${workspaceFolder}/Drivers/STM32F4xx_HAL_Driver/Inc",
+                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
+                "${workspaceFolder}/VexUF/Inc",
+                "${workspaceFolder}/Drivers/CMSIS/Include",
+                "${workspaceFolder}/Drivers/HD44780/Inc",
+                "${workspaceFolder}/Drivers/AHT20/Inc",
+                "${workspaceFolder}/VexUF/Inc"
+            ],
+            "defines": [
+                "DEBUG",
+                "USE_HAL_LIBRARY",
+                "STM32F401xx",
+                "STM32F401xC"
+            ]
+        }
+    ]
+}
