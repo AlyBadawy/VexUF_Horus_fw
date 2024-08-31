@@ -80,7 +80,7 @@ extern UART_HandleTypeDef huart6;
 /* Extern Variables ----------------------------------------------------------*/
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConf;
-extern OutputConfiguration outputConfig;
+extern OutputConfiguration outputConf;
 extern PwmConfiguration pwmConfig;
 extern ActuatorsConfiguration actConf;
 extern ActuatorsValues actValues;
@@ -110,7 +110,7 @@ int main(void) {
   */
   indConf.globalIndicatorEnabled = 1;
   indConf.sdCardIndicatorEnabled = 1;
-  outputConfig.haltOnSdCardErrors = 1;
+  outputConf.haltOnSdCardErrors = 1;
 
   HAL_Init();
 
@@ -156,7 +156,7 @@ int main(void) {
   if (CONFIG_getI2cConf(&i2cConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getLcdConf(&lcdConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getSpiConfiguration(&spiConf) == UF_ERROR) Error_Handler();
-  // TODO: Implement Output Configuration
+  if (CONFIG_getOutputConf(&outputConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
   // TODO: Load Alarm configurations
 
@@ -182,7 +182,7 @@ int main(void) {
   I2C_ScanTest();
   // END OF TESTS
 
-  // Start listening to the Serial interfaces
+    // Start listening to the Serial interfaces
   HAL_UARTEx_ReceiveToIdle_IT(&UART_TTL_HANDLER, ttlRxData, SERIAL_BUFFER_SIZE);
   HAL_UARTEx_ReceiveToIdle_IT(&UART_TNC_HANDLER, tncRxData, SERIAL_BUFFER_SIZE);
 

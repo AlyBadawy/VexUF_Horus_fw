@@ -27,7 +27,7 @@
 /* Extern Variables ----------------------------------------------------------*/
 
 /* Variables -----------------------------------------------------------------*/
-OutputConfiguration outputConfig;
+OutputConfiguration outputConf;
 
 /* Prototypes ----------------------------------------------------------------*/
 

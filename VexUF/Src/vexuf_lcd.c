@@ -8,6 +8,7 @@
 #include "vexuf_lcd.h"
 
 #include "hd44780.h"
+#include "vexuf_config.h"
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -23,11 +24,25 @@ uint8_t specialChars[5][8] = {
 
 // Initialize the LCD
 UF_STATUS LCD_Init(void) {
-  lcdConf.lcdAdd = 0x27;  // TODO: Extract this
-  lcdConf.lcdType = LCD2004;
-  lcdConf.lcdPwm = 100;
+  LcdConfiguration lcdConf = {0};
+  if (CONFIG_getLcdConf(&lcdConf) != UF_OK) return UF_ERROR;
 
-  HD44780_Init(&hi2c1, 4);
+  switch (lcdConf.lcdType) {
+    case NoLCD:
+      return UF_DISABLED;
+    case LCD2004:
+      HD44780_Init(&hi2c1, 4);
+      break;
+    case LCD1602:
+      HD44780_Init(&hi2c1, 2);
+      break;
+    default:
+      return UF_ERROR;
+  }
+
+  if (lcdConf.lcdType == NoLCD) return UF_DISABLED;
+  if (lcdConf.lcdType == LCD2004) HD44780_Init(&hi2c1, 4);
+  if (lcdConf.lcdType == LCD1602) HD44780_Init(&hi2c1, 2);
 
   // Create special characters
   for (uint8_t i = 0; i < 5; i++) {
