@@ -2,7 +2,6 @@
 
 Build/
 
-.vscode/
 CMakeCache.txt
 CMakeFiles/
 build.ninja
