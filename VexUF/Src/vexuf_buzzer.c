@@ -68,7 +68,6 @@ UF_STATUS IND_BuzzOnStartUp(void) {
   return UF_DISABLED;
 }
 void BUZZ_handleCli(const char *args, char *responseBuffer) {
-  // TODO: Refactor this function.
   IndConfiguration newIndConfig;
   memcpy(&newIndConfig, &indConf, sizeof(indConf));
 

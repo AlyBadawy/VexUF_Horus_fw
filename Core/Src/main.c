@@ -44,11 +44,13 @@
 #include "vexuf_indicators.h"
 #include "vexuf_lcd.h"
 #include "vexuf_pwm.h"
+#include "vexuf_rtc.h"
 #include "vexuf_sdcard.h"
 #include "vexuf_spi.h"
 #include "vexuf_temperature.h"
 #include "vexuf_timers.h"
 #include "vexuf_tnc.h"
+#include "vexuf_trigs.h"
 
 /* TypeDef -------------------------------------------------------------------*/
 extern IWDG_HandleTypeDef hiwdg;
@@ -159,7 +161,7 @@ int main(void) {
   if (CONFIG_getSpiConfiguration(&spiConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getOutputConf(&outputConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
-  // TODO: Load Alarm configurations
+  if (RTC_InitAlarms() == UF_ERROR) Error_Handler();
 
   if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
   if (ACT_Init() == UF_ERROR) Error_Handler();
@@ -213,8 +215,7 @@ int main(void) {
     // Run this routine every 100ms
     if (vexufStatus.timer_10hz_ticked == 1) {
       IND_toggleIndWithLevelOption(IndFAST);
-      if (vexufStatus.sdCardError == 1 || vexufStatus.sdCardEjected == 1) {
-      }
+      // TODO: toggle SDCARD indicator if error and no halt on error
       vexufStatus.timer_10hz_ticked = 0;
     }
 
