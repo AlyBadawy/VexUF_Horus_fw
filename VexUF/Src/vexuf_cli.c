@@ -156,9 +156,9 @@ void handle_set_time(const char *args) {
 
 void handle_get_callsign(const char *args) {
   UNUSED(args);
-  char callsign[CALLSIGN_LENGTH];
-  CONFIG_getCallSign(callsign);
-  sprintf(serialTxBuffer, "Callsign: %s%s", callsign, ok);
+  unsigned char callsignBuffer[CALLSIGN_LENGTH];
+  CONFIG_getCallSign(callsignBuffer);
+  sprintf(serialTxBuffer, "Callsign: %s%s", callsignBuffer, ok);
 }
 void handle_set_callsign(const char *args) {
   CONFIG_setCallSign(args);
