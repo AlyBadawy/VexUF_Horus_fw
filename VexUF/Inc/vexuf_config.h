@@ -134,8 +134,8 @@ UF_STATUS CONFIG_setI2cConf(const I2CConfiguration* i2cConf);
 UF_STATUS CONFIG_getLcdConf(LcdConfiguration* lcdConf);
 UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* lcdConf);
 
-UF_STATUS CONFIG_getSPIType(SpiType* spiType);
-UF_STATUS CONFIG_setSPIType(const SpiType* spiType);
+UF_STATUS CONFIG_getSpiConfiguration(SpiConfiguration* spiConfBuffer);
+UF_STATUS CONFIG_setSspiConfiguration(const SpiConfiguration* newSpiConf);
 
 UF_STATUS CONFIG_getIndicatorsConf(IndConfiguration* indConf);
 UF_STATUS CONFIG_setIndicatorsConf(const IndConfiguration* indConf);

@@ -3,6 +3,6 @@
 
 #include "vexuf.h"
 
-typedef enum { NoSpi = 0, BLUETOOTH } SpiType;
+typedef enum { NoSpi = 0, BLUETOOTH } SpiConfiguration;
 
 #endif  // VEXUF_SPI_H

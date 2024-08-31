@@ -87,7 +87,7 @@ extern ActuatorsValues actValues;
 extern SerialConfiguration serialConf;
 extern I2CConfiguration i2cConf;
 extern LcdConfiguration lcdConf;
-extern SpiType spiType;
+extern SpiConfiguration spiConf;
 
 extern unsigned char regNumber[REGISTRATION_NUMBER_LENGTH];
 extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
@@ -155,7 +155,7 @@ int main(void) {
   if (CONFIG_getSerialConf(&serialConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getI2cConf(&i2cConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getLcdConf(&lcdConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getSPIType(&spiType) == UF_ERROR) Error_Handler();
+  if (CONFIG_getSpiConfiguration(&spiConf) == UF_ERROR) Error_Handler();
   // TODO: Implement Output Configuration
   if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
   // TODO: Load Alarm configurations

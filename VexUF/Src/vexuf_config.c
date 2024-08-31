@@ -31,14 +31,14 @@
 /* Extern Variables ----------------------------------------------------------*/
 extern char serialNumber[SERIAL_NUMBER_LENGTH];
 extern char regNumber[REGISTRATION_NUMBER_LENGTH];
-extern char callsign[CALLSIGN_LENGTH];
+extern char callsign;
 extern PwmConfiguration pwmConfig;
 extern ActuatorsConfiguration actConf;
 extern ActuatorsValues actValues;
 extern SerialConfiguration serialConf;
 extern I2CConfiguration i2cConf;
 extern LcdConfiguration lcdConf;
-extern SpiType spiConf;
+extern SpiConfiguration spiConf;
 extern IndConfiguration indConf;
 extern AvSensor avSensors[3];
 extern AlarmConfiguration alarms[2];
@@ -341,18 +341,18 @@ UF_STATUS CONFIG_setLcdConf(const LcdConfiguration* newLcdConf) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_getSPIType(SpiType* spiType) {
+UF_STATUS CONFIG_getSpiConfiguration(SpiConfiguration* spiConfBuffer) {
   uint16_t buffer;
   if (EEPROM_93C86_Read(EEPROM_SPI_TYPE_ADDRESS, &buffer) != UF_OK)
     return UF_ERROR;
-  *spiType = (SpiType)buffer;
+  *spiConfBuffer = (SpiConfiguration)buffer;
   return UF_OK;
 }
-UF_STATUS CONFIG_setSPIType(const SpiType* newSpiType) {
-  uint16_t buffer = (uint16_t)*newSpiType;
+UF_STATUS CONFIG_setSpiConfiguration(const SpiConfiguration* newSpiConf) {
+  uint16_t buffer = (uint16_t)*newSpiConf;
   if (EEPROM_93C86_Write(EEPROM_SPI_TYPE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
-  memcpy(&spiConf, newSpiType, sizeof(SpiType));
+  memcpy(&spiConf, newSpiConf, sizeof(SpiConfiguration));
   return UF_OK;
 }
 
