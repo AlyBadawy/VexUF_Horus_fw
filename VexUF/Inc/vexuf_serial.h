@@ -29,6 +29,7 @@ typedef struct {
   uint16_t reserved : 2;
 } SerialConfiguration;
 
-void SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc);
+UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc);
+UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, BaudRate baud);
 
 #endif  // VEXUF_SERIAL_H
