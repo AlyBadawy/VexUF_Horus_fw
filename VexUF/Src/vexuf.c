@@ -95,26 +95,29 @@ void VexUF_GenerateSerialNumber(char *serialNumberString) {
   serialNumberString[j] = '\0';
 }
 
-void trim(char **str) {
-  char *start = *str;
-  char *end;
-
+char *trim(const char *str) {
   // Skip leading spaces
-  while (isspace((char)*start)) start++;
+  while (*str && isspace((unsigned char)*str)) str++;
 
   // If the string is all spaces or empty
-  if (*start == '\0') {
-    *str = start;
-    return;
+  if (*str == '\0') {
+    return strdup("");  // Return an empty string
   }
 
   // Find the last non-space character
-  end = start + strlen((const char *)start) - 1;
-  while (end > start && isspace((char)*end)) end--;
+  const char *end = str + strlen(str) - 1;
+  while (end > str && isspace((unsigned char)*end)) end--;
 
-  // Set the character after the last non-space character to '\0'
-  *(end + 1) = '\0';
+  // Allocate space for the trimmed string
+  size_t length = end - str + 1;
+  char *trimmed = (char *)malloc(length + 1);
+  if (!trimmed) {
+    return NULL;  // Handle memory allocation failure
+  }
 
-  // Update the str pointer to the new start
-  *str = start;
+  // Copy the trimmed content into the new string
+  strncpy(trimmed, str, length);
+  trimmed[length] = '\0';  // Null-terminate the trimmed string
+
+  return trimmed;
 }

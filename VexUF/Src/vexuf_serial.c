@@ -46,7 +46,7 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
   tncUart = tnc;
 
   if (serialConf.ttl_enabled) {
-    if (SERIAL_setBaudRate(ttlUart, serialConf.ttl_baud) != UF_OK)
+    if (SERIAL_setBaudRate(ttlUart, (uint16_t)serialConf.ttl_baud) != UF_OK)
       return UF_ERROR;
     if (HAL_UARTEx_ReceiveToIdle_IT(ttlUart, ttlRxData, SERIAL_BUFFER_SIZE) !=
         HAL_OK) {
@@ -65,7 +65,7 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
   return UF_OK;
 }
 
-UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, BaudRate baud) {
+UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, SerialBaudRate baud) {
   uint32_t newBaudRate = 0;
   switch (baud) {
     case Baud300:
@@ -90,10 +90,9 @@ UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, BaudRate baud) {
       newBaudRate = 57600;
       break;
     case Baud115200:
+    default:  // TODO: return uf_error if baud rate is not supported
       newBaudRate = 115200;
       break;
-    default:
-      return UF_ERROR;
   }
 
   huart->Init.BaudRate = newBaudRate;
@@ -114,11 +113,16 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
     rxIdx = &tncRxIdx;
   }
 
-  if (rxData[size - 1] == '\r' || rxData[size - 1] == '\n' || size > 2) {
+  if (rxData[size - 1] == '\r' || rxData[size - 1] == '\n' || size >= 2) {
     huart == ttlUart ? (vexufStatus.ttlBuffered = 1)
                      : (vexufStatus.tncBuffered = 1);
   }
   *rxIdx = size;
   rxData[size] = '\0';
-  HAL_UARTEx_ReceiveToIdle_IT(huart, rxData, SERIAL_BUFFER_SIZE);
+
+  if (huart == ttlUart) {
+    HAL_UARTEx_ReceiveToIdle_IT(ttlUart, ttlRxData, SERIAL_BUFFER_SIZE);
+  } else {
+    HAL_UARTEx_ReceiveToIdle_IT(tncUart, tncRxData, SERIAL_BUFFER_SIZE);
+  }
 }

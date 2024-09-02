@@ -46,6 +46,6 @@ typedef struct {
 void VexUF_GenerateSerialNumber(char *serialNumberString);
 uint16_t getSerialBytes(void);
 
-void trim(char **str);
+char *trim(const char *str);
 
 #endif  // VEXUF_H

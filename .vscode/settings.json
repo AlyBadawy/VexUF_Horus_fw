@@ -50,7 +50,8 @@
     "vexuf_spi.h": "c",
     "clock.h": "c",
     "vexuf_tnc.h": "c",
-    "vexuf_adc.h": "c"
+    "vexuf_adc.h": "c",
+    "stdlib.h": "c"
   },
   "cSpell.words": [
     "ABCDEFGHJKLMNPQRTUVWXYZ",
@@ -59,8 +60,11 @@
     "DAYLIGHTSAVING",
     "EEPROM",
     "EXTERNALTRIGCONVEDGE",
+    "fatent",
     "FATFS",
     "FIFOMODE",
+    "getfree",
+    "getlabel",
     "GPIO",
     "GPIOB",
     "GPIOC",
@@ -85,6 +89,7 @@
     "SAMPLETIME",
     "SDCARD",
     "SDIO",
+    "setlabel",
     "SHIFTREG",
     "STOREOPERATION",
     "TEMPSENSOR",
