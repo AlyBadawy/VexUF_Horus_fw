@@ -28,17 +28,16 @@
 
 /* Extern Variables ----------------------------------------------------------*/
 extern IndConfiguration indConf;
+extern char *ok;
+extern char *no;
+
 /* Variables -----------------------------------------------------------------*/
-const char *ok = "\r\nOk!";
-const char *no = "\r\nNo!";
 const char *enabledStr = "Enabled";
 const char *disabledStr = "Disabled";
 const char *buzzerStr = "Buzzer";
 const char *startBeepStr = "start beep";
 const char *errorStr = "beep on error";
 const char *isStr = "is";
-const char *okStr = "\r\nOK!";
-const char *noStr = "\r\nNo!";
 static char *buzzerDisabled = "Buzzer is disabled. Can't configure buzzer.";
 
 /* Prototypes ----------------------------------------------------------------*/
@@ -97,12 +96,11 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
     }
   } else if (strlen(args) == 0) {
     if (indConf.buzzerEnabled) {
-      sprintf(responseBuffer, "%s %s %s %s. %s %s.%s", buzzerStr, isStr,
-              enabledStr,
-              indConf.buzzer1sEnabled ? "start beep is Enabled"
-                                      : "start beep is Disabled",
-              errorStr, indConf.buzzerHoldOnError ? enabledStr : disabledStr,
-              okStr);
+      sprintf(
+          responseBuffer, "%s %s %s %s. %s %s.%s", buzzerStr, isStr, enabledStr,
+          indConf.buzzer1sEnabled ? "start beep is Enabled"
+                                  : "start beep is Disabled",
+          errorStr, indConf.buzzerHoldOnError ? enabledStr : disabledStr, ok);
     } else {
       setResponse(isStr, 0, responseBuffer);
     }
@@ -112,5 +110,5 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
 /* Private Methods -----------------------------------------------------------*/
 void setResponse(const char *feature, uint8_t enabled, char *responseBuffer) {
   sprintf(responseBuffer, "%s %s%s%s", buzzerStr, feature,
-          enabled ? enabledStr : disabledStr, okStr);
+          enabled ? enabledStr : disabledStr, ok);
 }

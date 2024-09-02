@@ -37,7 +37,7 @@ UF_STATUS LCD_Init(void) {
       HD44780_Init(&hi2c1, 2);
       break;
     default:
-      return UF_ERROR;
+      return UF_DISABLED;  // TODO: use error when default case is implemented
   }
 
   if (lcdConf.lcdType == NoLCD) return UF_DISABLED;

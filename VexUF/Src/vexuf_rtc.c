@@ -18,6 +18,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "vexuf_rtc.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,6 +32,7 @@ extern RTC_HandleTypeDef hrtc;
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
+extern char *ok;
 
 /* Variables -----------------------------------------------------------------*/
 static const uint8_t list_mth[12] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
@@ -55,7 +57,6 @@ UF_STATUS RTC_getDateTime(char *datetime) {
   if (HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK) return UF_ERROR;
   if (HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK) return UF_ERROR;
 
-  // TODO: Allow different date and time formats
   // Format the date and time as "MM/DD/YYYY HH:MM:SS"
   snprintf(datetime, 26, "%02d/%02d/%04d %02d:%02d:%02d", sDate.Month,
            sDate.Date, 2000 + sDate.Year, sTime.Hours, sTime.Minutes,
@@ -111,4 +112,20 @@ UF_STATUS RTC_setDateTime(const char *datetime) {
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK) return UF_ERROR;
 
   return UF_OK;
+}
+
+void RTC_handleCli(const char *args, char *responseBuffer) {
+  // Check if args is empty or contains only whitespace
+  while (*args && isspace((unsigned char)*args)) args++;
+
+  if (*args == '\0') {
+    // Getter: Show current date and time
+    char datetime[20];
+    RTC_getDateTime(datetime);
+    sprintf(responseBuffer, "Date/Time: %s%s", datetime, ok);
+  } else {
+    // Setter: Set new date and time
+    RTC_setDateTime(args);
+    sprintf(responseBuffer, "Date and Time set...%s", ok);
+  }
 }

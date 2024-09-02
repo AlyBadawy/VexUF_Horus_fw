@@ -110,7 +110,6 @@ int main(void) {
     Enable indicators for the duration of the startup routine.
     This makes sure that the initial WARN is turned on, and you
     can show the NO-CONF error sequence.
-    TODO: Review the need for this before release.
   */
   indConf.globalIndicatorEnabled = 1;
   indConf.sdCardIndicatorEnabled = 1;
@@ -162,30 +161,20 @@ int main(void) {
   if (CONFIG_getSpiConfiguration(&spiConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getOutputConf(&outputConf) == UF_ERROR) Error_Handler();
   if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
-  if (RTC_InitAlarms() == UF_ERROR) Error_Handler();
 
+  if (RTC_InitAlarms() == UF_ERROR) Error_Handler();
   if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
   if (ACT_Init() == UF_ERROR) Error_Handler();
   if (AVS_Init() == UF_ERROR) Error_Handler();
-
-  // TODO: Init Alarms
   if (TRIGS_Init() == UF_ERROR) Error_Handler();
-
-  CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
+  if (CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
+    Error_Handler();
   if (SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
     Error_Handler();
-
-  // TODO: change number of rows to as configured
-  LCD_Init();
+  if (LCD_Init() == UF_ERROR) Error_Handler();
 
   HAL_Delay(500);
   IND_BuzzOnStartUp();
-
-  // TODO: remove the following tests before release
-  // AVS_Test();
-  // ACTUATORS_Test();
-  // I2C_ScanTest();
-  // END OF TESTS
 
   HAL_Delay(500);
 
@@ -209,10 +198,7 @@ int main(void) {
     }
 
     if (vexufStatus.tncBuffered == 1) {
-      if (CLI_handleCommand(TNC) == UF_ERROR) {
-        // todo: handle error
-      }
-
+      // TODO: handle TNC buffer
       vexufStatus.ttlBuffered = 0;
     }
 
@@ -234,8 +220,8 @@ int main(void) {
 
     // Run this routine every 10s
     if (vexufStatus.timer_0d1hz_ticked == 1) {
+      TEMPERATURE_getCpuTempC();
       TEMPERATURE_getInternalTempC();
-      // TODO: Run AHT20 Scan
       TRIGS_runAll();
       vexufStatus.timer_0d1hz_ticked = 0;
     }

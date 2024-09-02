@@ -19,6 +19,7 @@
 #include "vexuf_serial.h"
 
 #include "vexuf_config.h"
+#include "vexuf_tnc.h"
 
 /* TypeDef -------------------------------------------------------------------*/
 static UART_HandleTypeDef *ttlUart;
@@ -61,43 +62,82 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
         HAL_OK) {
       return UF_ERROR;
     }
+    TNC_init(tncUart);
   }
   return UF_OK;
 }
 
 UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, SerialBaudRate baud) {
+  // TODO: is this working?
   uint32_t newBaudRate = 0;
-  switch (baud) {
-    case Baud300:
-      newBaudRate = 300;
-      break;
-    case Baud600:
-      newBaudRate = 600;
-      break;
-    case Baud1200:
-      newBaudRate = 1200;
-      break;
-    case Baud4800:
-      newBaudRate = 4800;
-      break;
-    case Baud9600:
-      newBaudRate = 9600;
-      break;
-    case Baud19200:
-      newBaudRate = 19200;
-      break;
-    case Baud57600:
-      newBaudRate = 57600;
-      break;
-    case Baud115200:
-    default:  // TODO: return uf_error if baud rate is not supported
-      newBaudRate = 115200;
-      break;
-  }
+  if (SERIAL_baudToInt(baud, &newBaudRate) != UF_OK) return UF_ERROR;
 
   huart->Init.BaudRate = newBaudRate;
   if (HAL_UART_Init(huart) != HAL_OK) return UF_ERROR;
 
+  return UF_OK;
+}
+
+UF_STATUS SERIAL_intToBaud(uint32_t baudInt, SerialBaudRate *baud) {
+  switch (baudInt) {
+    case 300:
+      *baud = Baud300;
+      break;
+    case 600:
+      *baud = Baud600;
+      break;
+    case 1200:
+      *baud = Baud1200;
+      break;
+    case 4800:
+      *baud = Baud4800;
+      break;
+    case 9600:
+      *baud = Baud9600;
+      break;
+    case 19200:
+      *baud = Baud19200;
+      break;
+    case 57600:
+      *baud = Baud57600;
+      break;
+    case 115200:
+      *baud = Baud115200;
+      break;
+    default:
+      return UF_ERROR;
+  }
+  return UF_OK;
+}
+
+UF_STATUS SERIAL_baudToInt(SerialBaudRate baud, uint32_t *baudInt) {
+  switch (baud) {
+    case Baud300:
+      *baudInt = 300;
+      break;
+    case Baud600:
+      *baudInt = 600;
+      break;
+    case Baud1200:
+      *baudInt = 1200;
+      break;
+    case Baud4800:
+      *baudInt = 4800;
+      break;
+    case Baud9600:
+      *baudInt = 9600;
+      break;
+    case Baud19200:
+      *baudInt = 19200;
+      break;
+    case Baud57600:
+      *baudInt = 57600;
+      break;
+    case Baud115200:
+    default:
+      *baudInt = 115200;
+      break;
+  }
   return UF_OK;
 }
 

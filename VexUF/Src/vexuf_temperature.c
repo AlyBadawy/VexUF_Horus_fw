@@ -31,6 +31,7 @@
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
+extern char *ok;
 
 /* Variables -----------------------------------------------------------------*/
 float cpuTempC = 0, internalTempC = 0;
@@ -59,8 +60,6 @@ UF_STATUS TEMPERATURE_getInternalTempC(void) {
 }
 
 void TEMPERATURE_handleCli(const char *args, char *responseBuffer) {
-  static char *ok = "\r\nOk!";
-
   if (strlen(args) == 0) {
     // TODO: logic to show all temperatures
   } else if ((strncmp(args, "internal", 8)) == 0) {

@@ -30,6 +30,8 @@ typedef struct {
 } SerialConfiguration;
 
 UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc);
+UF_STATUS SERIAL_baudToInt(SerialBaudRate baud, uint32_t *baudInt);
+UF_STATUS SERIAL_intToBaud(uint32_t baudInt, SerialBaudRate *baud);
 UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, SerialBaudRate baud);
 
 #endif  // VEXUF_SERIAL_H

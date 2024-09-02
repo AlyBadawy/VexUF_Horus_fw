@@ -99,12 +99,8 @@
 #define EEPROM_TRIG_SHIFT 16  // There are 25 triggers
 
 #define EEPROM_TNC_MESSAGE_ADDRESS 0x0270
-#define EEPROM_TNC_MESSAGE_LENGTH 32
-#define EEPROM_TNC_MESSAGE_COUNT 10
 
 #define EEPROM_TNC_PATH_ADDRESS 0x03B0
-#define EEPROM_TNC_PATH_LENGTH 16
-#define EEPROM_TNC_PATH_COUNT 5
 
 UF_STATUS CONFIG_IsConfigured(void);
 UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount);
