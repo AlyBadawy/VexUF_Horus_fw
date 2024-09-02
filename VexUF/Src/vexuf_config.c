@@ -620,10 +620,10 @@ UF_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx) {
   uint16_t buffer[EEPROM_TNC_PATH_LENGTH];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_TNC_PATH_ADDRESS + (EEPROM_TNC_PATH_LENGTH * idx), buffer,
-          EEPROM_TNC_MESSAGE_LENGTH) != UF_OK)
+          EEPROM_TNC_PATH_LENGTH) != UF_OK)
     return UF_ERROR;
 
-  for (int i = 0; i < EEPROM_TNC_MESSAGE_LENGTH; i++) {
+  for (int i = 0; i < EEPROM_TNC_PATH_LENGTH / 2; i++) {
     tncPath[2 * i] = (buffer[i] >> 8) & 0xFF;
     tncPath[2 * i + 1] = buffer[i] & 0xFF;
   }

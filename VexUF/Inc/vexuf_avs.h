@@ -32,4 +32,6 @@ UF_STATUS AVS_Scan(void);
 
 void AVS_Test(void);
 
+void AVS_handleCli(const char *args, char *responseBuffer);
+
 #endif /* INC_VEXUF_AVS_H_ */

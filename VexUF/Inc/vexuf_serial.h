@@ -6,7 +6,7 @@
 #define SERIAL_BUFFER_SIZE 1024
 
 typedef enum {
-  Baud300,
+  Baud300 = 0,
   Baud600,
   Baud1200,
   Baud4800,
@@ -14,7 +14,7 @@ typedef enum {
   Baud19200,
   Baud57600,
   Baud115200
-} BaudRate;
+} SerialBaudRate;
 
 typedef enum { TTL, TNC, CDC } SerialInterface;
 typedef enum { debugOnly, cliOnly, debugAndCli } TtlLogConfiguration;
@@ -22,14 +22,14 @@ typedef enum { debugOnly, cliOnly, debugAndCli } TtlLogConfiguration;
 typedef struct {
   uint16_t ttl_enabled : 1;
   uint16_t ttl_led_enabled : 1;
-  BaudRate ttl_baud : 4;
+  SerialBaudRate ttl_baud : 4;
   TtlLogConfiguration ttlConf : 3;
   uint16_t tnc_enabled : 1;
-  BaudRate tnc__baud : 4;
+  SerialBaudRate tnc__baud : 4;
   uint16_t reserved : 2;
 } SerialConfiguration;
 
 UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc);
-UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, BaudRate baud);
+UF_STATUS SERIAL_setBaudRate(UART_HandleTypeDef *huart, SerialBaudRate baud);
 
 #endif  // VEXUF_SERIAL_H

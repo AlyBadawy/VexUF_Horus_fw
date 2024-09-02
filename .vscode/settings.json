@@ -50,7 +50,8 @@
     "vexuf_spi.h": "c",
     "clock.h": "c",
     "vexuf_tnc.h": "c",
-    "vexuf_adc.h": "c"
+    "vexuf_adc.h": "c",
+    "stdlib.h": "c"
   },
   "cSpell.words": [
     "ABCDEFGHJKLMNPQRTUVWXYZ",

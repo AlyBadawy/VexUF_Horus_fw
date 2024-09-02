@@ -96,14 +96,15 @@ extern SpiConfiguration spiConf;
 extern char regNumber[REGISTRATION_NUMBER_LENGTH];
 extern char callsign[CALLSIGN_LENGTH];
 
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
+
 /* Variables -----------------------------------------------------------------*/
 
-/* Prototypes
-   ----------------------------------------------------------------*/
+/* Prototypes ----------------------------------------------------------------*/
 // Declare function prototypes here
 
-/* Code
-   ----------------------------------------------------------------------*/
+/* Code ----------------------------------------------------------------------*/
 int main(void) {
   /*
     Enable indicators for the duration of the startup routine.
@@ -171,7 +172,8 @@ int main(void) {
   if (TRIGS_Init() == UF_ERROR) Error_Handler();
 
   CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
-  SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
+  if (SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
+    Error_Handler();
 
   // TODO: change number of rows to as configured
   LCD_Init();
@@ -209,6 +211,7 @@ int main(void) {
       if (CLI_handleCommand(TNC) == UF_ERROR) {
         // todo: handle error
       }
+
       vexufStatus.ttlBuffered = 0;
     }
 
