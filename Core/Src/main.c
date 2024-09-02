@@ -182,9 +182,9 @@ int main(void) {
   IND_BuzzOnStartUp();
 
   // TODO: remove the following tests before release
-  AVS_Test();
-  ACTUATORS_Test();
-  I2C_ScanTest();
+  // AVS_Test();
+  // ACTUATORS_Test();
+  // I2C_ScanTest();
   // END OF TESTS
 
   HAL_Delay(500);
@@ -204,6 +204,7 @@ int main(void) {
       if (CLI_handleCommand(TTL) == UF_ERROR) {
         // todo: handle error
       }
+
       vexufStatus.ttlBuffered = 0;
     }
 

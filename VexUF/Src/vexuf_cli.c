@@ -114,6 +114,7 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
   memcpy(command, rxData, *rxIdx + 1);
 
   char tempCommand[SERIAL_BUFFER_SIZE];
+  memset(tempCommand, 0, sizeof(command));
   for (int i = 0; command[i] != '\0'; i++) {
     tempCommand[i] = tolower(command[i]);
   }
@@ -121,7 +122,7 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
   for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
     if (strncmp(tempCommand, commands[i].command_name,
                 strlen(commands[i].command_name)) == 0) {
-      char *args = command + strlen(commands[i].command_name);
+      char *args = tempCommand + strlen(commands[i].command_name);
       trim(&args);
       commands[i].handler(args);
     }
@@ -131,9 +132,11 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
   switch (interface) {
     case TTL:
       uartHandle = &ttlUart;
+      memset(ttlRxData, 0, sizeof(ttlRxData));
       break;
     case TNC:
       uartHandle = &tncUart;
+      memset(tncRxData, 0, sizeof(tncRxData));
       break;
     default:
       return UF_ERROR;

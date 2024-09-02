@@ -113,7 +113,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
     rxIdx = &tncRxIdx;
   }
 
-  if (rxData[size - 1] == '\r' || rxData[size - 1] == '\n' || size > 2) {
+  if (rxData[size - 1] == '\r' || rxData[size - 1] == '\n' || size >= 2) {
     huart == ttlUart ? (vexufStatus.ttlBuffered = 1)
                      : (vexufStatus.tncBuffered = 1);
   }
