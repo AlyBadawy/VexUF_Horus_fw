@@ -108,9 +108,9 @@ UF_STATUS SDCard_checkCard(void) {
       UF_STATUS status = SDCARD_hasEnoughSpace();
       if (status != UF_OK) return status;
       vexufStatus.sdCardError = 0;
-      return UF_OK;
     }
   }
+  return UF_OK;
 }
 UF_STATUS SDCARD_hasEnoughSpace(void) {
   float totalSize, freeSize;

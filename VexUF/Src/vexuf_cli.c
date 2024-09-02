@@ -123,7 +123,7 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
     if (strncmp(tempCommand, commands[i].command_name,
                 strlen(commands[i].command_name)) == 0) {
       char *args = tempCommand + strlen(commands[i].command_name);
-      trim(&args);
+      trim(args);
       commands[i].handler(args);
     }
   }

@@ -42,6 +42,7 @@ typedef enum {
 
 /* Extern Variables ----------------------------------------------------------*/
 extern IndConfiguration indConf;
+extern OutputConfiguration outputConf;
 
 /* Variables -----------------------------------------------------------------*/
 float AVsVoltages[NUMBER_OF_AVS];
@@ -54,7 +55,7 @@ static char *no = "\r\nNo!";
 /* Prototypes ----------------------------------------------------------------*/
 UF_STATUS AVS_rawToVoltage(float vref, uint32_t adcValue, float *voltValue);
 void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer);
-OptionStatus extractAvStatus(char *args, uint16_t *min, uint16_t *max);
+OptionStatus extractAvStatus(const char *args, uint16_t *min, uint16_t *max);
 void setResponseBuffer(char *responseBuffer, OptionStatus status);
 
 void setAvSensorStatus(AvSensor *av, uint8_t idx, uint16_t enable,
@@ -125,8 +126,8 @@ void AVS_handleCli(const char *args, char *responseBuffer) {
     return;
   } else if ((strncmp(args, "1", 1)) == 0 || (strncmp(args, "2", 1)) == 0 ||
              (strncmp(args, "3", 1)) == 0) {
-    char *avArgs = args + 1;  // Skip the first character
-    trim(&avArgs);
+    const char *avArgs = args + 1;  // Skip the first character
+    trim(avArgs);
     const char avIdxC = args[0];
     uint8_t avIdx = atoi(&avIdxC) - 1;  //
     handleCliForAv(avIdx, avArgs, responseBuffer);
@@ -254,8 +255,8 @@ void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer) {
       sprintf(responseBuffer, "AV%d is set to disabled.%s", idx + 1, ok);
       return;
     } else if (strncmp(args, rules[i].command, rules[i].commandLength) == 0) {
-      char *buffer = (char *)args + rules[i].commandLength;
-      trim(&buffer);
+      const char *buffer = (char *)args + rules[i].commandLength;
+      trim(buffer);
       if (strlen(buffer) == 0) {
         sprintf(responseBuffer, "AV%d %s rule is %s.", idx + 1,
                 rules[i].ruleType, av.enabled ? "enabled" : "disabled");
@@ -300,7 +301,7 @@ void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer) {
           "Error with AV command. Please use slow, fast, or on.%s", no);
 }
 
-OptionStatus extractAvStatus(char *args, uint16_t *min, uint16_t *max) {
+OptionStatus extractAvStatus(const char *args, uint16_t *min, uint16_t *max) {
   char *endptr;
   long tempMin, tempMax;
 
@@ -312,7 +313,7 @@ OptionStatus extractAvStatus(char *args, uint16_t *min, uint16_t *max) {
     return OPTION_ERROR_OUT_OF_RANGE;  // Number out of range
   *min = (uint16_t)tempMin;
 
-  trim(&endptr);  // Trim remaining string after first number
+  trim(endptr);  // Trim remaining string after first number
 
   // Check if there's another number
   if (*endptr == '\0')
@@ -332,7 +333,6 @@ void setResponseBuffer(char *responseBuffer, OptionStatus status) {
   static char *no = "\r\nNo!";
   switch (status) {
     case OPTION_SUCCESS:
-      sprintf(responseBuffer, "\r\nSuccess!");
       break;
     case OPTION_ERROR_INVALID_FORMAT:
       sprintf(responseBuffer,
