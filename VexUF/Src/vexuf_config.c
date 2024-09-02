@@ -584,62 +584,62 @@ UF_STATUS CONFIG_setTrigConf(const TriggerConfiguration* trigConf,
 }
 
 UF_STATUS CONFIG_getTncMessage(char* message, uint8_t idx) {
-  if (idx >= EEPROM_TNC_MESSAGE_COUNT) return UF_ERROR;
+  if (idx >= TNC_MESSAGE_COUNT / 2) return UF_ERROR;
 
-  uint16_t buffer[EEPROM_TNC_MESSAGE_LENGTH];
+  uint16_t buffer[TNC_MESSAGE_LENGTH / 2];
   if (EEPROM_93C86_ReadMultipleWords(
-          EEPROM_TNC_MESSAGE_ADDRESS + (EEPROM_TNC_MESSAGE_LENGTH * idx),
-          buffer, EEPROM_TNC_MESSAGE_LENGTH) != UF_OK)
+          EEPROM_TNC_MESSAGE_ADDRESS + ((TNC_MESSAGE_LENGTH / 2) * idx), buffer,
+          TNC_MESSAGE_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
-  for (int i = 0; i < EEPROM_TNC_MESSAGE_LENGTH; i++) {
+  for (int i = 0; i < TNC_MESSAGE_LENGTH / 2; i++) {
     message[2 * i] = (buffer[i] >> 8) & 0xFF;
     message[2 * i + 1] = buffer[i] & 0xFF;
   }
   return UF_OK;
 }
 UF_STATUS CONFIG_setTncMessage(const char* message, uint8_t idx) {
-  if (idx >= EEPROM_TNC_MESSAGE_COUNT) return UF_ERROR;
+  if (idx >= TNC_MESSAGE_COUNT / 2) return UF_ERROR;
 
-  uint16_t buffer[EEPROM_TNC_MESSAGE_LENGTH];
-  for (int i = 0; i < EEPROM_TNC_MESSAGE_LENGTH; i++) {
+  uint16_t buffer[TNC_MESSAGE_LENGTH / 2];
+  for (int i = 0; i < TNC_MESSAGE_LENGTH / 2; i++) {
     buffer[i] = (message[2 * i] & 0xFF) << 8 | ((message[2 * i + 1] & 0xFF));
   }
 
   if (EEPROM_93C86_WriteMultipleWords(
-          EEPROM_TNC_MESSAGE_ADDRESS + (EEPROM_TNC_MESSAGE_LENGTH * idx),
-          buffer, EEPROM_TNC_MESSAGE_LENGTH) != UF_OK)
+          EEPROM_TNC_MESSAGE_ADDRESS + ((TNC_MESSAGE_LENGTH / 2) * idx), buffer,
+          TNC_MESSAGE_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
 }
 
 UF_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx) {
-  if (idx >= EEPROM_TNC_PATH_COUNT) return UF_ERROR;
+  if (idx >= TNC_PATH_COUNT / 2) return UF_ERROR;
 
-  uint16_t buffer[EEPROM_TNC_PATH_LENGTH];
+  uint16_t buffer[TNC_PATH_LENGTH / 2];
   if (EEPROM_93C86_ReadMultipleWords(
-          EEPROM_TNC_PATH_ADDRESS + (EEPROM_TNC_PATH_LENGTH * idx), buffer,
-          EEPROM_TNC_PATH_LENGTH) != UF_OK)
+          EEPROM_TNC_PATH_ADDRESS + ((TNC_PATH_LENGTH / 2) * idx), buffer,
+          TNC_PATH_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
-  for (int i = 0; i < EEPROM_TNC_PATH_LENGTH / 2; i++) {
+  for (int i = 0; i < TNC_PATH_LENGTH / 2; i++) {
     tncPath[2 * i] = (buffer[i] >> 8) & 0xFF;
     tncPath[2 * i + 1] = buffer[i] & 0xFF;
   }
   return UF_OK;
 }
 UF_STATUS CONFIG_setTncPath(const char* tncPath, uint8_t idx) {
-  if (idx >= EEPROM_TNC_PATH_COUNT) return UF_ERROR;
+  if (idx >= TNC_PATH_COUNT / 2) return UF_ERROR;
 
-  uint16_t buffer[EEPROM_TNC_PATH_LENGTH];
-  for (int i = 0; i < EEPROM_TNC_PATH_LENGTH; i++) {
+  uint16_t buffer[TNC_PATH_LENGTH / 2];
+  for (int i = 0; i < TNC_PATH_LENGTH / 2; i++) {
     buffer[i] = (tncPath[2 * i] & 0xFF) << 8 | ((tncPath[2 * i + 1] & 0xFF));
   }
 
   if (EEPROM_93C86_WriteMultipleWords(
-          EEPROM_TNC_PATH_ADDRESS + (EEPROM_TNC_PATH_LENGTH * idx), buffer,
-          EEPROM_TNC_PATH_LENGTH) != UF_OK)
+          EEPROM_TNC_PATH_ADDRESS + ((TNC_PATH_LENGTH / 2) * idx), buffer,
+          TNC_PATH_LENGTH / 2) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;

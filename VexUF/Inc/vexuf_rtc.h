@@ -23,4 +23,6 @@ UF_STATUS RTC_InitAlarms(void);
 UF_STATUS RTC_getDateTime(char *datetime);
 UF_STATUS RTC_setDateTime(const char *datetime);
 
+void RTC_handleCli(const char *args, char *responseBuffer);
+
 #endif  // VEXUF_RTC_H

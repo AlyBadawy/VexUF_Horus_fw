@@ -19,6 +19,7 @@
 #include "vexuf.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "vexuf_config.h"
 
@@ -76,7 +77,7 @@ void base32_encode(const uint8_t *data, size_t length, char *output) {
 void VexUF_GenerateSerialNumber(char *serialNumberString) {
   uint32_t uid[3] = {HAL_GetUIDw2(), HAL_GetUIDw1(), HAL_GetUIDw0()};
   uint8_t uid_bytes[12];
-  char serial[20];
+  char serial[24];
 
   for (int i = 0; i < 3; ++i) {
     uid_bytes[4 * i + 0] = (uid[i] >> 24) & 0xFF;
@@ -96,28 +97,38 @@ void VexUF_GenerateSerialNumber(char *serialNumberString) {
 }
 
 char *trim(const char *str) {
+  // Check if the string is NULL or empty
+  if (!str || *str == '\0') {
+    return (char *)str;
+  }
+
+  // Pointer to the start of the string
+  const char *start = str;
+
   // Skip leading spaces
-  while (*str && isspace((unsigned char)*str)) str++;
+  while (*start && isspace((unsigned char)*start)) start++;
 
   // If the string is all spaces or empty
-  if (*str == '\0') {
-    return strdup("");  // Return an empty string
+  if (*start == '\0') {
+    return (char *)start;  // Return pointer to the end of the string
   }
 
   // Find the last non-space character
-  const char *end = str + strlen(str) - 1;
-  while (end > str && isspace((unsigned char)*end)) end--;
+  const char *end = start + strlen(start) - 1;
+  while (end > start && isspace((unsigned char)*end)) end--;
 
-  // Allocate space for the trimmed string
-  size_t length = end - str + 1;
-  char *trimmed = (char *)malloc(length + 1);
-  if (!trimmed) {
-    return NULL;  // Handle memory allocation failure
+  // Calculate the length of the trimmed string
+  size_t length = end - start + 1;
+
+  // Create a static buffer to hold the trimmed result
+  static char trimmedBuffer[1024];
+  if (length >= sizeof(trimmedBuffer)) {
+    length = sizeof(trimmedBuffer) - 1;  // Ensure it fits in the buffer
   }
 
-  // Copy the trimmed content into the new string
-  strncpy(trimmed, str, length);
-  trimmed[length] = '\0';  // Null-terminate the trimmed string
+  // Copy the trimmed content into the buffer
+  strncpy(trimmedBuffer, start, length);
+  trimmedBuffer[length] = '\0';  // Null-terminate the trimmed string
 
-  return trimmed;
+  return trimmedBuffer;
 }

@@ -18,6 +18,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "vexuf_trigs.h"
 
+#include "vexuf_config.h"
+
 /* TypeDef -------------------------------------------------------------------*/
 
 /* Defines -------------------------------------------------------------------*/
@@ -100,19 +102,19 @@ UF_STATUS TRIGS_checkTriggerRule(TrigComparison comparison,
     case trigDisabled:
       return UF_DISABLED;
     case Av1ToAv2:
-      return TRIGS_compare(AVsRawValues[1], test, AVsRawValues[2], 0);
+      return TRIGS_compare(AVsRawValues[0], test, AVsRawValues[1], 0);
     case Av2ToAv3:
-      return TRIGS_compare(AVsRawValues[2], test, AVsRawValues[3], 0);
+      return TRIGS_compare(AVsRawValues[1], test, AVsRawValues[2], 0);
     case Av1ToAv3:
-      return TRIGS_compare(AVsRawValues[1], test, AVsRawValues[3], 0);
+      return TRIGS_compare(AVsRawValues[0], test, AVsRawValues[2], 0);
     case IntTempToExternal:
       return UF_DISABLED;  // TODO: IMPLEMENT TEMP.
     case Av1ToTest:
-      return TRIGS_compare(AVsRawValues[1], test, fromValue, toValue);
+      return TRIGS_compare(AVsRawValues[0], test, fromValue, toValue);
     case Av2ToTest:
-      return TRIGS_compare(AVsRawValues[2], test, fromValue, toValue);
+      return TRIGS_compare(AVsRawValues[1], test, fromValue, toValue);
     case Av3ToTest:
-      return TRIGS_compare(AVsRawValues[3], test, fromValue, toValue);
+      return TRIGS_compare(AVsRawValues[2], test, fromValue, toValue);
     case IntTempToTest:
       return UF_DISABLED;  // TODO: IMPLEMENT TEMP.
     case ExtTempToTest:

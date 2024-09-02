@@ -55,33 +55,42 @@ extern IndConfiguration indConf;
 /* Variables -----------------------------------------------------------------*/
 static char serialTxBuffer[SERIAL_BUFFER_SIZE];
 static char *prompt = "\r\nVexUF:Horus >";
-static char *ok = "\r\nOk!";
+
+char *ok = "\r\nOk!";
+char *no = "\r\nNo!";
 
 /* Prototypes ----------------------------------------------------------------*/
-void handle_get_callsign(const char *args);
-void handle_set_callsign(const char *args);
-void handle_get_temperature(const char *args);
-void handle_get_time(const char *args);
-void handle_set_time(const char *args);
+void handle_temperature(const char *args);
+void handle_time(const char *args);
 void handle_buzzer(const char *args);
 void handle_avs(const char *args);
+void handle_tnc(const char *args);
+void handle_help(const char *args);
 
 /* Code ----------------------------------------------------------------------*/
 
 const Command commands[] = {
-    {"get callsign", handle_get_callsign},
-    {"set callsign", handle_set_callsign},
-    {"get temperature", handle_get_temperature},
-    {"get time", handle_get_time},
-    {"set time", handle_set_time},
+    {"time", handle_time},
+    {"temperature", handle_temperature},
     {"buzzer", handle_buzzer},
     {"av", handle_avs},
+    {"tnc", handle_tnc},
+    {"help", handle_help}
     // ... add more commands as needed ...
 };
 
-void CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
+UF_STATUS CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
   ttlUart = *ttl;
   tncUart = *tnc;
+
+  if (HAL_UART_Transmit(&ttlUart, (uint8_t *)prompt, strlen(prompt), 200) !=
+      HAL_OK)
+    return UF_ERROR;
+  if (HAL_UART_Transmit(&tncUart, (uint8_t *)prompt, strlen(prompt), 200) !=
+      HAL_OK)
+    return UF_ERROR;
+
+  return UF_OK;
 }
 
 UF_STATUS CLI_handleCommand(const SerialInterface interface) {
@@ -118,16 +127,20 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
   for (int i = 0; command[i] != '\0'; i++) {
     tempCommand[i] = tolower(command[i]);
   }
-
+  uint8_t found = 0;
   for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
     if (strncmp(tempCommand, commands[i].command_name,
                 strlen(commands[i].command_name)) == 0) {
       char *args = tempCommand + strlen(commands[i].command_name);
-      trim(args);
+      args = trim(args);
+      found = 1;
       commands[i].handler(args);
     }
   }
-  // TODO: handle unknown commands
+  if (found == 0 && strlen(tempCommand) > 0) {
+    sprintf(serialTxBuffer,
+            "Unknown command. Use 'help' to list all commands.%s", no);
+  }
 
   switch (interface) {
     case TTL:
@@ -156,31 +169,96 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
 }
 
 /* Private Methods -----------------------------------------------------------*/
-
-void handle_get_time(const char *args) {
-  UNUSED(args);
-  char datetime[20];
-  RTC_getDateTime(datetime);
-  sprintf(serialTxBuffer, "Date/Time: %s%s", datetime, ok);
-}
-void handle_set_time(const char *args) {
-  RTC_setDateTime(args);
-  sprintf(serialTxBuffer, "Date and Time set...%s", ok);
-}
-
-void handle_get_callsign(const char *args) {
-  UNUSED(args);
-  char callsignBuffer[CALLSIGN_LENGTH];
-  CONFIG_getCallSign(callsignBuffer);
-  sprintf(serialTxBuffer, "Callsign: %s%s", callsignBuffer, ok);
-}
-void handle_set_callsign(const char *args) {
-  CONFIG_setCallSign(args);
-  sprintf(serialTxBuffer, "%s", ok);
-}
-
+void handle_time(const char *args) { RTC_handleCli(args, serialTxBuffer); }
 void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
 void handle_avs(const char *args) { AVS_handleCli(args, serialTxBuffer); }
-void handle_get_temperature(const char *args) {
+void handle_tnc(const char *args) { TNC_handleCli(args, serialTxBuffer); }
+void handle_temperature(const char *args) {
   TEMPERATURE_handleCli(args, serialTxBuffer);
+}
+
+void handle_help(const char *args) {
+  // Array of command details to provide specific help
+  const char *command_help[] = {
+      "Time: Manage date and time.\r\n"
+      "  - Use 'Time' to display the current date and time.\r\n"
+      "  - Use 'Time <date> <time>' to set the current date and time.\r\n"
+      "    Example: 'Time 2024-09-02 14:30:00' sets the date and time.\r\n",
+
+      "Temperature: Manage temperature sensors.\r\n"
+      "  - Use 'Temperature' to get readings from all sensors.\r\n"
+      "  - Use 'Temperature CPU' to get the CPU temperature.\r\n"
+      "  - Use 'Temperature Internal' to get the internal sensor's temperature "
+      "and humidity.\r\n"
+      "  - Use 'Temperature External' to get the external I2C sensor's "
+      "temperature and humidity.\r\n",
+
+      "Buzzer: Control the buzzer functionality.\r\n"
+      "  - Use 'Buzzer <enable|disable>' to enable or disable the buzzer.\r\n"
+      "  - Use 'Buzzer start beep <on/off>' to enable/disable the start-up  "
+      "beep.\r\n"
+      "  - Use 'Buzzer error <on|off>' to enable/disable sounding the buzzer "
+      "on "
+      "errors.\r\n",
+
+      "AV: Manage AV peripherals.\r\n"
+      "  - Use 'AV' to show statuses of all AVs.\r\n"
+      "  - Use 'AV <n>' where <n> is 1, 2, or 3 to get details about a "
+      "specific AV.\r\n"
+      "  - Use 'AV <n> <enable|disable>' to enable or disable a specific "
+      "AV.\r\n"
+      "  - Use 'AV <n> <slow|fast|on> <enable|disable>' to control LED "
+      "blinking "
+      "rules.\r\n"
+      "  - Use 'AV <n> <slow|fast|on> <min> <max>' to set min and max values "
+      "for "
+      "blinking rules.\r\n",
+
+      "TNC: Manage TNC.\r\n"
+      "  - Use 'TNC callsign' to get current callsign.\r\n"
+      "  - Use 'TNC callsign <new_callsign>' to set the callsign.\r\n"
+      "  - Use 'TNC baud' to get current Baud rate for the TNC interface.\r\n"
+      "  - Use 'TNC baud <baud_rate>' to set the Baud rate.\r\n"
+      "    Available rates: 300, 600, 1200, 4800, 9600, 19200, 57600, "
+      "115200.\r\n"
+      "  - Use 'TNC message <n>' to get a message. <n> is between 0 to 9.\r\n"
+      "  - Use 'TNC message <n> <message>' to set a message.\r\n"
+      "  - Use 'TNC path <n>' to get a path. <n> is between 0 to 4.\r\n"
+      "  - Use 'TNC path <n> <path>' to set a path.\r\n",
+
+      "Help: Shows the list of available commands or help for a specific "
+      "command.\r\n"
+      "  - Use 'help' to list all available commands.\r\n"
+      "  - Use 'help <command>' to get detailed help for a specific "
+      "command.\r\n"};
+
+  // Check if args is empty
+  if (strlen(args) == 0) {
+    sprintf(serialTxBuffer, "\r\nAvailable commands:\r\n");
+    for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
+      sprintf(serialTxBuffer + strlen(serialTxBuffer), "  - %s\r\n",
+              commands[i].command_name);
+    }
+    sprintf(serialTxBuffer + strlen(serialTxBuffer),
+            "\r\nUse 'help <command>' for more information.\r\n");
+    sprintf(serialTxBuffer + strlen(serialTxBuffer), "\r\nOk!\r\n");
+  } else {
+    // Search for the command in the commands array
+    uint8_t found = 0;
+    for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
+      if (strcasecmp(args, commands[i].command_name) == 0) {
+        // Found the command, provide detailed help
+        sprintf(serialTxBuffer, "\r\nHelp for '%s':\r\n%s\r\n",
+                commands[i].command_name, command_help[i]);
+        found = 1;
+        break;
+      }
+    }
+    if (found == 0) {
+      // Command not found
+      sprintf(serialTxBuffer,
+              "Unknown command '%s'. Use 'help' to list all commands.\r\n",
+              args);
+    }
+  }
 }

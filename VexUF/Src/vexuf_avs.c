@@ -43,14 +43,13 @@ typedef enum {
 /* Extern Variables ----------------------------------------------------------*/
 extern IndConfiguration indConf;
 extern OutputConfiguration outputConf;
+extern char *ok;
+extern char *no;
 
 /* Variables -----------------------------------------------------------------*/
 float AVsVoltages[NUMBER_OF_AVS];
 uint32_t AVsRawValues[NUMBER_OF_AVS];
 AvSensor avSensors[NUMBER_OF_AVS];
-
-static char *ok = "\r\nOk!";
-static char *no = "\r\nNo!";
 
 /* Prototypes ----------------------------------------------------------------*/
 UF_STATUS AVS_rawToVoltage(float vref, uint32_t adcValue, float *voltValue);
@@ -126,10 +125,9 @@ void AVS_handleCli(const char *args, char *responseBuffer) {
     return;
   } else if ((strncmp(args, "1", 1)) == 0 || (strncmp(args, "2", 1)) == 0 ||
              (strncmp(args, "3", 1)) == 0) {
-    const char *avArgs = args + 1;  // Skip the first character
-    trim(avArgs);
     const char avIdxC = args[0];
     uint8_t avIdx = atoi(&avIdxC) - 1;  //
+    const char *avArgs = trim(&args[1]);
     handleCliForAv(avIdx, avArgs, responseBuffer);
   } else {
     sprintf(responseBuffer, "Invalid AV number. Please use 1, 2, or 3%s", no);
@@ -255,8 +253,12 @@ void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer) {
       sprintf(responseBuffer, "AV%d is set to disabled.%s", idx + 1, ok);
       return;
     } else if (strncmp(args, rules[i].command, rules[i].commandLength) == 0) {
-      const char *buffer = (char *)args + rules[i].commandLength;
-      trim(buffer);
+      if (av.enabled != 1) {
+        sprintf(responseBuffer, "AV%d %s rule is disabled.", idx + 1,
+                rules[i].ruleType);
+        return;
+      }
+      const char *buffer = trim((char *)args + rules[i].commandLength);
       if (strlen(buffer) == 0) {
         sprintf(responseBuffer, "AV%d %s rule is %s.", idx + 1,
                 rules[i].ruleType, av.enabled ? "enabled" : "disabled");
@@ -313,7 +315,7 @@ OptionStatus extractAvStatus(const char *args, uint16_t *min, uint16_t *max) {
     return OPTION_ERROR_OUT_OF_RANGE;  // Number out of range
   *min = (uint16_t)tempMin;
 
-  trim(endptr);  // Trim remaining string after first number
+  endptr = trim(endptr);  // Trim remaining string after first number
 
   // Check if there's another number
   if (*endptr == '\0')
