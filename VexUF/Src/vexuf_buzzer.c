@@ -80,17 +80,37 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
     setResponse("", 0, responseBuffer);
   } else if (strncmp(args, startBeepStr, 10) == 0) {
     if (newIndConfig.buzzerEnabled) {
-      newIndConfig.buzzer1sEnabled = strncmp(args + 11, "on", 2) == 0 ? 1 : 0;
-      CONFIG_setIndicatorsConf(&newIndConfig);
-      setResponse(startBeepStr, newIndConfig.buzzer1sEnabled, responseBuffer);
+      if (strncmp(args + 11, "on", 2) == 0) {
+        newIndConfig.buzzer1sEnabled = 1;
+        CONFIG_setIndicatorsConf(&newIndConfig);
+        setResponse(startBeepStr, newIndConfig.buzzer1sEnabled, responseBuffer);
+      } else if (strncmp(args + 11, "off", 3) == 0) {
+        newIndConfig.buzzer1sEnabled = 0;
+        CONFIG_setIndicatorsConf(&newIndConfig);
+        setResponse(startBeepStr, newIndConfig.buzzer1sEnabled, responseBuffer);
+      } else {
+        sprintf(responseBuffer,
+                "Incorrect parameter. Use 'Buzzer start beep <on|off>'.%s", no);
+      }
     } else {
       sprintf(responseBuffer, "%s%s", buzzerDisabled, no);
     }
   } else if (strncmp(args, "error", 5) == 0) {
     if (newIndConfig.buzzerEnabled) {
-      newIndConfig.buzzerHoldOnError = strncmp(args + 6, "on", 2) == 0 ? 1 : 0;
-      CONFIG_setIndicatorsConf(&newIndConfig);
-      setResponse(errorStr, newIndConfig.buzzerHoldOnError, responseBuffer);
+      if (strncmp(args + 11, "on", 2) == 0) {
+        newIndConfig.buzzerHoldOnError = 1;
+        CONFIG_setIndicatorsConf(&newIndConfig);
+        setResponse(startBeepStr, newIndConfig.buzzerHoldOnError,
+                    responseBuffer);
+      } else if (strncmp(args + 11, "off", 3) == 0) {
+        newIndConfig.buzzer1sEnabled = 0;
+        CONFIG_setIndicatorsConf(&newIndConfig);
+        setResponse(startBeepStr, newIndConfig.buzzerHoldOnError,
+                    responseBuffer);
+      } else {
+        sprintf(responseBuffer,
+                "Incorrect parameter. Use 'Buzzer error <on|off>'.%s", no);
+      }
     } else {
       sprintf(responseBuffer, "%s%s", buzzerDisabled, no);
     }
@@ -109,6 +129,6 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
 
 /* Private Methods -----------------------------------------------------------*/
 void setResponse(const char *feature, uint8_t enabled, char *responseBuffer) {
-  sprintf(responseBuffer, "%s %s%s%s", buzzerStr, feature,
+  sprintf(responseBuffer, "%s %s %s%s", buzzerStr, feature,
           enabled ? enabledStr : disabledStr, ok);
 }

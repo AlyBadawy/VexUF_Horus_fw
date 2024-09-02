@@ -70,11 +70,11 @@ void handle_help(const char *args);
 /* Code ----------------------------------------------------------------------*/
 
 const Command commands[] = {
-    {"tnc", handle_tnc},
-    {"temperature", handle_temperature},
     {"time", handle_time},
+    {"temperature", handle_temperature},
     {"buzzer", handle_buzzer},
     {"av", handle_avs},
+    {"tnc", handle_tnc},
     {"help", handle_help}
     // ... add more commands as needed ...
 };
@@ -127,16 +127,20 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
   for (int i = 0; command[i] != '\0'; i++) {
     tempCommand[i] = tolower(command[i]);
   }
-
+  uint8_t found = 0;
   for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
     if (strncmp(tempCommand, commands[i].command_name,
                 strlen(commands[i].command_name)) == 0) {
       char *args = tempCommand + strlen(commands[i].command_name);
       args = trim(args);
+      found = 1;
       commands[i].handler(args);
     }
   }
-  // TODO: handle unknown commands
+  if (found == 0 && strlen(tempCommand) > 0) {
+    sprintf(serialTxBuffer,
+            "Unknown command. Use 'help' to list all commands.%s", no);
+  }
 
   switch (interface) {
     case TTL:
@@ -176,17 +180,10 @@ void handle_temperature(const char *args) {
 void handle_help(const char *args) {
   // Array of command details to provide specific help
   const char *command_help[] = {
-      "TNC: Manage TNC.\r\n"
-      "  - Use 'TNC callsign' to get current callsign.\r\n"
-      "  - Use 'TNC callsign <new_callsign>' to set the callsign.\r\n"
-      "  - Use 'TNC baud' to get current Baud rate for the TNC interface.\r\n"
-      "  - Use 'TNC baud <baud_rate>' to set the Baud rate.\r\n"
-      "    Available rates: 300, 600, 1200, 4800, 9600, 19200, 57600, "
-      "115200.\r\n"
-      "  - Use 'TNC message <n>' to get a message. <n> is between 0 to 9.\r\n"
-      "  - Use 'TNC message <n> <message>' to set a message.\r\n"
-      "  - Use 'TNC path <n>' to get a path. <n> is between 0 to 4.\r\n"
-      "  - Use 'TNC path <n> <path>' to set a path.\r\n",
+      "Time: Manage date and time.\r\n"
+      "  - Use 'Time' to display the current date and time.\r\n"
+      "  - Use 'Time <date> <time>' to set the current date and time.\r\n"
+      "    Example: 'Time 2024-09-02 14:30:00' sets the date and time.\r\n",
 
       "Temperature: Manage temperature sensors.\r\n"
       "  - Use 'Temperature' to get readings from all sensors.\r\n"
@@ -196,17 +193,12 @@ void handle_help(const char *args) {
       "  - Use 'Temperature External' to get the external I2C sensor's "
       "temperature and humidity.\r\n",
 
-      "Time: Manage date and time.\r\n"
-      "  - Use 'Time' to display the current date and time.\r\n"
-      "  - Use 'Time <date> <time>' to set the current date and time.\r\n"
-      "    Example: 'Time 2024-09-02 14:30:00' sets the date and time.\r\n",
-
       "Buzzer: Control the buzzer functionality.\r\n"
-      "  - Use 'Buzzer enable' to enable the buzzer.\r\n"
-      "  - Use 'Buzzer disable' to disable the buzzer.\r\n"
-      "  - Use 'Buzzer start beep on/off' to enable/disable the start-up  "
+      "  - Use 'Buzzer <enable|disable>' to enable or disable the buzzer.\r\n"
+      "  - Use 'Buzzer start beep <on/off>' to enable/disable the start-up  "
       "beep.\r\n"
-      "  - Use 'Buzzer error on/off' to enable/disable sounding the buzzer on "
+      "  - Use 'Buzzer error <on|off>' to enable/disable sounding the buzzer "
+      "on "
       "errors.\r\n",
 
       "AV: Manage AV peripherals.\r\n"
@@ -221,6 +213,18 @@ void handle_help(const char *args) {
       "  - Use 'AV <n> <slow|fast|on> <min> <max>' to set min and max values "
       "for "
       "blinking rules.\r\n",
+
+      "TNC: Manage TNC.\r\n"
+      "  - Use 'TNC callsign' to get current callsign.\r\n"
+      "  - Use 'TNC callsign <new_callsign>' to set the callsign.\r\n"
+      "  - Use 'TNC baud' to get current Baud rate for the TNC interface.\r\n"
+      "  - Use 'TNC baud <baud_rate>' to set the Baud rate.\r\n"
+      "    Available rates: 300, 600, 1200, 4800, 9600, 19200, 57600, "
+      "115200.\r\n"
+      "  - Use 'TNC message <n>' to get a message. <n> is between 0 to 9.\r\n"
+      "  - Use 'TNC message <n> <message>' to set a message.\r\n"
+      "  - Use 'TNC path <n>' to get a path. <n> is between 0 to 4.\r\n"
+      "  - Use 'TNC path <n> <path>' to set a path.\r\n",
 
       "Help: Shows the list of available commands or help for a specific "
       "command.\r\n"
@@ -253,7 +257,7 @@ void handle_help(const char *args) {
     if (found == 0) {
       // Command not found
       sprintf(serialTxBuffer,
-              "\r\nUnknown command '%s'. Use 'help' to list all commands.\r\n",
+              "Unknown command '%s'. Use 'help' to list all commands.\r\n",
               args);
     }
   }

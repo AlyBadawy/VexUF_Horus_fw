@@ -61,7 +61,15 @@ UF_STATUS TEMPERATURE_getInternalTempC(void) {
 
 void TEMPERATURE_handleCli(const char *args, char *responseBuffer) {
   if (strlen(args) == 0) {
-    // TODO: logic to show all temperatures
+    TEMPERATURE_getCpuTempC();
+    TEMPERATURE_getInternalTempC();
+    sprintf(responseBuffer,
+            "Temperature (CPU): %0.2fC (%0.2fF)\r\n"
+            "Temperature (Internal): %0.2fC (%0.2fF) - Humidity: %0.2f%%\r\n"
+            "Temperature (External): not configured"
+            "%s",
+            cpuTempC, TEMPERATURE_cToF(cpuTempC), internalTempC,
+            TEMPERATURE_cToF(internalTempC), internalHumidity, ok);
   } else if ((strncmp(args, "internal", 8)) == 0) {
     TEMPERATURE_getInternalTempC();
     sprintf(responseBuffer,
@@ -69,7 +77,7 @@ void TEMPERATURE_handleCli(const char *args, char *responseBuffer) {
             internalTempC, TEMPERATURE_cToF(internalTempC), internalHumidity,
             ok);
   } else if ((strncmp(args, "external", 8)) == 0) {
-    // TODO: implement external temperature
+    sprintf(responseBuffer, "Temperature (External): not configured%s", ok);
   } else if ((strncmp(args, "cpu", 3)) == 0) {
     TEMPERATURE_getCpuTempC();  // todo: implement this function
     sprintf(responseBuffer, "Temperature (CPU): %0.2fC (%0.2fF)%s", cpuTempC,
