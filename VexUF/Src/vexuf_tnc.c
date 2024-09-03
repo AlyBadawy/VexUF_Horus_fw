@@ -216,19 +216,6 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
           }
         }
       }
-    } else if (strncmp(args, "help", 4) == 0) {
-      sprintf(responseBuffer,
-              "TNC Commands:\r\n"
-              "  enable\r\n"
-              "  disable\r\n"
-              "  callsign [callsign]\r\n"
-              "  baud [baud rate]\r\n"
-              "  message [1-10]\r\n"
-              "  message [1-10] [message]\r\n"
-              "  path [1-5]\r\n"
-              "  path [1-5] [path]\r\n"
-              "  help%s",
-              ok);
     } else {
       sprintf(responseBuffer, "Invalid command. use `help TNC` for help.%s",
               no);

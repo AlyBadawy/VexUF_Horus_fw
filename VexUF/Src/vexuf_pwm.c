@@ -18,6 +18,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "vexuf_pwm.h"
 
+#include <ctype.h>
+#include <stdlib.h>
+
+#include "vexuf_config.h"
+
 /* TypeDef -------------------------------------------------------------------*/
 static TIM_HandleTypeDef *pwm1Timer;
 static TIM_HandleTypeDef *pwm2Timer;
@@ -27,6 +32,8 @@ static TIM_HandleTypeDef *pwm2Timer;
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
+extern char *ok;
+extern char *no;
 
 /* Variables -----------------------------------------------------------------*/
 PwmConfiguration pwmConfig;
@@ -36,19 +43,17 @@ UF_STATUS PWM_Start(PwmChannel channel);
 UF_STATUS PWM_Stop(PwmChannel channel);
 
 /* Code ----------------------------------------------------------------------*/
-
-/* Private Methods -----------------------------------------------------------*/
-
 UF_STATUS PWM_init(TIM_HandleTypeDef *pwm1, TIM_HandleTypeDef *pwm2) {
   pwm1Timer = pwm1;
   pwm2Timer = pwm2;
 
-  if (pwmConfig.pwm1Enabled == 1 && pwmConfig.pwm1Value <= 1000) {
+  if (pwmConfig.pwm1Enabled == 1 && pwmConfig.pwm1Value < 1000) {
     if (PWM_Start(PwmChannel1) == UF_ERROR) return UF_ERROR;
     if (PWM_setDutyCycle(PwmChannel1, pwmConfig.pwm1Value) == UF_ERROR)
       return UF_ERROR;
   }
-  if (pwmConfig.pwm2Enabled == 1 && pwmConfig.pwm2Value <= 1000) {
+
+  if (pwmConfig.pwm2Enabled == 1 && pwmConfig.pwm2Value < 1000) {
     if (PWM_Start(PwmChannel2) == UF_ERROR) return UF_ERROR;
     if (PWM_setDutyCycle(PwmChannel2, pwmConfig.pwm1Value) == UF_ERROR)
       return UF_ERROR;
@@ -93,7 +98,8 @@ UF_STATUS PWM_Start(PwmChannel channel) {
 
 UF_STATUS PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle) {
   if (dutyCycle == 0xFFFF) return UF_OK;  // 0xFFFF means leave unchanged
-  if (dutyCycle > 0x0FFF) return UF_ERROR;
+  if (dutyCycle > 0x03E7)
+    return UF_ERROR;  // resolution of 0x03E7 is 1000 (0x3E7 is 999)
 
   TIM_HandleTypeDef *htim;
   uint8_t enabled;
@@ -158,4 +164,102 @@ UF_STATUS PWM_deinit(void) {
           PWM_disable(PwmChannel2) == UF_ERROR)
              ? UF_ERROR
              : UF_OK;
+}
+
+void PWM_handleCli(const char *args, char *responseBuffer) {
+  static char *invalidValue =
+      "\r\nInvalid PWM value.\r\n Allowed range is: 0 to 999.";
+  static char *unknown = "Unknown PWM command. Use 'help PWM' for help.";
+  static char *statusEnabled = "PWM%c: Enabled - Default value: %d.%s";
+  static char *statusDisabled = "PWM%c: Disabled.%s";
+
+  if (args == NULL || strlen(args) == 0) {
+    // Show status for both PWM 1 and PWM 2
+    if (pwmConfig.pwm1Enabled) {
+      sprintf(responseBuffer, statusEnabled, '1', pwmConfig.pwm1Value, "\r\n");
+    } else {
+      sprintf(responseBuffer, statusDisabled, '1', "\r\n");
+    }
+    if (pwmConfig.pwm2Enabled) {
+      sprintf(responseBuffer + strlen(responseBuffer), statusEnabled, '2',
+              pwmConfig.pwm2Value, ok);
+    } else {
+      sprintf(responseBuffer + strlen(responseBuffer), statusDisabled, '2',
+              "\r\n");
+    }
+  } else if (strncmp(args, "1", 1) == 0 || strncmp(args, "2", 1) == 0) {
+    const char *pwmArgs = args + 1;
+    while (isspace((unsigned char)*pwmArgs)) pwmArgs++;
+    if (*pwmArgs == '\0') {
+      if (args[0] == '1') {
+        if (pwmConfig.pwm1Enabled) {
+          sprintf(responseBuffer, statusEnabled, '1', pwmConfig.pwm1Value, ok);
+        } else {
+          sprintf(responseBuffer, statusDisabled, '1', ok);
+        }
+      } else {
+        if (pwmConfig.pwm2Enabled) {
+          sprintf(responseBuffer, statusEnabled, '2', pwmConfig.pwm2Value, ok);
+        } else {
+          sprintf(responseBuffer, statusDisabled, '2', ok);
+        }
+      }
+    } else if (strncmp(pwmArgs, "enable", 6) == 0) {
+      PwmConfiguration newConf;
+      memcpy(&newConf, &pwmConfig, sizeof(PwmConfiguration));
+      if (args[0] == '1') {
+        newConf.pwm1Enabled = 1;
+      } else {
+        newConf.pwm2Enabled = 1;
+      }
+      CONFIG_setPwmConfigurations(&newConf);
+      PWM_init(pwm1Timer, pwm2Timer);
+      sprintf(responseBuffer, "PWM%c is set to Enabled%s", args[0], ok);
+    } else if (strncmp(pwmArgs, "disable", 7) == 0) {
+      PwmConfiguration newConf;
+      memcpy(&newConf, &pwmConfig, sizeof(PwmConfiguration));
+      if (args[0] == '1') {
+        newConf.pwm1Enabled = 0;
+      } else {
+        newConf.pwm2Enabled = 0;
+      }
+      CONFIG_setPwmConfigurations(&newConf);
+      PWM_Stop(args[0] == '1' ? PwmChannel1 : PwmChannel2);
+      sprintf(responseBuffer, "PWM%c is set to Disabled%s", args[0], ok);
+    } else if (strncmp(pwmArgs, "value", 5) == 0) {
+      if ((pwmConfig.pwm1Enabled == 0 && args[0] == '1') ||
+          (pwmConfig.pwm2Enabled == 0 && args[0] == '2')) {
+        sprintf(responseBuffer, "Error: PWM%c is disabled.%s", args[0], no);
+        return;
+      }
+      const char *valueArgs = pwmArgs + 5;
+      while (isspace((unsigned char)*valueArgs)) valueArgs++;
+      if (*valueArgs == '\0') {
+        sprintf(responseBuffer,
+                "Error: No PWM value provided. Use a value between 0-999.%s",
+                no);
+      } else {
+        int value = atoi(valueArgs);
+        if (value < 0 || value > 999) {
+          sprintf(responseBuffer, "%s%s", invalidValue, no);
+        } else {
+          PwmConfiguration newConf;
+          memcpy(&newConf, &pwmConfig, sizeof(PwmConfiguration));
+          if (args[0] == '1') {
+            newConf.pwm1Value = value;
+          } else {
+            newConf.pwm2Value = value;
+          }
+          CONFIG_setPwmConfigurations(&newConf);
+          PWM_init(pwm1Timer, pwm2Timer);
+          sprintf(responseBuffer, "PWM%c default value set to: %d%s", args[0],
+                  value, ok);
+        }
+      }
+    } else {
+      sprintf(responseBuffer, "%s%s", unknown, no);
+    }
+  } else {
+    sprintf(responseBuffer, "%s%s", unknown, no);
+  }
 }
