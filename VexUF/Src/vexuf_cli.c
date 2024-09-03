@@ -65,18 +65,20 @@ void handle_time(const char *args);
 void handle_buzzer(const char *args);
 void handle_avs(const char *args);
 void handle_tnc(const char *args);
+void handle_pwm(const char *args);
 void handle_help(const char *args);
 
 /* Code ----------------------------------------------------------------------*/
 
 const Command commands[] = {
-    {"time", handle_time},
-    {"temperature", handle_temperature},
-    {"buzzer", handle_buzzer},
-    {"av", handle_avs},
-    {"tnc", handle_tnc},
-    {"help", handle_help}
-    // ... add more commands as needed ...
+    {"time", handle_time},                // CLI command to handle time
+    {"temperature", handle_temperature},  // CLI command to handle temperature
+    {"buzzer", handle_buzzer},            // CLI command to handle buzzer
+    {"av", handle_avs},                   // CLI command to handle AVs
+    {"tnc", handle_tnc},                  // CLI command to handle TNC
+    {"pwm", handle_pwm},                  // CLI command to handle PWM
+    {"help", handle_help}                 // CLI command to handle help
+                                          // ... add more commands as needed ...
 };
 
 UF_STATUS CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
@@ -173,6 +175,7 @@ void handle_time(const char *args) { RTC_handleCli(args, serialTxBuffer); }
 void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
 void handle_avs(const char *args) { AVS_handleCli(args, serialTxBuffer); }
 void handle_tnc(const char *args) { TNC_handleCli(args, serialTxBuffer); }
+void handle_pwm(const char *args) { PWM_handleCli(args, serialTxBuffer); }
 void handle_temperature(const char *args) {
   TEMPERATURE_handleCli(args, serialTxBuffer);
 }
@@ -225,6 +228,15 @@ void handle_help(const char *args) {
       "  - Use 'TNC message <n> <message>' to set a message.\r\n"
       "  - Use 'TNC path <n>' to get a path. <n> is between 0 to 4.\r\n"
       "  - Use 'TNC path <n> <path>' to set a path.\r\n",
+
+      "PWM: Control PWM channels.\r\n"
+      "  - Use 'PWM' to display the status of both PWM channels.\r\n"
+      "  - Use 'PWM 1' or 'PWM 2' to display the status of a specific PWM "
+      "channel.\r\n"
+      "  - Use 'PWM <n> <enable|disable>' to enable or "
+      "disable a specific PWM channel. <n> should be 1 or 2.\r\n"
+      "  - Use 'PWM <n> <value> to set the default value "
+      "for the PWM channel. <value> should be between 0 and 999.\r\n",
 
       "Help: Shows the list of available commands or help for a specific "
       "command.\r\n"

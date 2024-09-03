@@ -28,4 +28,6 @@ UF_STATUS PWM_setDutyCycle(PwmChannel channel, uint16_t dutyCycle);
 UF_STATUS PWM_disable(PwmChannel channel);
 UF_STATUS PWM_deinit(void);
 
+void PWM_handleCli(const char *args, char *responseBuffer);
+
 #endif /* VEXUF_VEXUF_PWM_H_ */
