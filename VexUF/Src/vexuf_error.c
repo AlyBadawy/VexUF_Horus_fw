@@ -18,19 +18,29 @@
 /* Includes ------------------------------------------------------------------*/
 #include "vexuf_error.h"
 
+#include "93c86.h"
 #include "iwdg.h"
 #include "vexuf.h"
+#include "vexuf_cli.h"
+#include "vexuf_config.h"
 #include "vexuf_indicators.h"
 #include "vexuf_outputs.h"
 #include "vexuf_pwm.h"
 #include "vexuf_sdcard.h"
+#include "vexuf_serial.h"
 #include "vexuf_timers.h"
 
 /* TypeDef -------------------------------------------------------------------*/
 extern IWDG_HandleTypeDef hiwdg;
 extern TIM_HandleTypeDef htim10;  // Servo 2 Timer
 extern TIM_HandleTypeDef htim11;  // Servo 1 Timer
+
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart6;
+
 /* Defines -------------------------------------------------------------------*/
+#define UART_TTL_HANDLER huart1
+#define UART_TNC_HANDLER huart6
 
 /* Macros --------------------------------------------------------------------*/
 
@@ -38,6 +48,9 @@ extern TIM_HandleTypeDef htim11;  // Servo 1 Timer
 extern VexufStatus vexufStatus;
 extern IndConfiguration indConf;
 extern OutputConfiguration outputConf;
+extern SerialConfiguration serialConf;
+
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
 
 /* Variables -----------------------------------------------------------------*/
 
@@ -56,6 +69,22 @@ void ERROR_handleNoConfig(void) {
 
   indConf.globalIndicatorEnabled = 1;
   indConf.statusIndicatorsEnabled = 1;
+
+  uint16_t buffer = 0;
+  EEPROM_93C86_Read(EEPROM_CONFIG_FLAG_ADDRESS, &buffer);
+  if (buffer != CONFIG_FLAG || buffer == 0) {
+    EEPROM_93C86_WriteAll(0x00);
+  }
+
+  SerialConfiguration newConf;
+  memcpy(&newConf, &serialConf, sizeof(SerialConfiguration));
+  newConf.ttl_enabled = 1;
+  newConf.ttl_led_enabled = 1;
+  newConf.ttl_baud = Baud115200;
+  CONFIG_setSerialConf(&newConf);
+
+  SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
+  CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
 
   TIMERS_Stop();
   PWM_deinit();
@@ -106,14 +135,19 @@ void ERROR_handleSdError(void) {
 /* Private Methods -----------------------------------------------------------*/
 
 void ERROR_ConfigLoop() {
-  while (1) {
+  while (vexufStatus.isConfigured == 0) {
     HAL_IWDG_Refresh(&hiwdg);
     IND_setLevel(IndError, IndON);
     HAL_Delay(300);
     IND_setLevel(IndWarn, IndON);
     HAL_Delay(300);
+    if (vexufStatus.ttlBuffered == 1) {
+      CLI_handleCommand(TTL);
+      vexufStatus.ttlBuffered = 0;
+    }
   }
 }
+
 void ERROR_SdCardLoop(uint16_t delay) {
   printf("SD card error detected\n");
   UF_STATUS status = UF_ERROR;

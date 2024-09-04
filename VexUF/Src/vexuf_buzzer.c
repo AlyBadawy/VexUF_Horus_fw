@@ -34,10 +34,10 @@ extern char *no;
 /* Variables -----------------------------------------------------------------*/
 const char *enabledStr = "Enabled";
 const char *disabledStr = "Disabled";
-const char *buzzerStr = "Buzzer";
-const char *startBeepStr = "start beep";
-const char *errorStr = "beep on error";
-const char *isStr = "is";
+const char *buzzerStr = "Buzzer ";
+const char *startBeepStr = "start beep ";
+const char *errorStr = "beep on error ";
+const char *isStr = "is ";
 static char *buzzerDisabled = "Buzzer is disabled. Can't configure buzzer.";
 
 /* Prototypes ----------------------------------------------------------------*/
@@ -97,13 +97,13 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
     }
   } else if (strncmp(args, "error", 5) == 0) {
     if (newIndConfig.buzzerEnabled) {
-      if (strncmp(args + 11, "on", 2) == 0) {
+      if (strncmp(args + 6, "on", 2) == 0) {
         newIndConfig.buzzerHoldOnError = 1;
         CONFIG_setIndicatorsConf(&newIndConfig);
         setResponse(startBeepStr, newIndConfig.buzzerHoldOnError,
                     responseBuffer);
-      } else if (strncmp(args + 11, "off", 3) == 0) {
-        newIndConfig.buzzer1sEnabled = 0;
+      } else if (strncmp(args + 6, "off", 3) == 0) {
+        newIndConfig.buzzerHoldOnError = 0;
         CONFIG_setIndicatorsConf(&newIndConfig);
         setResponse(startBeepStr, newIndConfig.buzzerHoldOnError,
                     responseBuffer);
@@ -117,7 +117,7 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
   } else if (strlen(args) == 0) {
     if (indConf.buzzerEnabled) {
       sprintf(
-          responseBuffer, "%s %s %s %s. %s %s.%s", buzzerStr, isStr, enabledStr,
+          responseBuffer, "%s%s%s. %s. %s%s.%s", buzzerStr, isStr, enabledStr,
           indConf.buzzer1sEnabled ? "start beep is Enabled"
                                   : "start beep is Disabled",
           errorStr, indConf.buzzerHoldOnError ? enabledStr : disabledStr, ok);
@@ -129,6 +129,6 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
 
 /* Private Methods -----------------------------------------------------------*/
 void setResponse(const char *feature, uint8_t enabled, char *responseBuffer) {
-  sprintf(responseBuffer, "%s %s %s%s", buzzerStr, feature,
+  sprintf(responseBuffer, "%s%s%s%s", buzzerStr, feature,
           enabled ? enabledStr : disabledStr, ok);
 }

@@ -148,9 +148,10 @@ int main(void) {
 
   PWM_init(&TIMER_PWM1_HANDLER, &TIMER_PWM2_HANDLER);
 
-  if (CONFIG_IsConfigured() == UF_OK) {
+  if (CONFIG_IsConfigured() != UF_OK) {
     ERROR_handleNoConfig();
   }
+
   if (CONFIG_WriteSerialNumber() == UF_ERROR) Error_Handler();
   // TODO: Check for registration number and handle it.
   if (CONFIG_getCallSign(&callsign) == UF_ERROR) Error_Handler();
@@ -167,10 +168,11 @@ int main(void) {
   if (ACT_Init() == UF_ERROR) Error_Handler();
   if (AVS_Init() == UF_ERROR) Error_Handler();
   if (TRIGS_Init() == UF_ERROR) Error_Handler();
-  if (CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
-    Error_Handler();
   if (SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
     Error_Handler();
+  if (CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
+    Error_Handler();
+
   if (LCD_Init() == UF_ERROR) Error_Handler();
 
   HAL_Delay(500);
@@ -178,7 +180,6 @@ int main(void) {
 
   HAL_Delay(500);
 
-  printf("VexUF Horus is ready.\n");
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_RESET);
 
 #ifndef DEBUG

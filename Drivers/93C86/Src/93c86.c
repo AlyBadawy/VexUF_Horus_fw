@@ -162,7 +162,44 @@ UF_STATUS EEPROM_93C86_WriteMultipleWords(uint16_t startAddress,
 
   return status;
 }
+UF_STATUS EEPROM_93C86_WriteAll(uint16_t data) {
+  UF_STATUS status = UF_OK;
 
+  while (EEPROM_93C86_getStatus() == UF_BUSY);
+
+  uint8_t temp = 0;
+
+  status = EEPROM_93C86_WriteEnable();
+  if (status != UF_OK) return status;
+
+  EEPROM_93C86_CS_SELECT();
+  status = EEPROM_93C86_SendCommand(EEPROM_CMD_WRAL);
+  if (status != UF_OK) {
+    EEPROM_93C86_CS_UNSELECT();
+    return status;
+  }
+
+  // Send the high byte of the 16-bit data
+  temp = (data >> 8) & 0xFF;
+  status = EEPROM_93C86_TransmitReceive(temp, &temp);
+  if (status != UF_OK) {
+    EEPROM_93C86_CS_UNSELECT();
+    return status;
+  }
+  // Send the low byte of the 16-bit data
+  temp = data & 0xFF;
+  status = EEPROM_93C86_TransmitReceive(temp, &temp);
+  if (status != UF_OK) {
+    EEPROM_93C86_CS_UNSELECT();
+    return status;
+  }
+
+  EEPROM_93C86_CS_UNSELECT();
+  HAL_Delay(2);  // Wait for write cycle to complete
+  status = EEPROM_93C86_WriteDisable();
+
+  return status;
+}
 UF_STATUS EEPROM_93C86_Erase(uint16_t address) {
   UF_STATUS status = UF_OK;
 

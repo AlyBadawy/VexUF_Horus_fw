@@ -21,31 +21,33 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include "93c86.h"
 #include "vexuf_config.h"
 
 /* TypeDef -------------------------------------------------------------------*/
+extern UART_HandleTypeDef huart1;
 
 /* Defines -------------------------------------------------------------------*/
 
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
+extern char *ok;
+extern char *no;
 
 /* Variables -----------------------------------------------------------------*/
-static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
-// char serialNumber[24];
-uint32_t regNumber;
+static const char *major = "1";
+static const char *minor = "0";
+static const char *patch = "0";
 
+static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
+uint32_t regNumber;
 VexufStatus vexufStatus;
 
 /* Prototypes ----------------------------------------------------------------*/
 void base32_encode(const uint8_t *data, size_t length, char *output);
 
 /* Code ----------------------------------------------------------------------*/
-
-/* Private Methods -----------------------------------------------------------*/
-
-extern UART_HandleTypeDef huart1;
 int _write(int file, char *ptr, int len) {
   UNUSED(file);
   HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 200);
@@ -53,26 +55,6 @@ int _write(int file, char *ptr, int len) {
 }
 
 uint16_t getSerialBytes(void) { return *(uint16_t *)0x08007FFD; }
-
-void base32_encode(const uint8_t *data, size_t length, char *output) {
-  int bitBuffer = 0, bitsInBuffer = 0;
-  size_t index = 0;
-
-  for (size_t i = 0; i < length; ++i) {
-    bitBuffer = (bitBuffer << 8) | data[i];
-    bitsInBuffer += 8;
-    while (bitsInBuffer >= 5) {
-      output[index++] =
-          custom_base32_alphabet[(bitBuffer >> (bitsInBuffer - 5)) & 0x1F];
-      bitsInBuffer -= 5;
-    }
-  }
-  if (bitsInBuffer > 0) {
-    output[index++] =
-        custom_base32_alphabet[(bitBuffer << (5 - bitsInBuffer)) & 0x1F];
-  }
-  output[index] = '\0';
-}
 
 void VexUF_GenerateSerialNumber(char *serialNumberString) {
   uint32_t uid[3] = {HAL_GetUIDw2(), HAL_GetUIDw1(), HAL_GetUIDw0()};
@@ -94,6 +76,104 @@ void VexUF_GenerateSerialNumber(char *serialNumberString) {
     serialNumberString[j++] = serial[i];
   }
   serialNumberString[j] = '\0';
+}
+
+void VexUF_handleCliInfo(const char *args, char *responseBuffer) {
+  if (strlen(args) == 0) {
+    static char serialNumber[SERIAL_NUMBER_LENGTH];
+    VexUF_GenerateSerialNumber(serialNumber);
+
+    uint16_t vexufSerial = getSerialBytes();
+
+    char *regNumber = "";
+    CONFIG_getRegNumber(regNumber);
+
+    char *status =
+        vexufStatus.isConfigured != 1 ? "Configured" : "Not Configured";
+
+    uint16_t configVersion = 0, configCount = 0;
+    if (vexufStatus.isConfigured == 1)
+      CONFIG_GetConfigValues(&configVersion, &configCount);
+
+    sprintf(responseBuffer,
+            "\r\nInformation: \r\n"
+            "  Serial Number       : %s\r\n"
+            "  VexUF FW Version    : %s.%s.%s\r\n"
+            "  VexUF               : %04X\r\n"
+            "  Registration Number : %s\r\n"
+            "  Config Status       : %s\r\n"
+            "  Config Version      : %d\r\n"
+            "  Config Count        : %d\r\n"
+            "%s",
+            serialNumber, major, minor, patch, vexufSerial, regNumber, status,
+            configVersion, configCount, ok);
+  } else if (strncmp(args, "dump", 4) == 0) {
+    if (strlen(args + 4) == 0) {
+      sprintf(responseBuffer,
+              "Missing region number. use 'Info dump <n>' where n is between 1 "
+              "and 5%s",
+              no);
+      return;
+    } else {
+      const char *buffer = trim((char *)args + 4);
+      uint8_t region = atoi(buffer);
+      if (region >= 1 && region <= 5) {
+        uint16_t startAddress = 0x0000;
+        uint16_t endAddress = 0x0000;
+        switch (region) {
+          case 1:
+            startAddress = 0x0000;
+            endAddress = 0x00DF;  // 14 * 16 = 224 address. 448 bytes
+            break;
+          case 2:
+            startAddress = 0x00E0;
+            endAddress = 0x01CF;  // 15 * 16 = 240 address. 480 bytes
+            break;
+          case 3:
+            startAddress = 0x01D0;
+            endAddress = 0x026F;  // 10 * 16 = 160 address. 320 bytes
+            break;
+          case 4:
+            startAddress = 0x0270;
+            endAddress = 0x03AF;  // 20 * 16 = 160 address. 640 bytes
+            break;
+          case 5:
+            startAddress = 0x03B0;
+            endAddress = 0x03FF;  // 10 * 16 = 160 address. 320 bytes
+            break;
+        }
+
+        uint16_t regionBuffer[0x3FF];
+        for (uint16_t address = startAddress; address <= endAddress;
+             address++) {
+          EEPROM_93C86_Read(address, &regionBuffer[address]);
+        }
+        for (uint16_t address = startAddress; address <= endAddress;
+             address += 16) {
+          sprintf(responseBuffer + strlen(responseBuffer),
+                  " %04X:   ", address);
+          // Print first column (8 words)
+          for (uint16_t i = 0; i < 16; i++) {
+            sprintf(responseBuffer + strlen(responseBuffer), "%04X ",
+                    regionBuffer[address + i]);
+          }
+          // New line
+          sprintf(responseBuffer + strlen(responseBuffer), "\r\n");
+        }
+        sprintf(responseBuffer + strlen(responseBuffer), "%s", ok);
+      } else {
+        sprintf(
+            responseBuffer,
+            "Invalid region number. use 'Info dump <n>' where n is between 1 "
+            "and 5%s",
+            no);
+      }
+    }
+  } else {
+    sprintf(responseBuffer,
+            "Invalid command: %s.\r\nUse 'Help' for a list of commands.%s",
+            args, no);
+  }
 }
 
 char *trim(const char *str) {
@@ -131,4 +211,25 @@ char *trim(const char *str) {
   trimmedBuffer[length] = '\0';  // Null-terminate the trimmed string
 
   return trimmedBuffer;
+}
+
+/* Private Methods -----------------------------------------------------------*/
+void base32_encode(const uint8_t *data, size_t length, char *output) {
+  int bitBuffer = 0, bitsInBuffer = 0;
+  size_t index = 0;
+
+  for (size_t i = 0; i < length; ++i) {
+    bitBuffer = (bitBuffer << 8) | data[i];
+    bitsInBuffer += 8;
+    while (bitsInBuffer >= 5) {
+      output[index++] =
+          custom_base32_alphabet[(bitBuffer >> (bitsInBuffer - 5)) & 0x1F];
+      bitsInBuffer -= 5;
+    }
+  }
+  if (bitsInBuffer > 0) {
+    output[index++] =
+        custom_base32_alphabet[(bitBuffer << (5 - bitsInBuffer)) & 0x1F];
+  }
+  output[index] = '\0';
 }

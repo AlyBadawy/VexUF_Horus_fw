@@ -23,8 +23,12 @@
 
 #include "93c86.h"
 /* TypeDef -------------------------------------------------------------------*/
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart6;
 
 /* Defines -------------------------------------------------------------------*/
+#define UART_TTL_HANDLER huart1
+#define UART_TNC_HANDLER huart6
 
 /* Macros --------------------------------------------------------------------*/
 
@@ -81,6 +85,7 @@ UF_STATUS CONFIG_GetConfigValues(uint16_t* version, uint16_t* configCount) {
 UF_STATUS CONFIG_SetIsConfigured(void) {
   uint16_t confFlag = CONFIG_FLAG;
   uint16_t confVer = CONFIG_VERSION;
+
   if (EEPROM_93C86_Write(EEPROM_CONFIG_FLAG_ADDRESS, confFlag) != UF_OK)
     return UF_ERROR;
   if (EEPROM_93C86_Write(EEPROM_CONFIG_VERSION_ADDRESS, confVer) != UF_OK)
@@ -106,11 +111,12 @@ UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer) {
     return UF_ERROR;
 
   for (int i = 0; i < 12; i++) {
-    serialNumberBuffer[2 * i] = (char)(buffer[i] & 0xFF);
-    serialNumberBuffer[2 * i + 1] = (char)((buffer[i] >> 8) & 0xFF);
+    serialNumberBuffer[2 * i] = (char)((buffer[i] >> 8) & 0xFF);  // MSB first
+    serialNumberBuffer[2 * i + 1] = (char)(buffer[i] & 0xFF);     // LSB second
   }
   return UF_OK;
 }
+
 UF_STATUS CONFIG_WriteSerialNumber(void) {
   uint16_t vexufSerial = getSerialBytes();
   uint16_t eepromVexufSerial;
@@ -128,15 +134,25 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
 
   uint16_t buffer[SERIAL_NUMBER_LENGTH / 2] = {0};
   for (int i = 0; i < SERIAL_NUMBER_LENGTH / 2; i++) {
-    buffer[i] = (serialNumberString[2 * i] & 0xFF) |
-                ((serialNumberString[2 * i + 1] & 0xFF) << 8);
+    // MSB first: higher byte from serialNumberString[2 * i],
+    // lower byte from serialNumberString[2 * i + 1]
+    buffer[i] = ((serialNumberString[2 * i] & 0xFF) << 8) |
+                (serialNumberString[2 * i + 1] & 0xFF);
   }
 
   char eepromSerialNumberString[SERIAL_NUMBER_LENGTH];
   if (CONFIG_ReadSerialNumber(eepromSerialNumberString) != UF_OK)
     return UF_ERROR;
 
-  if (memcmp(buffer, eepromSerialNumberString, SERIAL_NUMBER_LENGTH) != 0) {
+  // Convert eepromSerialNumberString to a buffer with MSB first for comparison
+  uint16_t eepromBuffer[SERIAL_NUMBER_LENGTH / 2] = {0};
+  for (int i = 0; i < SERIAL_NUMBER_LENGTH / 2; i++) {
+    eepromBuffer[i] = ((eepromSerialNumberString[2 * i] & 0xFF) << 8) |
+                      (eepromSerialNumberString[2 * i + 1] & 0xFF);
+  }
+
+  // Compare the two buffers
+  if (memcmp(buffer, eepromBuffer, sizeof(buffer)) != 0) {
     if (EEPROM_93C86_WriteMultipleWords(EEPROM_SERIAL_NUMBER_ADDRESS, buffer,
                                         SERIAL_NUMBER_LENGTH / 2) != UF_OK)
       return UF_ERROR;
@@ -145,20 +161,29 @@ UF_STATUS CONFIG_WriteSerialNumber(void) {
   return UF_OK;
 }
 
-UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber) {
-  uint16_t buffer[2];
+UF_STATUS CONFIG_getRegNumber(char* regNumber) {
+  uint16_t buffer[REGISTRATION_NUMBER_LENGTH / 2] = {0};
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_REGISTRATION_NUMBER_ADDRESS, buffer,
                                      REGISTRATION_NUMBER_LENGTH / 2) != UF_OK)
     return UF_ERROR;
-  *regNumber = ((uint32_t)buffer[1] << 16) | buffer[0];
+  for (int i = 0; i < REGISTRATION_NUMBER_LENGTH / 2; i++) {
+    regNumber[2 * i] = (buffer[i] >> 8) & 0xFF;  // MSB first
+    regNumber[2 * i + 1] = buffer[i] & 0xFF;     // LSB second
+  }
   return UF_OK;
 }
-UF_STATUS CONFIG_SetRegNumber(const uint32_t* newRegNumber) {
-  uint16_t buffer[2];
-  buffer[0] = (uint16_t)(*newRegNumber & 0xFFFF);          // Lower 16 bits
-  buffer[1] = (uint16_t)((*newRegNumber >> 16) & 0xFFFF);  // Upper 16 bits
+UF_STATUS CONFIG_SetRegNumber(const char* newRegNumber) {
+  uint16_t buffer[REGISTRATION_NUMBER_LENGTH / 2] = {0};
+  for (int i = 0; i < REGISTRATION_NUMBER_LENGTH / 2; i++) {
+    char upperChar = toupper(newRegNumber[2 * i]);      // MSB
+    char lowerChar = toupper(newRegNumber[2 * i + 1]);  // LSB
+
+    buffer[i] =
+        ((upperChar & 0xFF) << 8) | (lowerChar & 0xFF);  // MSB first, then LSB
+  }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_REGISTRATION_NUMBER_ADDRESS,
-                                      buffer, 2) != UF_OK)
+                                      buffer,
+                                      REGISTRATION_NUMBER_LENGTH / 2) != UF_OK)
     return UF_ERROR;
   memcpy(&regNumber, newRegNumber, REGISTRATION_NUMBER_LENGTH);
   return UF_OK;
@@ -169,23 +194,26 @@ UF_STATUS CONFIG_getCallSign(char* callsign) {
   if (EEPROM_93C86_ReadMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                      CALLSIGN_LENGTH / 2) != UF_OK)
     return UF_ERROR;
+
   for (int i = 0; i < CALLSIGN_LENGTH / 2; i++) {
-    callsign[2 * i] = buffer[i] & 0xFF;
-    callsign[2 * i + 1] = (buffer[i] >> 8) & 0xFF;
+    callsign[2 * i] = (buffer[i] >> 8) & 0xFF;  // MSB first
+    callsign[2 * i + 1] = buffer[i] & 0xFF;     // LSB second
   }
   return UF_OK;
 }
 UF_STATUS CONFIG_setCallSign(const char* newCallSign) {
   uint16_t buffer[CALLSIGN_LENGTH / 2] = {0};
   for (int i = 0; i < CALLSIGN_LENGTH / 2; i++) {
-    char upperChar = toupper(newCallSign[2 * i]);
-    char lowerChar = toupper(newCallSign[2 * i + 1]);
+    char upperChar = toupper(newCallSign[2 * i]);      // MSB
+    char lowerChar = toupper(newCallSign[2 * i + 1]);  // LSB
 
-    buffer[i] = (upperChar & 0xFF) | ((lowerChar & 0xFF) << 8);
+    buffer[i] =
+        ((upperChar & 0xFF) << 8) | (lowerChar & 0xFF);  // MSB first, then LSB
   }
   if (EEPROM_93C86_WriteMultipleWords(EEPROM_CALLSIGN_ADDRESS, buffer,
                                       CALLSIGN_LENGTH / 2) != UF_OK)
     return UF_ERROR;
+
   memcpy(&callsign, newCallSign, CALLSIGN_LENGTH);
   return UF_OK;
 }
@@ -291,6 +319,7 @@ UF_STATUS CONFIG_setSerialConf(const SerialConfiguration* newSerialConf) {
   if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;
   memcpy(&serialConf, newSerialConf, sizeof(SerialConfiguration));
+  SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
   return UF_OK;
 }
 
@@ -584,9 +613,9 @@ UF_STATUS CONFIG_setTrigConf(const TriggerConfiguration* trigConf,
 }
 
 UF_STATUS CONFIG_getTncMessage(char* message, uint8_t idx) {
-  if (idx >= TNC_MESSAGE_COUNT / 2) return UF_ERROR;
+  if (idx >= TNC_MESSAGE_COUNT) return UF_ERROR;
 
-  uint16_t buffer[TNC_MESSAGE_LENGTH / 2];
+  uint16_t buffer[TNC_MESSAGE_LENGTH];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_TNC_MESSAGE_ADDRESS + ((TNC_MESSAGE_LENGTH / 2) * idx), buffer,
           TNC_MESSAGE_LENGTH / 2) != UF_OK)
@@ -599,9 +628,9 @@ UF_STATUS CONFIG_getTncMessage(char* message, uint8_t idx) {
   return UF_OK;
 }
 UF_STATUS CONFIG_setTncMessage(const char* message, uint8_t idx) {
-  if (idx >= TNC_MESSAGE_COUNT / 2) return UF_ERROR;
+  if (idx >= TNC_MESSAGE_COUNT) return UF_ERROR;
 
-  uint16_t buffer[TNC_MESSAGE_LENGTH / 2];
+  uint16_t buffer[TNC_MESSAGE_LENGTH];
   for (int i = 0; i < TNC_MESSAGE_LENGTH / 2; i++) {
     buffer[i] = (message[2 * i] & 0xFF) << 8 | ((message[2 * i + 1] & 0xFF));
   }
@@ -615,9 +644,9 @@ UF_STATUS CONFIG_setTncMessage(const char* message, uint8_t idx) {
 }
 
 UF_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx) {
-  if (idx >= TNC_PATH_COUNT / 2) return UF_ERROR;
+  if (idx >= TNC_PATH_COUNT) return UF_ERROR;
 
-  uint16_t buffer[TNC_PATH_LENGTH / 2];
+  uint16_t buffer[TNC_PATH_LENGTH];
   if (EEPROM_93C86_ReadMultipleWords(
           EEPROM_TNC_PATH_ADDRESS + ((TNC_PATH_LENGTH / 2) * idx), buffer,
           TNC_PATH_LENGTH / 2) != UF_OK)
@@ -630,9 +659,9 @@ UF_STATUS CONFIG_getTncPath(char* tncPath, uint8_t idx) {
   return UF_OK;
 }
 UF_STATUS CONFIG_setTncPath(const char* tncPath, uint8_t idx) {
-  if (idx >= TNC_PATH_COUNT / 2) return UF_ERROR;
+  if (idx >= TNC_PATH_COUNT) return UF_ERROR;
 
-  uint16_t buffer[TNC_PATH_LENGTH / 2];
+  uint16_t buffer[TNC_PATH_LENGTH];
   for (int i = 0; i < TNC_PATH_LENGTH / 2; i++) {
     buffer[i] = (tncPath[2 * i] & 0xFF) << 8 | ((tncPath[2 * i + 1] & 0xFF));
   }

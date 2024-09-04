@@ -3,7 +3,7 @@
 
 #include "vexuf.h"
 
-#define SERIAL_BUFFER_SIZE 1024
+#define SERIAL_BUFFER_SIZE 2048
 
 typedef enum {
   Baud300 = 0,

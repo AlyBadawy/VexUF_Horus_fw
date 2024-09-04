@@ -23,7 +23,7 @@
 #include "vexuf_trigs.h"
 
 #define CONFIG_FLAG 0x3E3E
-#define CONFIG_VERSION 1
+#define CONFIG_VERSION 3
 
 // Memory Map addresses
 #define EEPROM_CONFIG_FLAG_ADDRESS 0x0000
@@ -109,8 +109,8 @@ UF_STATUS CONFIG_SetIsConfigured(void);
 UF_STATUS CONFIG_ReadSerialNumber(char* serialNumberBuffer);
 UF_STATUS CONFIG_WriteSerialNumber(void);
 
-UF_STATUS CONFIG_getRegNumber(uint32_t* regNumber);
-UF_STATUS CONFIG_SetRegNumber(const uint32_t* regNumber);
+UF_STATUS CONFIG_getRegNumber(char* regNumber);
+UF_STATUS CONFIG_SetRegNumber(const char* regNumber);
 
 UF_STATUS CONFIG_getCallSign(char* callsign);
 UF_STATUS CONFIG_setCallSign(const char* newCallSign);
