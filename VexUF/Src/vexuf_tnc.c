@@ -25,7 +25,7 @@
 #include "vexuf_serial.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-static UART_HandleTypeDef *tncUart;
+extern UART_HandleTypeDef *tncUart;
 
 /* Defines -------------------------------------------------------------------*/
 
@@ -35,6 +35,7 @@ static UART_HandleTypeDef *tncUart;
 extern SerialConfiguration serialConf;
 extern char *ok;
 extern char *no;
+extern char *invalidBaud;
 
 /* Variables -----------------------------------------------------------------*/
 char callsign[CALLSIGN_LENGTH];
@@ -44,18 +45,10 @@ char tncPaths[TNC_PATH_COUNT][TNC_PATH_LENGTH];
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
-UF_STATUS TNC_init(UART_HandleTypeDef *tnc) {
-  tncUart = tnc;
-  return UF_OK;
-}
 
 void TNC_handleCli(const char *args, char *responseBuffer) {
-  static char *invalidBaud =
-      "Invalid baud rate.\r\n Allowed rates are: 300, 600, 1200, 4800, "
-      "9600, 19200, 57600, or 115200.";
-
   uint32_t baudInt = 0;
-  SERIAL_baudToInt(serialConf.tnc__baud, &baudInt);
+  SERIAL_baudToInt(serialConf.tnc_baud, &baudInt);
 
   char tncEnabled[70];
   sprintf(tncEnabled, "enabled. \r\n  Callsign: %s\r\n  Baud    : %lu",
@@ -105,7 +98,7 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
       if (*baudArgs == '\0') {
         // Getter: Show current baud rate
         uint32_t currentBaudInt;
-        SERIAL_baudToInt(serialConf.tnc__baud, &currentBaudInt);
+        SERIAL_baudToInt(serialConf.tnc_baud, &currentBaudInt);
         sprintf(responseBuffer, "Current Baud Rate: %lu%s", currentBaudInt, ok);
       } else {
         // Setter: Set new baud rate
@@ -118,7 +111,7 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
             sprintf(responseBuffer, "%s%s", invalidBaud, no);
             return;
           }
-          serialConf.tnc__baud = newBaud;
+          serialConf.tnc_baud = newBaud;
           if (SERIAL_setBaudRate(tncUart, newBaud) == UF_OK) {
             sprintf(responseBuffer, "Baud rate set to: %lu%s", newBaudInt, ok);
           } else {
@@ -225,5 +218,4 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
   }
 }
 
-/* Private Methods
- * -----------------------------------------------------------*/
+/* Private Methods -----------------------------------------------------------*/

@@ -34,11 +34,12 @@ extern UART_HandleTypeDef huart1;
 /* Extern Variables ----------------------------------------------------------*/
 extern char *ok;
 extern char *no;
+extern uint16_t configVersion, configCount;
 
 /* Variables -----------------------------------------------------------------*/
 static const char *major = "0";
 static const char *minor = "8";
-static const char *patch = "2";
+static const char *patch = "7";
 
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char regNumber[REGISTRATION_NUMBER_LENGTH];
@@ -86,11 +87,9 @@ void VexUF_handleCliInfo(const char *args, char *responseBuffer) {
     uint16_t vexufSerial = getSerialBytes();
 
     char *status =
-        vexufStatus.isConfigured != 1 ? "Configured" : "Not Configured";
+        vexufStatus.isConfigured == 1 ? "Configured" : "Not Configured";
 
-    uint16_t configVersion = 0, configCount = 0;
-    if (vexufStatus.isConfigured == 1)
-      CONFIG_loadConfigValues(&configVersion, &configCount);
+    if (vexufStatus.isConfigured == 1) CONFIG_loadConfigValues();
 
     sprintf(responseBuffer,
             "Information: \r\n"

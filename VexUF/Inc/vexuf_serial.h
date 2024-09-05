@@ -25,7 +25,7 @@ typedef struct {
   SerialBaudRate ttl_baud : 4;
   TtlLogConfiguration ttlConf : 3;
   uint16_t tnc_enabled : 1;
-  SerialBaudRate tnc__baud : 4;
+  SerialBaudRate tnc_baud : 4;
   uint16_t reserved : 2;
 } SerialConfiguration;
 

@@ -25,12 +25,16 @@
 #include "vexuf_avs.h"
 #include "vexuf_buzzer.h"
 #include "vexuf_config.h"
+#include "vexuf_pwm.h"
 #include "vexuf_rtc.h"
+#include "vexuf_serial.h"
 #include "vexuf_temperature.h"
+#include "vexuf_tnc.h"
+#include "vexuf_ttl.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-static UART_HandleTypeDef ttlUart;
-static UART_HandleTypeDef tncUart;
+extern UART_HandleTypeDef *ttlUart;
+extern UART_HandleTypeDef *tncUart;
 
 typedef void (*CommandHandler)(const char *args);
 
@@ -58,6 +62,9 @@ static char *prompt = "VexUF:Horus> ";
 
 char *ok = "\r\nOk!\r\n";
 char *no = "\r\nNo!\r\n";
+char *invalidBaud =
+    "Invalid baud rate.\r\n Allowed rates are: 300, 600, 1200, 4800, "
+    "9600, 19200, 57600, or 115200.";
 
 /* Prototypes ----------------------------------------------------------------*/
 void handle_info(const char *args);
@@ -68,6 +75,7 @@ void handle_log(const char *args);
 void handle_i2c(const char *args);
 void handle_spi(const char *args);
 void handle_display(const char *args);
+void handle_ttl(const char *args);
 void handle_tnc(const char *args);
 void handle_avs(const char *args);
 void handle_act(const char *args);
@@ -87,6 +95,7 @@ const Command commands[] = {
     {"i2c", handle_i2c},                  // CLI command to handle I2C
     {"spi", handle_spi},                  // CLI command to handle SPI
     {"display", handle_display},          // CLI command to handle display
+    {"ttl", handle_ttl},                  // CLI command to handle TTL
     {"tnc", handle_tnc},                  // CLI command to handle TNC
     {"av", handle_avs},                   // CLI command to handle AVs
     {"act", handle_act},                  // CLI command to handle actuators
@@ -97,20 +106,21 @@ const Command commands[] = {
                                           // ... add more commands as needed ...
 };
 
-UF_STATUS CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
-  ttlUart = *ttl;
-  tncUart = *tnc;
-
+UF_STATUS CLI_init(void) {
   char newLinePrompt[30];
   sprintf(newLinePrompt, "\r\n%s", prompt);
 
-  if (HAL_UART_Transmit(&ttlUart, (uint8_t *)newLinePrompt,
-                        strlen(newLinePrompt), 200) != HAL_OK)
-    return UF_ERROR;
-  if (HAL_UART_Transmit(&tncUart, (uint8_t *)newLinePrompt,
-                        strlen(newLinePrompt), 200) != HAL_OK)
-    return UF_ERROR;
+  if (serialConf.ttl_enabled == 1) {
+    if (HAL_UART_Transmit(ttlUart, (uint8_t *)newLinePrompt,
+                          strlen(newLinePrompt), 200) != HAL_OK)
+      return UF_ERROR;
+  }
 
+  if (serialConf.tnc_enabled == 1) {
+    if (HAL_UART_Transmit(tncUart, (uint8_t *)newLinePrompt,
+                          strlen(newLinePrompt), 200) != HAL_OK)
+      return UF_ERROR;
+  }
   return UF_OK;
 }
 
@@ -165,11 +175,11 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
 
   switch (interface) {
     case TTL:
-      uartHandle = &ttlUart;
+      uartHandle = ttlUart;
       memset(ttlRxData, 0, sizeof(ttlRxData));
       break;
     case TNC:
-      uartHandle = &tncUart;
+      uartHandle = tncUart;
       memset(tncRxData, 0, sizeof(tncRxData));
       break;
     default:
@@ -210,6 +220,7 @@ void handle_log(const char *args) { handle_unsupported(args); }
 void handle_i2c(const char *args) { handle_unsupported(args); }
 void handle_spi(const char *args) { handle_unsupported(args); }
 void handle_display(const char *args) { handle_unsupported(args); }
+void handle_ttl(const char *args) { TTL_handleCli(args, serialTxBuffer); }
 void handle_tnc(const char *args) { TNC_handleCli(args, serialTxBuffer); }
 void handle_avs(const char *args) { AVS_handleCli(args, serialTxBuffer); }
 void handle_act(const char *args) { handle_unsupported(args); }
@@ -287,7 +298,17 @@ void handle_help(const char *args) {
       "  NOTE: This command is not implemented in this version of the "
       "Firmware.",
 
+      "TTL: Manage TTL interface.\r\n"
+      "  - Use 'TTL' to get the status of the TTL interface.\r\n"
+      "  - Use 'TTL <enable|disable>' to enable or disable the TTL "
+      "interface.\r\n"
+      "  - Use 'TTL baud' to get current Baud rate for the TTL interface.\r\n"
+      "  - Use 'TTL baud <baud_rate>' to set the Baud rate.\r\n",
+
       "TNC: Manage TNC.\r\n"
+      "  - Use 'TNC' to get the status of the TNC interface.\r\n"
+      "  - Use 'TNC <enable|disable>' to enable or disable the TNC "
+      "interface.\r\n"
       "  - Use 'TNC callsign' to get current callsign.\r\n"
       "  - Use 'TNC callsign <new_callsign>' to set the callsign.\r\n"
       "  - Use 'TNC baud' to get current Baud rate for the TNC interface.\r\n"

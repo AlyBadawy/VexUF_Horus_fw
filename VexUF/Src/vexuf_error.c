@@ -81,7 +81,7 @@ void ERROR_handleNoConfig(void) {
   serialConf.ttl_baud = Baud115200;
 
   SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
-  CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
+  CLI_init();
 
   TIMERS_Stop();
   PWM_deinit();

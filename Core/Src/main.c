@@ -162,16 +162,12 @@ int main(void) {
   if (ACT_Init() == UF_ERROR) Error_Handler();
   if (SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
     Error_Handler();
-  if (CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
-    Error_Handler();
+  if (CLI_init() != UF_OK) Error_Handler();
 
   if (LCD_Init() == UF_ERROR) Error_Handler();
 
   HAL_Delay(500);
   IND_BuzzOnStartUp();
-
-  HAL_Delay(500);
-
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_RESET);
 
 #ifndef DEBUG

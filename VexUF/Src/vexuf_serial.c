@@ -20,10 +20,11 @@
 
 #include "vexuf_config.h"
 #include "vexuf_tnc.h"
+#include "vexuf_ttl.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-static UART_HandleTypeDef *ttlUart;
-static UART_HandleTypeDef *tncUart;
+UART_HandleTypeDef *ttlUart;
+UART_HandleTypeDef *tncUart;
 
 /* Defines -------------------------------------------------------------------*/
 
@@ -33,7 +34,7 @@ static UART_HandleTypeDef *tncUart;
 extern VexufStatus vexufStatus;
 
 /* Variables -----------------------------------------------------------------*/
-SerialConfiguration serialConf = {0};
+SerialConfiguration serialConf;
 unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
 unsigned char tncRxData[SERIAL_BUFFER_SIZE];
 uint16_t ttlRxIdx;
@@ -46,7 +47,7 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
   ttlUart = ttl;
   tncUart = tnc;
 
-  if (serialConf.ttl_enabled) {
+  if (ttl && serialConf.ttl_enabled) {
     if (SERIAL_setBaudRate(ttlUart, (uint16_t)serialConf.ttl_baud) != UF_OK)
       return UF_ERROR;
     if (HAL_UARTEx_ReceiveToIdle_IT(ttlUart, ttlRxData, SERIAL_BUFFER_SIZE) !=
@@ -57,14 +58,13 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
     if (HAL_UART_DeInit(ttlUart) != HAL_OK) return UF_ERROR;
   }
 
-  if (serialConf.tnc_enabled) {
+  if (tnc && serialConf.tnc_enabled) {
     if (SERIAL_setBaudRate(tncUart, serialConf.ttl_baud) != UF_OK)
       return UF_ERROR;
     if (HAL_UARTEx_ReceiveToIdle_IT(tncUart, tncRxData, SERIAL_BUFFER_SIZE) !=
         HAL_OK) {
       return UF_ERROR;
     }
-    if (TNC_init(tncUart) != UF_OK) return UF_ERROR;
   } else {
     if (HAL_UART_DeInit(tncUart) != HAL_OK) return UF_ERROR;
   }
@@ -152,9 +152,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
   if (huart == ttlUart) {
     rxData = ttlRxData;
     rxIdx = &ttlRxIdx;
-  } else {
+  } else if (huart == tncUart) {
     rxData = tncRxData;
     rxIdx = &tncRxIdx;
+  } else {
+    return;
   }
 
   huart == ttlUart ? (vexufStatus.ttlBuffered = 1)

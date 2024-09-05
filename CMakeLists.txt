@@ -73,6 +73,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "./VexUF/Src/vexuf_timers.c"
     "./VexUF/Src/vexuf_tnc.c"
     "./VexUF/Src/vexuf_trigs.c"
+    "./VexUF/Src/vexuf_ttl.c"
 )
 
 # Add include paths

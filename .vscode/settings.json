@@ -52,7 +52,8 @@
     "vexuf_tnc.h": "c",
     "vexuf_adc.h": "c",
     "stdlib.h": "c",
-    "memory": "c"
+    "memory": "c",
+    "vexuf_ttl.h": "c"
   },
   "cSpell.words": [
     "ABCDEFGHJKLMNPQRTUVWXYZ",

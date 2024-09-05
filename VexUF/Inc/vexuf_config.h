@@ -27,7 +27,7 @@
 #define EEPROM_CONFIG_FLAG_ADDRESS 0x0000
 
 UF_STATUS CONFIG_IsConfigured(void);
-UF_STATUS CONFIG_loadConfigValues(uint16_t* version, uint16_t* configCount);
+UF_STATUS CONFIG_loadConfigValues(void);
 
 UF_STATUS CONFIG_loadConfiguration(void);
 UF_STATUS CONFIG_saveConfiguration(void);

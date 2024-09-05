@@ -128,12 +128,14 @@ extern TriggerConfiguration triggers[NUMBER_OF_TRIGGERS];
 extern OutputConfiguration outputConf;
 extern char tncMessages[TNC_MESSAGE_COUNT][TNC_MESSAGE_LENGTH];
 extern char tncPaths[TNC_PATH_COUNT][TNC_PATH_LENGTH];
-
-/* Variables -----------------------------------------------------------------*/
 extern VexufStatus vexufStatus;
 
+/* Variables -----------------------------------------------------------------*/
+uint16_t configVersion, configCount;
+
 /* Prototypes ----------------------------------------------------------------*/
-UF_STATUS CONFIG_loadRegNumber(void);
+UF_STATUS
+CONFIG_loadRegNumber(void);
 UF_STATUS CONFIG_saveRegNumber(void);
 
 UF_STATUS CONFIG_loadCallSign(void);
@@ -154,7 +156,7 @@ UF_STATUS CONFIG_loadLcdConf(void);
 UF_STATUS CONFIG_saveLcdConf(void);
 
 UF_STATUS CONFIG_loadSpiConfiguration(void);
-UF_STATUS CONFIG_saveSspiConfiguration(void);
+UF_STATUS CONFIG_saveSpiConfiguration(void);
 
 UF_STATUS CONFIG_loadOutputConf(void);
 UF_STATUS CONFIG_saveOutputConf(void);
@@ -191,20 +193,22 @@ UF_STATUS CONFIG_IsConfigured(void) {
   return UF_NOT_CONFIGURED;
 }
 
-UF_STATUS CONFIG_loadConfigValues(uint16_t* version, uint16_t* configCount) {
-  if (!CONFIG_IsConfigured()) {
+UF_STATUS CONFIG_loadConfigValues(void) {
+  if (CONFIG_IsConfigured() != UF_OK) {
     return UF_NOT_CONFIGURED;
   }
 
-  if (EEPROM_93C86_Read(EEPROM_CONFIG_VERSION_ADDRESS, version) != UF_OK)
+  if (EEPROM_93C86_Read(EEPROM_CONFIG_VERSION_ADDRESS, &configVersion) != UF_OK)
     return UF_ERROR;
-  if (EEPROM_93C86_Read(EEPROM_CONFIG_COUNT_ADDRESS, configCount) != UF_OK)
+  if (EEPROM_93C86_Read(EEPROM_CONFIG_COUNT_ADDRESS, &configCount) != UF_OK)
     return UF_ERROR;
 
   return UF_OK;
 }
 
 UF_STATUS CONFIG_loadConfiguration(void) {
+  if (CONFIG_loadConfigValues() != UF_OK) return UF_ERROR;
+
   if (CONFIG_loadRegNumber() != UF_OK) return UF_ERROR;
   if (CONFIG_loadCallSign() != UF_OK) return UF_ERROR;
   if (CONFIG_loadPwmConfigurations() != UF_OK) return UF_ERROR;
@@ -228,19 +232,31 @@ UF_STATUS CONFIG_saveConfiguration(void) {
   uint16_t confFlag = CONFIG_FLAG;
   uint16_t confVer = CONFIG_VERSION;
 
+  if (CONFIG_saveRegNumber() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveCallSign() != UF_OK) return UF_ERROR;
+  if (CONFIG_savePwmConfigurations() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveActuators() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveSerialConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveI2cConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveLcdConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveSpiConfiguration() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveOutputConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveIndicatorsConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveAvSensors() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveAlarmsConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveTrigsConf() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveTncMessages() != UF_OK) return UF_ERROR;
+  if (CONFIG_saveTncPaths() != UF_OK) return UF_ERROR;
+
   if (EEPROM_93C86_Write(EEPROM_CONFIG_FLAG_ADDRESS, confFlag) != UF_OK)
     return UF_ERROR;
   if (EEPROM_93C86_Write(EEPROM_CONFIG_VERSION_ADDRESS, confVer) != UF_OK)
     return UF_ERROR;
   if (CONFIG_WriteSerialNumber() != UF_OK) return UF_ERROR;
 
-  uint16_t version = 0, confCount = 0;
-  if (CONFIG_loadConfigValues(&version, &confCount) == UF_ERROR)
-    return UF_ERROR;
+  configCount++;
 
-  confCount++;
-
-  if (EEPROM_93C86_Write(EEPROM_CONFIG_COUNT_ADDRESS, confCount) != UF_OK)
+  if (EEPROM_93C86_Write(EEPROM_CONFIG_COUNT_ADDRESS, configCount) != UF_OK)
     return UF_ERROR;
 
   vexufStatus.isConfigured = 1;
@@ -442,7 +458,7 @@ UF_STATUS CONFIG_loadSerialConf() {
   serialConf.ttl_baud = (buffer >> 2) & 0xF;
   serialConf.ttlConf = (buffer >> 6) & 0x7;
   serialConf.tnc_enabled = (buffer >> 9) & 0x1;
-  serialConf.tnc__baud = (buffer >> 10) & 0xF;
+  serialConf.tnc_baud = (buffer >> 10) & 0xF;
 
   return UF_OK;
 }
@@ -452,7 +468,7 @@ UF_STATUS CONFIG_saveSerialConf(void) {
                     ((serialConf.ttl_baud & 0xF) << 2) |
                     ((serialConf.ttlConf & 0x7) << 6) |
                     ((serialConf.tnc_enabled & 0x1) << 9) |
-                    ((serialConf.tnc__baud & 0xF) << 10);
+                    ((serialConf.tnc_baud & 0xF) << 10);
 
   if (EEPROM_93C86_Write(EEPROM_SERIAL_INTERFACE_ADDRESS, buffer) != UF_OK)
     return UF_ERROR;

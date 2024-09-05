@@ -99,7 +99,7 @@ void HD44780_Init(I2C_HandleTypeDef *i2c, uint8_t rows) {
   DelayInit();
   HAL_Delay(50);
   ExpanderWrite(dpBacklight);
-  HAL_Delay(200);
+  HAL_Delay(50);
 
   // 4-bit mode initialization
   for (int i = 0; i < 3; i++) {
