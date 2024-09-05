@@ -26,8 +26,6 @@ typedef struct {
   uint16_t maxOn;
 } AvSensor;
 
-UF_STATUS AVS_Init(void);
-
 UF_STATUS AVS_Scan(void);
 
 void AVS_Test(void);

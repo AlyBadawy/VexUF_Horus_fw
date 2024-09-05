@@ -66,28 +66,22 @@ UF_STATUS IND_BuzzOnStartUp(void) {
   }
   return UF_DISABLED;
 }
-void BUZZ_handleCli(const char *args, char *responseBuffer) {
-  IndConfiguration newIndConfig;
-  memcpy(&newIndConfig, &indConf, sizeof(indConf));
 
+void BUZZ_handleCli(const char *args, char *responseBuffer) {
   if ((strncmp(args, "enable", 6)) == 0) {
-    newIndConfig.buzzerEnabled = 1;
-    CONFIG_setIndicatorsConf(&newIndConfig);
+    indConf.buzzerEnabled = 1;
     setResponse("", 1, responseBuffer);
   } else if ((strncmp(args, "disable", 7)) == 0) {
-    newIndConfig.buzzerEnabled = 0;
-    CONFIG_setIndicatorsConf(&newIndConfig);
+    indConf.buzzerEnabled = 0;
     setResponse("", 0, responseBuffer);
   } else if (strncmp(args, startBeepStr, 10) == 0) {
-    if (newIndConfig.buzzerEnabled) {
+    if (indConf.buzzerEnabled) {
       if (strncmp(args + 11, "on", 2) == 0) {
-        newIndConfig.buzzer1sEnabled = 1;
-        CONFIG_setIndicatorsConf(&newIndConfig);
-        setResponse(startBeepStr, newIndConfig.buzzer1sEnabled, responseBuffer);
+        indConf.buzzer1sEnabled = 1;
+        setResponse(startBeepStr, indConf.buzzer1sEnabled, responseBuffer);
       } else if (strncmp(args + 11, "off", 3) == 0) {
-        newIndConfig.buzzer1sEnabled = 0;
-        CONFIG_setIndicatorsConf(&newIndConfig);
-        setResponse(startBeepStr, newIndConfig.buzzer1sEnabled, responseBuffer);
+        indConf.buzzer1sEnabled = 0;
+        setResponse(startBeepStr, indConf.buzzer1sEnabled, responseBuffer);
       } else {
         sprintf(responseBuffer,
                 "Incorrect parameter. Use 'Buzzer start beep <on|off>'.%s", no);
@@ -96,17 +90,13 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
       sprintf(responseBuffer, "%s%s", buzzerDisabled, no);
     }
   } else if (strncmp(args, "error", 5) == 0) {
-    if (newIndConfig.buzzerEnabled) {
+    if (indConf.buzzerEnabled) {
       if (strncmp(args + 6, "on", 2) == 0) {
-        newIndConfig.buzzerHoldOnError = 1;
-        CONFIG_setIndicatorsConf(&newIndConfig);
-        setResponse(startBeepStr, newIndConfig.buzzerHoldOnError,
-                    responseBuffer);
+        indConf.buzzerHoldOnError = 1;
+        setResponse(startBeepStr, indConf.buzzerHoldOnError, responseBuffer);
       } else if (strncmp(args + 6, "off", 3) == 0) {
-        newIndConfig.buzzerHoldOnError = 0;
-        CONFIG_setIndicatorsConf(&newIndConfig);
-        setResponse(startBeepStr, newIndConfig.buzzerHoldOnError,
-                    responseBuffer);
+        indConf.buzzerHoldOnError = 0;
+        setResponse(startBeepStr, indConf.buzzerHoldOnError, responseBuffer);
       } else {
         sprintf(responseBuffer,
                 "Incorrect parameter. Use 'Buzzer error <on|off>'.%s", no);
@@ -124,6 +114,11 @@ void BUZZ_handleCli(const char *args, char *responseBuffer) {
     } else {
       setResponse(isStr, 0, responseBuffer);
     }
+  } else {
+    sprintf(responseBuffer,
+            "Error with Buzzer command. Please use `help Buzzer` for "
+            "help.%s",
+            no);
   }
 }
 

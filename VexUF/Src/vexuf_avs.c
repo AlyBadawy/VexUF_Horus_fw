@@ -65,13 +65,6 @@ void setAvSensorLimits(AvSensor *av, uint8_t idx, const char *ruleType,
                        uint16_t ruleFlag);
 
 /* Code ----------------------------------------------------------------------*/
-UF_STATUS AVS_Init(void) {
-  for (uint8_t i = 0; i < NUMBER_OF_AVS; i++) {
-    if (CONFIG_getAvSensor(&avSensors[i], i) != UF_OK) return UF_ERROR;
-  }
-  return UF_OK;
-}
-
 UF_STATUS AVS_Scan(void) {
   float vref;
   Indicator ind;
@@ -167,9 +160,9 @@ void setAvSensorStatus(AvSensor *av, uint8_t idx, uint16_t enable,
   else if (ruleFlag == 3)
     av->statusOn = enable;
 
-  CONFIG_SetAvSensor(av, idx);
   sprintf(responseBuffer, "AV%d %s rule %s.", idx + 1, ruleType,
           enable ? "enabled" : "disabled");
+  sprintf(responseBuffer + strlen(responseBuffer), "%s", ok);
 }
 
 void setAvSensorLimits(AvSensor *av, uint8_t idx, const char *ruleType,
@@ -186,7 +179,6 @@ void setAvSensorLimits(AvSensor *av, uint8_t idx, const char *ruleType,
     av->maxOn = max;
   }
 
-  CONFIG_SetAvSensor(av, idx);
   sprintf(responseBuffer, "AV%d %s rule set to Min: %d, Max: %d%s", idx + 1,
           ruleType, min, max, ok);
 }
@@ -194,8 +186,6 @@ void setAvSensorLimits(AvSensor *av, uint8_t idx, const char *ruleType,
 void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer) {
   uint16_t min = 0, max = 0;
   OptionStatus status = OPTION_ERROR_INVALID_FORMAT;
-  AvSensor av;
-  memcpy(&av, &avSensors[idx], sizeof(AvSensor));
 
   const struct {
     const char *command;
@@ -209,80 +199,80 @@ void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer) {
   };
 
   if (strlen(args) == 0) {
-    if (av.enabled != 1) {
-      sprintf(responseBuffer, "AV%d is disabled.", idx + 1);
+    if (avSensors[idx].enabled != 1) {
+      sprintf(responseBuffer, "AV%d is disabled.%s", idx + 1, ok);
     } else {
       sprintf(responseBuffer, "AV%d is enabled with the following rules:\r\n",
               idx + 1);
-      if (av.statusSlow) {
+      if (avSensors[idx].statusSlow) {
         sprintf(responseBuffer + strlen(responseBuffer),
-                "  Slow Rule Enabled. Min: %d, Max: %d\r\n", av.minSlow,
-                av.maxSlow);
+                "  Slow Rule Enabled. Min: %d, Max: %d\r\n",
+                avSensors[idx].minSlow, avSensors[idx].maxSlow);
       } else {
         sprintf(responseBuffer + strlen(responseBuffer),
-                "  SlowRule Disabled.\r\n");
+                "  Slow Rule Disabled.\r\n");
       }
-      if (av.statusFast) {
+      if (avSensors[idx].statusFast) {
         sprintf(responseBuffer + strlen(responseBuffer),
-                "  Fast Rule Enabled. Min: %d, Max: %d\r\n", av.minFast,
-                av.maxFast);
+                "  Fast Rule Enabled. Min: %d, Max: %d\r\n",
+                avSensors[idx].minFast, avSensors[idx].maxFast);
       } else {
         sprintf(responseBuffer + strlen(responseBuffer),
                 "  Fast Rule Disabled.\r\n");
       }
-      if (av.statusOn) {
+      if (avSensors[idx].statusOn) {
         sprintf(responseBuffer + strlen(responseBuffer),
-                "  On Rule Enabled. Min: %d, Max: %d\r\n", av.minOn, av.maxOn);
+                "  On Rule Enabled. Min: %d, Max: %d", avSensors[idx].minOn,
+                avSensors[idx].maxOn);
       } else {
-        sprintf(responseBuffer + strlen(responseBuffer),
-                "  On Rule Disabled.\r\n");
+        sprintf(responseBuffer + strlen(responseBuffer), "  On Rule Disabled.");
       }
     }
+    sprintf(responseBuffer + strlen(responseBuffer), "%s", ok);
     return;
   }
 
   for (size_t i = 0; i < sizeof(rules) / sizeof(rules[0]); i++) {
     if (strncmp(args, "enable", 6) == 0) {
-      av.enabled = 1;
-      CONFIG_SetAvSensor(&av, idx);
+      avSensors[idx].enabled = 1;
       sprintf(responseBuffer, "AV%d is set to enabled.%s", idx + 1, ok);
       return;
     } else if (strncmp(args, "disable", 7) == 0) {
-      av.enabled = 0;
-      CONFIG_SetAvSensor(&av, idx);
+      avSensors[idx].enabled = 0;
       sprintf(responseBuffer, "AV%d is set to disabled.%s", idx + 1, ok);
       return;
     } else if (strncmp(args, rules[i].command, rules[i].commandLength) == 0) {
-      if (av.enabled != 1) {
-        sprintf(responseBuffer, "AV%d %s rule is disabled.", idx + 1,
-                rules[i].ruleType);
+      if (avSensors[idx].enabled != 1) {
+        sprintf(responseBuffer, "AV%d %s rule is disabled.%s", idx + 1,
+                rules[i].ruleType, ok);
         return;
       }
       const char *buffer = trim((char *)args + rules[i].commandLength);
       if (strlen(buffer) == 0) {
-        sprintf(responseBuffer, "AV%d %s rule is %s.", idx + 1,
-                rules[i].ruleType, av.enabled ? "enabled" : "disabled");
+        sprintf(responseBuffer, "AV%d %s rule is %s.%s", idx + 1,
+                rules[i].ruleType,
+                avSensors[idx].enabled ? "enabled" : "disabled", ok);
         return;
       } else if (strncmp(buffer, "enable", 6) == 0) {
-        setAvSensorStatus(&av, idx, 1, rules[i].ruleType, rules[i].ruleFlag,
-                          responseBuffer);
+        setAvSensorStatus(&avSensors[idx], idx, 1, rules[i].ruleType,
+                          rules[i].ruleFlag, responseBuffer);
         return;
       } else if (strncmp(buffer, "disable", 7) == 0) {
-        setAvSensorStatus(&av, idx, 0, rules[i].ruleType, rules[i].ruleFlag,
-                          responseBuffer);
+        setAvSensorStatus(&avSensors[idx], idx, 0, rules[i].ruleType,
+                          rules[i].ruleFlag, responseBuffer);
         return;
       } else {
         uint16_t enabled = 0;
         if (rules[i].ruleFlag == 1)
-          enabled = av.statusSlow;
+          enabled = avSensors[idx].statusSlow;
         else if (rules[i].ruleFlag == 2)
-          enabled = av.statusFast;
+          enabled = avSensors[idx].statusFast;
         else if (rules[i].ruleFlag == 3)
-          enabled = av.statusOn;
+          enabled = avSensors[idx].statusOn;
 
-        if (av.enabled != 1 || enabled != 1) {
-          sprintf(responseBuffer, "AV%d %s rule is disabled.", idx + 1,
-                  rules[i].ruleType);
+        if (avSensors[idx].enabled != 1 || enabled != 1) {
+          sprintf(responseBuffer, "AV%d %s rule is disabled.%s", idx + 1,
+                  rules[i].ruleType, no);
           return;
         }
 
@@ -292,15 +282,15 @@ void handleCliForAv(uint8_t idx, const char *args, char *responseBuffer) {
           return;
         }
 
-        setAvSensorLimits(&av, idx, rules[i].ruleType, responseBuffer, min, max,
-                          rules[i].ruleFlag);
+        setAvSensorLimits(&avSensors[idx], idx, rules[i].ruleType,
+                          responseBuffer, min, max, rules[i].ruleFlag);
         return;
       }
     }
   }
 
   sprintf(responseBuffer,
-          "Error with AV command. Please use slow, fast, or on.%s", no);
+          "Error with AV command. Please use `help AV` for help.%s", no);
 }
 
 OptionStatus extractAvStatus(const char *args, uint16_t *min, uint16_t *max) {

@@ -152,22 +152,14 @@ int main(void) {
     ERROR_handleNoConfig();
   }
 
-  if (CONFIG_WriteSerialNumber() == UF_ERROR) Error_Handler();
-  // TODO: Check for registration number and handle it.
-  if (CONFIG_getCallSign(&callsign) == UF_ERROR) Error_Handler();
-  if (CONFIG_getPwmConfigurations(&pwmConfig) == UF_ERROR) Error_Handler();
-  if (CONFIG_getSerialConf(&serialConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getI2cConf(&i2cConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getLcdConf(&lcdConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getSpiConfiguration(&spiConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getOutputConf(&outputConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
+  if (CONFIG_loadConfiguration() != UF_OK) {
+    ERROR_handleNoConfig();
+  }
 
-  if (RTC_InitAlarms() == UF_ERROR) Error_Handler();
+  // TODO: Check for registration number and handle it.
+
   if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
   if (ACT_Init() == UF_ERROR) Error_Handler();
-  if (AVS_Init() == UF_ERROR) Error_Handler();
-  if (TRIGS_Init() == UF_ERROR) Error_Handler();
   if (SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
     Error_Handler();
   if (CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)

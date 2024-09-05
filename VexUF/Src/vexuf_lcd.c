@@ -24,9 +24,6 @@ uint8_t specialChars[5][8] = {
 
 // Initialize the LCD
 UF_STATUS LCD_Init(void) {
-  LcdConfiguration lcdConf = {0};
-  if (CONFIG_getLcdConf(&lcdConf) != UF_OK) return UF_ERROR;
-
   switch (lcdConf.lcdType) {
     case NoLCD:
       return UF_DISABLED;

@@ -36,12 +36,12 @@ extern char *ok;
 extern char *no;
 
 /* Variables -----------------------------------------------------------------*/
-static const char *major = "1";
-static const char *minor = "0";
-static const char *patch = "0";
+static const char *major = "0";
+static const char *minor = "8";
+static const char *patch = "2";
 
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
-uint32_t regNumber;
+char regNumber[REGISTRATION_NUMBER_LENGTH];
 VexufStatus vexufStatus;
 
 /* Prototypes ----------------------------------------------------------------*/
@@ -85,25 +85,22 @@ void VexUF_handleCliInfo(const char *args, char *responseBuffer) {
 
     uint16_t vexufSerial = getSerialBytes();
 
-    char *regNumber = "";
-    CONFIG_getRegNumber(regNumber);
-
     char *status =
         vexufStatus.isConfigured != 1 ? "Configured" : "Not Configured";
 
     uint16_t configVersion = 0, configCount = 0;
     if (vexufStatus.isConfigured == 1)
-      CONFIG_GetConfigValues(&configVersion, &configCount);
+      CONFIG_loadConfigValues(&configVersion, &configCount);
 
     sprintf(responseBuffer,
-            "\r\nInformation: \r\n"
+            "Information: \r\n"
             "  Serial Number       : %s\r\n"
             "  VexUF FW Version    : %s.%s.%s\r\n"
             "  VexUF               : %04X\r\n"
             "  Registration Number : %s\r\n"
             "  Config Status       : %s\r\n"
             "  Config Version      : %d\r\n"
-            "  Config Count        : %d\r\n"
+            "  Config Count        : %d"
             "%s",
             serialNumber, major, minor, patch, vexufSerial, regNumber, status,
             configVersion, configCount, ok);
@@ -171,8 +168,9 @@ void VexUF_handleCliInfo(const char *args, char *responseBuffer) {
     }
   } else {
     sprintf(responseBuffer,
-            "Invalid command: %s.\r\nUse 'Help' for a list of commands.%s",
-            args, no);
+            "Error with Info command. Please use `help Info` for "
+            "help.%s",
+            no);
   }
 }
 

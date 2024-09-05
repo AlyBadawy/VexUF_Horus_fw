@@ -11,7 +11,7 @@
 #define TNC_PATH_LENGTH 32
 #define TNC_PATH_COUNT 5
 
-void TNC_init(UART_HandleTypeDef *tnc);
+UF_STATUS TNC_init(UART_HandleTypeDef *tnc);
 void TNC_handleCli(const char *args, char *responseBuffer);
 
 #endif  // VEXUF_TNC_H_

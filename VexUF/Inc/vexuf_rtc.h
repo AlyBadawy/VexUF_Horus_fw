@@ -18,8 +18,6 @@ typedef struct {
 
 } AlarmConfiguration;
 
-UF_STATUS RTC_InitAlarms(void);
-
 UF_STATUS RTC_getDateTime(char *datetime);
 UF_STATUS RTC_setDateTime(const char *datetime);
 

@@ -64,7 +64,7 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
         HAL_OK) {
       return UF_ERROR;
     }
-    TNC_init(tncUart);
+    if (TNC_init(tncUart) != UF_OK) return UF_ERROR;
   } else {
     if (HAL_UART_DeInit(tncUart) != HAL_OK) return UF_ERROR;
   }

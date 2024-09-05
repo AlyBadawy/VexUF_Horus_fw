@@ -193,7 +193,7 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
 void handle_unsupported(const char *args) {
   UNUSED(args);
   sprintf(serialTxBuffer,
-          "This command is not implemented in this version of the Firmware.\r\n"
+          "This command is not implemented in this version of the firmware.\r\n"
           "        Update the firmware to get this feature.%s",
           no);
 }
@@ -217,7 +217,7 @@ void handle_pwm(const char *args) { PWM_handleCli(args, serialTxBuffer); }
 void handle_triggers(const char *args) { handle_unsupported(args); }
 void handle_save(const char *args) {
   UNUSED(args);
-  if (CONFIG_SetIsConfigured() == UF_OK) {
+  if (CONFIG_saveConfiguration() == UF_OK) {
     sprintf(serialTxBuffer, "Configuration saved.%s", ok);
   } else {
     sprintf(serialTxBuffer, "Error saving configuration.%s", no);

@@ -76,12 +76,9 @@ void ERROR_handleNoConfig(void) {
     EEPROM_93C86_WriteAll(0x00);
   }
 
-  SerialConfiguration newConf;
-  memcpy(&newConf, &serialConf, sizeof(SerialConfiguration));
-  newConf.ttl_enabled = 1;
-  newConf.ttl_led_enabled = 1;
-  newConf.ttl_baud = Baud115200;
-  CONFIG_setSerialConf(&newConf);
+  serialConf.ttl_enabled = 1;
+  serialConf.ttl_led_enabled = 1;
+  serialConf.ttl_baud = Baud115200;
 
   SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
   CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER);
