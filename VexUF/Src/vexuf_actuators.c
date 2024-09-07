@@ -31,7 +31,7 @@
 
 /* Variables -----------------------------------------------------------------*/
 ActuatorsConfiguration actConf = {0};
-ActuatorsValues actValues;  // default values for the actuators
+ActuatorsValues actDefaultValues;  // default values for the actuators
 static uint8_t actuatorsData = 0;
 
 /* Prototypes ----------------------------------------------------------------*/
@@ -39,11 +39,9 @@ uint8_t convertToShiftRegisterValue(ActuatorsValues actValues);
 
 /* Code ----------------------------------------------------------------------*/
 UF_STATUS ACT_Init(void) {
-  if (CONFIG_getActuators(&actConf, &actValues) != UF_OK) return UF_ERROR;
-
   if (actConf.actuators_enabled != 1) return UF_DISABLED;
 
-  actuatorsData = convertToShiftRegisterValue(actValues);
+  actuatorsData = convertToShiftRegisterValue(actDefaultValues);
 
   return ACTUATORS_Update();
 }

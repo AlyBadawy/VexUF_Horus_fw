@@ -24,9 +24,6 @@ uint8_t specialChars[5][8] = {
 
 // Initialize the LCD
 UF_STATUS LCD_Init(void) {
-  LcdConfiguration lcdConf = {0};
-  if (CONFIG_getLcdConf(&lcdConf) != UF_OK) return UF_ERROR;
-
   switch (lcdConf.lcdType) {
     case NoLCD:
       return UF_DISABLED;
@@ -34,10 +31,11 @@ UF_STATUS LCD_Init(void) {
       HD44780_Init(&hi2c1, 4);
       break;
     case LCD1602:
+      return UF_NOT_CONFIGURED;  // TODO: Implement this case
       HD44780_Init(&hi2c1, 2);
       break;
     default:
-      return UF_DISABLED;  // TODO: use error when default case is implemented
+      return UF_ERROR;
   }
 
   if (lcdConf.lcdType == NoLCD) return UF_DISABLED;

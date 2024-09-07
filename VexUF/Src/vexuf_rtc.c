@@ -33,6 +33,7 @@ extern RTC_HandleTypeDef hrtc;
 
 /* Extern Variables ----------------------------------------------------------*/
 extern char *ok;
+extern char *no;
 
 /* Variables -----------------------------------------------------------------*/
 static const uint8_t list_mth[12] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
@@ -41,12 +42,6 @@ AlarmConfiguration alarms[2];
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
-UF_STATUS RTC_InitAlarms(void) {
-  if (CONFIG_getAlarmConf(&alarms[0], 0) != UF_OK) return UF_ERROR;
-  if (CONFIG_getAlarmConf(&alarms[1], 1) != UF_OK) return UF_ERROR;
-
-  return UF_OK;
-}
 
 UF_STATUS RTC_getDateTime(char *datetime) {
   RTC_DateTypeDef sDate;
@@ -121,11 +116,17 @@ void RTC_handleCli(const char *args, char *responseBuffer) {
   if (*args == '\0') {
     // Getter: Show current date and time
     char datetime[20];
-    RTC_getDateTime(datetime);
+    if (RTC_getDateTime(datetime) == UF_ERROR) {
+      sprintf(responseBuffer, "Error getting date and time%s", no);
+      return;
+    }
     sprintf(responseBuffer, "Date/Time: %s%s", datetime, ok);
   } else {
     // Setter: Set new date and time
-    RTC_setDateTime(args);
-    sprintf(responseBuffer, "Date and Time set...%s", ok);
+    if (RTC_setDateTime(args) == UF_ERROR) {
+      sprintf(responseBuffer, "Error setting date and time%s", no);
+    } else {
+      sprintf(responseBuffer, "Date and Time set...%s", ok);
+    }
   }
 }

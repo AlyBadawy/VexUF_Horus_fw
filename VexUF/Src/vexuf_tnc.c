@@ -25,7 +25,8 @@
 #include "vexuf_serial.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-static UART_HandleTypeDef *tncUart;
+extern UART_HandleTypeDef *tncUart;
+
 /* Defines -------------------------------------------------------------------*/
 
 /* Macros --------------------------------------------------------------------*/
@@ -34,33 +35,34 @@ static UART_HandleTypeDef *tncUart;
 extern SerialConfiguration serialConf;
 extern char *ok;
 extern char *no;
+extern char *invalidBaud;
 
 /* Variables -----------------------------------------------------------------*/
 char callsign[CALLSIGN_LENGTH];
+char tncMessages[TNC_MESSAGE_COUNT][TNC_MESSAGE_LENGTH];
+char tncPaths[TNC_PATH_COUNT][TNC_PATH_LENGTH];
+
 /* Prototypes ----------------------------------------------------------------*/
 
 /* Code ----------------------------------------------------------------------*/
-void TNC_init(UART_HandleTypeDef *tnc) { tncUart = tnc; }
+
 void TNC_handleCli(const char *args, char *responseBuffer) {
-  static char *invalidBaud =
-      "\r\nInvalid baud rate.\r\n Allowed rates are: 300, 600, 1200, 4800, "
-      "9600, 19200, 57600, or 115200.";
+  uint32_t baudInt = 0;
+  SERIAL_baudToInt(serialConf.tnc_baud, &baudInt);
+
+  char tncEnabled[70];
+  sprintf(tncEnabled, "enabled. \r\n  Callsign: %s\r\n  Baud    : %lu",
+          callsign, baudInt);
 
   if (args == NULL || strlen(args) == 0) {
     sprintf(responseBuffer, "TNC is currently %s%s",
-            serialConf.tnc_enabled == 1 ? "enabled" : "disabled", ok);
+            serialConf.tnc_enabled == 1 ? tncEnabled : "disabled", ok);
   } else {
     if (strncmp(args, "enable", 6) == 0) {
-      SerialConfiguration newConf;
-      memcpy(&newConf, &serialConf, sizeof(SerialConfiguration));
-      newConf.tnc_enabled = 1;
-      CONFIG_setSerialConf(&newConf);
+      serialConf.tnc_enabled = 1;
       sprintf(responseBuffer, "TNC enabled%s", ok);
     } else if (strncmp(args, "disable", 7) == 0) {
-      SerialConfiguration newConf;
-      memcpy(&newConf, &serialConf, sizeof(SerialConfiguration));
-      newConf.tnc_enabled = 0;
-      CONFIG_setSerialConf(&newConf);
+      serialConf.tnc_enabled = 0;
       sprintf(responseBuffer, "TNC disabled%s", ok);
     } else if (strncmp(args, "callsign", 8) == 0) {
       if (serialConf.tnc_enabled == 0) {
@@ -73,15 +75,13 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
 
       if (*callsignArgs == '\0') {
         // Getter: Show current callsign
-        char callsignBuffer[CALLSIGN_LENGTH];
-        CONFIG_getCallSign(callsignBuffer);
-        sprintf(responseBuffer, "Current Callsign: %s%s", callsignBuffer, ok);
+        sprintf(responseBuffer, "Current Callsign: %s%s", callsign, ok);
       } else {
         // Setter: Set new callsign
-        if (strlen(callsignArgs) < CALLSIGN_LENGTH) {
-          CONFIG_setCallSign(callsignArgs);
-          sprintf(responseBuffer, "Callsign set to: %s%s", callsignArgs,
-                  ok);  // TODO: upper case callsignArgs
+        if (strlen(callsignArgs) <= CALLSIGN_LENGTH) {
+          memset(callsign, 0, CALLSIGN_LENGTH);
+          memcpy(callsign, callsignArgs, strlen(callsignArgs));
+          sprintf(responseBuffer, "Callsign set to: %s%s", callsignArgs, ok);
         } else {
           sprintf(responseBuffer, "Error: Callsign is too long.%s", no);
         }
@@ -98,7 +98,7 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
       if (*baudArgs == '\0') {
         // Getter: Show current baud rate
         uint32_t currentBaudInt;
-        SERIAL_baudToInt(serialConf.tnc__baud, &currentBaudInt);
+        SERIAL_baudToInt(serialConf.tnc_baud, &currentBaudInt);
         sprintf(responseBuffer, "Current Baud Rate: %lu%s", currentBaudInt, ok);
       } else {
         // Setter: Set new baud rate
@@ -106,16 +106,13 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
         if (newBaudInt == 300 || newBaudInt == 600 || newBaudInt == 1200 ||
             newBaudInt == 4800 || newBaudInt == 9600 || newBaudInt == 19200 ||
             newBaudInt == 57600 || newBaudInt == 115200) {
-          SerialConfiguration newConf;
-          memcpy(&newConf, &serialConf, sizeof(SerialConfiguration));
           SerialBaudRate newBaud;
           if (SERIAL_intToBaud(newBaudInt, &newBaud) != UF_OK) {
             sprintf(responseBuffer, "%s%s", invalidBaud, no);
             return;
           }
-          newConf.tnc__baud = newBaud;
-          if (CONFIG_setSerialConf(&newConf) == UF_OK &&
-              SERIAL_setBaudRate(tncUart, newBaud) == UF_OK) {
+          serialConf.tnc_baud = newBaud;
+          if (SERIAL_setBaudRate(tncUart, newBaud) == UF_OK) {
             sprintf(responseBuffer, "Baud rate set to: %lu%s", newBaudInt, ok);
           } else {
             sprintf(responseBuffer, "Error: Could not set baud rate.%s", no);
@@ -152,14 +149,13 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
 
           if (*message == '\0') {
             // Getter: Show current message
-            char messageBuffer[TNC_MESSAGE_LENGTH];
-            CONFIG_getTncMessage(messageBuffer, messageNumber);
             sprintf(responseBuffer, "Message %d: %s%s", messageNumber,
-                    messageBuffer, ok);
+                    tncMessages[messageNumber], ok);
           } else {
             // Setter: Set new message
             if (strlen(message) < TNC_MESSAGE_LENGTH) {
-              CONFIG_setTncMessage(message, messageNumber);
+              memset(tncMessages[messageNumber], 0, TNC_MESSAGE_LENGTH);
+              memcpy(tncMessages[messageNumber], message, strlen(message));
               sprintf(responseBuffer, "Message %d set to: %s%s", messageNumber,
                       message, ok);
             } else {
@@ -199,14 +195,13 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
 
           if (*path == '\0') {
             // Getter: Show current path
-            char pathBuffer[TNC_PATH_LENGTH];
-            CONFIG_getTncPath(pathBuffer, pathNumber);
-            sprintf(responseBuffer, "Path %d: %s%s", pathNumber, pathBuffer,
-                    ok);
+            sprintf(responseBuffer, "Path %d: %s%s", pathNumber,
+                    tncPaths[pathNumber], ok);
           } else {
             // Setter: Set new path
             if (strlen(path) < TNC_PATH_LENGTH) {
-              CONFIG_setTncPath(path, pathNumber);
+              memset(tncPaths[pathNumber], 0, TNC_PATH_LENGTH);
+              memcpy(tncPaths[pathNumber], path, strlen(path));
               sprintf(responseBuffer, "Path %d set to: %s%s", pathNumber, path,
                       ok);
             } else {
@@ -217,11 +212,10 @@ void TNC_handleCli(const char *args, char *responseBuffer) {
         }
       }
     } else {
-      sprintf(responseBuffer, "Invalid command. use `help TNC` for help.%s",
-              no);
+      sprintf(responseBuffer,
+              "Error with TNC command. use `help TNC` for help.%s", no);
     }
   }
 }
 
-/* Private Methods
- * -----------------------------------------------------------*/
+/* Private Methods -----------------------------------------------------------*/

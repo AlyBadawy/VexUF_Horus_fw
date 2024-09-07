@@ -137,48 +137,35 @@ int main(void) {
   MX_TIM11_Init();
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
-  // TODO: Enable before release
-  // MX_USB_DEVICE_Init();
+  MX_USB_DEVICE_Init();
 
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_SET);
   EEPROM_93C86_init(&hspi1, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
   TIMERS_init(&TIMER_10HZ_HANDLER, &TIMER_1HZ_HANDLER, &TIMER_0D1HZ_HANDLER);
   TIMERS_Start();
-
   PWM_init(&TIMER_PWM1_HANDLER, &TIMER_PWM2_HANDLER);
 
-  if (CONFIG_IsConfigured() == UF_OK) {
+  if (CONFIG_IsConfigured() != UF_OK) {
     ERROR_handleNoConfig();
   }
-  if (CONFIG_WriteSerialNumber() == UF_ERROR) Error_Handler();
-  // TODO: Check for registration number and handle it.
-  if (CONFIG_getCallSign(&callsign) == UF_ERROR) Error_Handler();
-  if (CONFIG_getPwmConfigurations(&pwmConfig) == UF_ERROR) Error_Handler();
-  if (CONFIG_getSerialConf(&serialConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getI2cConf(&i2cConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getLcdConf(&lcdConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getSpiConfiguration(&spiConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getOutputConf(&outputConf) == UF_ERROR) Error_Handler();
-  if (CONFIG_getIndicatorsConf(&indConf) == UF_ERROR) Error_Handler();
 
-  if (RTC_InitAlarms() == UF_ERROR) Error_Handler();
+  if (CONFIG_loadConfiguration() != UF_OK) {
+    ERROR_handleNoConfig();
+  }
+
+  // TODO: Check for registration number and handle it.
+
   if (AHT20_Init(&hi2c1, AHT20_ADDRESS) == UF_ERROR) Error_Handler();
   if (ACT_Init() == UF_ERROR) Error_Handler();
-  if (AVS_Init() == UF_ERROR) Error_Handler();
-  if (TRIGS_Init() == UF_ERROR) Error_Handler();
-  if (CLI_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
-    Error_Handler();
   if (SERIAL_init(&UART_TTL_HANDLER, &UART_TNC_HANDLER) == UF_ERROR)
     Error_Handler();
+  if (CLI_init() != UF_OK) Error_Handler();
+
   if (LCD_Init() == UF_ERROR) Error_Handler();
 
   HAL_Delay(500);
   IND_BuzzOnStartUp();
-
-  HAL_Delay(500);
-
-  printf("VexUF Horus is ready.\n");
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_RESET);
 
 #ifndef DEBUG
@@ -193,13 +180,19 @@ int main(void) {
       if (CLI_handleCommand(TTL) == UF_ERROR) {
         // todo: handle error
       }
-
       vexufStatus.ttlBuffered = 0;
     }
 
     if (vexufStatus.tncBuffered == 1) {
       // TODO: handle TNC buffer
       vexufStatus.ttlBuffered = 0;
+    }
+
+    if (vexufStatus.cdcBuffered == 1) {
+      if (CLI_handleCommand(CDC) == UF_ERROR) {
+        // TODO: handle error
+      }
+      vexufStatus.cdcBuffered = 0;
     }
 
     // Run this routine every 100ms

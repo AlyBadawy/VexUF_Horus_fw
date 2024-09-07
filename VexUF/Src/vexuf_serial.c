@@ -20,10 +20,11 @@
 
 #include "vexuf_config.h"
 #include "vexuf_tnc.h"
+#include "vexuf_ttl.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-static UART_HandleTypeDef *ttlUart;
-static UART_HandleTypeDef *tncUart;
+UART_HandleTypeDef *ttlUart;
+UART_HandleTypeDef *tncUart;
 
 /* Defines -------------------------------------------------------------------*/
 
@@ -31,13 +32,15 @@ static UART_HandleTypeDef *tncUart;
 
 /* Extern Variables ----------------------------------------------------------*/
 extern VexufStatus vexufStatus;
+extern unsigned char cdcRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t cdcRxIdx;
 
 /* Variables -----------------------------------------------------------------*/
-SerialConfiguration serialConf = {0};
+SerialConfiguration serialConf;
 unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
 unsigned char tncRxData[SERIAL_BUFFER_SIZE];
-uint16_t ttlRxIdx;
-uint16_t tncRxIdx;
+uint32_t ttlRxIdx;
+uint32_t tncRxIdx;
 
 /* Prototypes ----------------------------------------------------------------*/
 
@@ -46,23 +49,26 @@ UF_STATUS SERIAL_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
   ttlUart = ttl;
   tncUart = tnc;
 
-  if (serialConf.ttl_enabled) {
+  if (ttl && serialConf.ttl_enabled) {
     if (SERIAL_setBaudRate(ttlUart, (uint16_t)serialConf.ttl_baud) != UF_OK)
       return UF_ERROR;
     if (HAL_UARTEx_ReceiveToIdle_IT(ttlUart, ttlRxData, SERIAL_BUFFER_SIZE) !=
         HAL_OK) {
       return UF_ERROR;
     }
+  } else {
+    if (HAL_UART_DeInit(ttlUart) != HAL_OK) return UF_ERROR;
   }
 
-  if (serialConf.tnc_enabled) {
+  if (tnc && serialConf.tnc_enabled) {
     if (SERIAL_setBaudRate(tncUart, serialConf.ttl_baud) != UF_OK)
       return UF_ERROR;
     if (HAL_UARTEx_ReceiveToIdle_IT(tncUart, tncRxData, SERIAL_BUFFER_SIZE) !=
         HAL_OK) {
       return UF_ERROR;
     }
-    TNC_init(tncUart);
+  } else {
+    if (HAL_UART_DeInit(tncUart) != HAL_OK) return UF_ERROR;
   }
   return UF_OK;
 }
@@ -143,14 +149,16 @@ UF_STATUS SERIAL_baudToInt(SerialBaudRate baud, uint32_t *baudInt) {
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
   uint8_t *rxData;
-  uint16_t *rxIdx;
+  uint32_t *rxIdx;
 
   if (huart == ttlUart) {
     rxData = ttlRxData;
     rxIdx = &ttlRxIdx;
-  } else {
+  } else if (huart == tncUart) {
     rxData = tncRxData;
     rxIdx = &tncRxIdx;
+  } else {
+    return;
   }
 
   huart == ttlUart ? (vexufStatus.ttlBuffered = 1)

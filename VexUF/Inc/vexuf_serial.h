@@ -3,7 +3,7 @@
 
 #include "vexuf.h"
 
-#define SERIAL_BUFFER_SIZE 1024
+#define SERIAL_BUFFER_SIZE 2048
 
 typedef enum {
   Baud300 = 0,
@@ -25,7 +25,7 @@ typedef struct {
   SerialBaudRate ttl_baud : 4;
   TtlLogConfiguration ttlConf : 3;
   uint16_t tnc_enabled : 1;
-  SerialBaudRate tnc__baud : 4;
+  SerialBaudRate tnc_baud : 4;
   uint16_t reserved : 2;
 } SerialConfiguration;
 

@@ -19,6 +19,7 @@
 #include "vexuf_temperature.h"
 
 #include "aht20.h"
+#include "vexuf.h"
 #include "vexuf_adc.h"
 #include "vexuf_avs.h"
 
@@ -31,7 +32,9 @@
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
+extern VexufStatus vexufStatus;
 extern char *ok;
+extern char *no;
 
 /* Variables -----------------------------------------------------------------*/
 float cpuTempC = 0, internalTempC = 0;
@@ -60,6 +63,11 @@ UF_STATUS TEMPERATURE_getInternalTempC(void) {
 }
 
 void TEMPERATURE_handleCli(const char *args, char *responseBuffer) {
+  if (vexufStatus.isConfigured == 0) {
+    sprintf(responseBuffer,
+            "VexUF is not configured. Please configure VexUF first.%s", no);
+    return;
+  }
   if (strlen(args) == 0) {
     TEMPERATURE_getCpuTempC();
     TEMPERATURE_getInternalTempC();
@@ -82,6 +90,11 @@ void TEMPERATURE_handleCli(const char *args, char *responseBuffer) {
     TEMPERATURE_getCpuTempC();  // todo: implement this function
     sprintf(responseBuffer, "Temperature (CPU): %0.2fC (%0.2fF)%s", cpuTempC,
             TEMPERATURE_cToF(cpuTempC), ok);
+  } else {
+    sprintf(responseBuffer,
+            "Error with Temperature command. Please use `help Temperature` for "
+            "help.%s",
+            no);
   }
 }
 

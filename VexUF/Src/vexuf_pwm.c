@@ -169,7 +169,7 @@ UF_STATUS PWM_deinit(void) {
 void PWM_handleCli(const char *args, char *responseBuffer) {
   static char *invalidValue =
       "\r\nInvalid PWM value.\r\n Allowed range is: 0 to 999.";
-  static char *unknown = "Unknown PWM command. Use 'help PWM' for help.";
+  static char *unknown = "Error with PWM command. use `help PWM` for help";
   static char *statusEnabled = "PWM%c: Enabled - Default value: %d.%s";
   static char *statusDisabled = "PWM%c: Disabled.%s";
 
@@ -205,25 +205,19 @@ void PWM_handleCli(const char *args, char *responseBuffer) {
         }
       }
     } else if (strncmp(pwmArgs, "enable", 6) == 0) {
-      PwmConfiguration newConf;
-      memcpy(&newConf, &pwmConfig, sizeof(PwmConfiguration));
       if (args[0] == '1') {
-        newConf.pwm1Enabled = 1;
+        pwmConfig.pwm1Enabled = 1;
       } else {
-        newConf.pwm2Enabled = 1;
+        pwmConfig.pwm2Enabled = 1;
       }
-      CONFIG_setPwmConfigurations(&newConf);
       PWM_init(pwm1Timer, pwm2Timer);
       sprintf(responseBuffer, "PWM%c is set to Enabled%s", args[0], ok);
     } else if (strncmp(pwmArgs, "disable", 7) == 0) {
-      PwmConfiguration newConf;
-      memcpy(&newConf, &pwmConfig, sizeof(PwmConfiguration));
       if (args[0] == '1') {
-        newConf.pwm1Enabled = 0;
+        pwmConfig.pwm1Enabled = 0;
       } else {
-        newConf.pwm2Enabled = 0;
+        pwmConfig.pwm2Enabled = 0;
       }
-      CONFIG_setPwmConfigurations(&newConf);
       PWM_Stop(args[0] == '1' ? PwmChannel1 : PwmChannel2);
       sprintf(responseBuffer, "PWM%c is set to Disabled%s", args[0], ok);
     } else if (strncmp(pwmArgs, "value", 5) == 0) {
@@ -243,14 +237,11 @@ void PWM_handleCli(const char *args, char *responseBuffer) {
         if (value < 0 || value > 999) {
           sprintf(responseBuffer, "%s%s", invalidValue, no);
         } else {
-          PwmConfiguration newConf;
-          memcpy(&newConf, &pwmConfig, sizeof(PwmConfiguration));
           if (args[0] == '1') {
-            newConf.pwm1Value = value;
+            pwmConfig.pwm1Value = value;
           } else {
-            newConf.pwm2Value = value;
+            pwmConfig.pwm2Value = value;
           }
-          CONFIG_setPwmConfigurations(&newConf);
           PWM_init(pwm1Timer, pwm2Timer);
           sprintf(responseBuffer, "PWM%c default value set to: %d%s", args[0],
                   value, ok);

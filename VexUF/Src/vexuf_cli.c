@@ -22,15 +22,20 @@
 #include <string.h>
 
 #include "aht20.h"
+#include "usbd_cdc_if.h"
 #include "vexuf_avs.h"
 #include "vexuf_buzzer.h"
 #include "vexuf_config.h"
+#include "vexuf_pwm.h"
 #include "vexuf_rtc.h"
+#include "vexuf_serial.h"
 #include "vexuf_temperature.h"
+#include "vexuf_tnc.h"
+#include "vexuf_ttl.h"
 
 /* TypeDef -------------------------------------------------------------------*/
-static UART_HandleTypeDef ttlUart;
-static UART_HandleTypeDef tncUart;
+extern UART_HandleTypeDef *ttlUart;
+extern UART_HandleTypeDef *tncUart;
 
 typedef void (*CommandHandler)(const char *args);
 
@@ -44,61 +49,88 @@ typedef struct {
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
-extern char ttlRxData[SERIAL_BUFFER_SIZE];
-extern char tncRxData[SERIAL_BUFFER_SIZE];
-extern uint16_t ttlRxIdx;
-extern uint16_t tncRxIdx;
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t ttlRxIdx;
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t tncRxIdx;
+extern unsigned char cdcRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t cdcRxIdx;
 extern SerialConfiguration serialConf;
 extern OutputConfiguration outputConfig;
 extern IndConfiguration indConf;
 
 /* Variables -----------------------------------------------------------------*/
 static char serialTxBuffer[SERIAL_BUFFER_SIZE];
-static char *prompt = "\r\nVexUF:Horus >";
+static char *prompt = "VexUF:Horus> ";
 
-char *ok = "\r\nOk!";
-char *no = "\r\nNo!";
+char *ok = "\r\nOk!\r\n";
+char *no = "\r\nNo!\r\n";
+char *invalidBaud =
+    "Invalid baud rate.\r\n Allowed rates are: 300, 600, 1200, 4800, "
+    "9600, 19200, 57600, or 115200.";
 
 /* Prototypes ----------------------------------------------------------------*/
-void handle_temperature(const char *args);
+void handle_info(const char *args);
 void handle_time(const char *args);
+void handle_temperature(const char *args);
 void handle_buzzer(const char *args);
-void handle_avs(const char *args);
+void handle_log(const char *args);
+void handle_i2c(const char *args);
+void handle_spi(const char *args);
+void handle_display(const char *args);
+void handle_ttl(const char *args);
 void handle_tnc(const char *args);
+void handle_avs(const char *args);
+void handle_act(const char *args);
 void handle_pwm(const char *args);
+void handle_triggers(const char *args);
+void handle_save(const char *args);
 void handle_help(const char *args);
 
 /* Code ----------------------------------------------------------------------*/
 
 const Command commands[] = {
+    {"info", handle_info},                // CLI command to get info
     {"time", handle_time},                // CLI command to handle time
     {"temperature", handle_temperature},  // CLI command to handle temperature
     {"buzzer", handle_buzzer},            // CLI command to handle buzzer
-    {"av", handle_avs},                   // CLI command to handle AVs
+    {"log", handle_log},                  // CLI command to handle output
+    {"i2c", handle_i2c},                  // CLI command to handle I2C
+    {"spi", handle_spi},                  // CLI command to handle SPI
+    {"display", handle_display},          // CLI command to handle display
+    {"ttl", handle_ttl},                  // CLI command to handle TTL
     {"tnc", handle_tnc},                  // CLI command to handle TNC
+    {"av", handle_avs},                   // CLI command to handle AVs
+    {"act", handle_act},                  // CLI command to handle actuators
     {"pwm", handle_pwm},                  // CLI command to handle PWM
+    {"trigger", handle_triggers},         // CLI command to handle triggers
+    {"save", handle_save},                // CLI command to handle save config
     {"help", handle_help}                 // CLI command to handle help
                                           // ... add more commands as needed ...
 };
 
-UF_STATUS CLI_init(UART_HandleTypeDef *ttl, UART_HandleTypeDef *tnc) {
-  ttlUart = *ttl;
-  tncUart = *tnc;
+UF_STATUS CLI_init(void) {
+  char newLinePrompt[30];
+  sprintf(newLinePrompt, "\r\n%s", prompt);
 
-  if (HAL_UART_Transmit(&ttlUart, (uint8_t *)prompt, strlen(prompt), 200) !=
-      HAL_OK)
-    return UF_ERROR;
-  if (HAL_UART_Transmit(&tncUart, (uint8_t *)prompt, strlen(prompt), 200) !=
-      HAL_OK)
-    return UF_ERROR;
+  if (serialConf.ttl_enabled == 1) {
+    if (HAL_UART_Transmit(ttlUart, (uint8_t *)newLinePrompt,
+                          strlen(newLinePrompt), 200) != HAL_OK)
+      return UF_ERROR;
+  }
 
+  if (serialConf.tnc_enabled == 1) {
+    if (HAL_UART_Transmit(tncUart, (uint8_t *)newLinePrompt,
+                          strlen(newLinePrompt), 200) != HAL_OK)
+      return UF_ERROR;
+  }
   return UF_OK;
 }
 
 UF_STATUS CLI_handleCommand(const SerialInterface interface) {
-  char command[SERIAL_BUFFER_SIZE];
-  char *rxData;
-  uint16_t *rxIdx;
+  unsigned char command[SERIAL_BUFFER_SIZE];
+  unsigned char *rxData;
+  uint32_t *rxIdx;
   UART_HandleTypeDef *uartHandle;
 
   switch (interface) {
@@ -111,6 +143,10 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
       if (serialConf.tnc_enabled != 1) return UF_DISABLED;
       rxData = tncRxData;
       rxIdx = &tncRxIdx;
+      break;
+    case CDC:
+      rxData = cdcRxData;
+      rxIdx = &cdcRxIdx;
       break;
     default:
       return UF_ERROR;
@@ -146,47 +182,93 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
 
   switch (interface) {
     case TTL:
-      uartHandle = &ttlUart;
+      uartHandle = ttlUart;
       memset(ttlRxData, 0, sizeof(ttlRxData));
+      ttlRxIdx = 0;
       break;
     case TNC:
-      uartHandle = &tncUart;
+      uartHandle = tncUart;
       memset(tncRxData, 0, sizeof(tncRxData));
+      tncRxIdx = 0;
+      break;
+    case CDC:
+      memset(cdcRxData, 0, sizeof(cdcRxData));
+      cdcRxIdx = 0;
       break;
     default:
       return UF_ERROR;
   }
 
   if (strlen(serialTxBuffer) > 0) {
-    if (HAL_UART_Transmit(uartHandle, (uint8_t *)serialTxBuffer,
-                          strlen(serialTxBuffer), 200) != HAL_OK)
-      Error_Handler();
+    if (interface == CDC) {
+      CDC_Transmit_FS((uint8_t *)serialTxBuffer, strlen(serialTxBuffer));
+    } else {
+      if (HAL_UART_Transmit(uartHandle, (uint8_t *)serialTxBuffer,
+                            strlen(serialTxBuffer), 200) != HAL_OK)
+        Error_Handler();
 
-    HAL_Delay(100);
+      HAL_Delay(100);
+    }
+  }
+
+  if (interface == CDC) {
+    CDC_Transmit_FS((uint8_t *)prompt, strlen(prompt));
+    return UF_OK;
   }
   if (HAL_UART_Transmit(uartHandle, (uint8_t *)prompt, strlen(prompt), 200) !=
       HAL_OK)
     Error_Handler();
+
   return UF_OK;
 }
 
 /* Private Methods -----------------------------------------------------------*/
+void handle_unsupported(const char *args) {
+  UNUSED(args);
+  sprintf(serialTxBuffer,
+          "This command is not implemented in this version of the firmware.\r\n"
+          "        Update the firmware to get this feature.%s",
+          no);
+}
+
+void handle_info(const char *args) {
+  VexUF_handleCliInfo(args, serialTxBuffer);
+}
 void handle_time(const char *args) { RTC_handleCli(args, serialTxBuffer); }
-void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
-void handle_avs(const char *args) { AVS_handleCli(args, serialTxBuffer); }
-void handle_tnc(const char *args) { TNC_handleCli(args, serialTxBuffer); }
-void handle_pwm(const char *args) { PWM_handleCli(args, serialTxBuffer); }
 void handle_temperature(const char *args) {
   TEMPERATURE_handleCli(args, serialTxBuffer);
 }
-
+void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
+void handle_log(const char *args) { handle_unsupported(args); }
+void handle_i2c(const char *args) { handle_unsupported(args); }
+void handle_spi(const char *args) { handle_unsupported(args); }
+void handle_display(const char *args) { handle_unsupported(args); }
+void handle_ttl(const char *args) { TTL_handleCli(args, serialTxBuffer); }
+void handle_tnc(const char *args) { TNC_handleCli(args, serialTxBuffer); }
+void handle_avs(const char *args) { AVS_handleCli(args, serialTxBuffer); }
+void handle_act(const char *args) { handle_unsupported(args); }
+void handle_pwm(const char *args) { PWM_handleCli(args, serialTxBuffer); }
+void handle_triggers(const char *args) { handle_unsupported(args); }
+void handle_save(const char *args) {
+  UNUSED(args);
+  if (CONFIG_saveConfiguration() == UF_OK) {
+    sprintf(serialTxBuffer, "Configuration saved.%s", ok);
+  } else {
+    sprintf(serialTxBuffer, "Error saving configuration.%s", no);
+  }
+}
 void handle_help(const char *args) {
   // Array of command details to provide specific help
   const char *command_help[] = {
+      "Info: Get information about your VexUF: Horus\r\n"
+      "  - Use 'Info' to get information about the VexUF.\r\n"
+      "  - Use 'Info dump <n>' to get detailed information about a specific "
+      "region. Where <n> is between 1 and 5.",
+
       "Time: Manage date and time.\r\n"
       "  - Use 'Time' to display the current date and time.\r\n"
       "  - Use 'Time <date> <time>' to set the current date and time.\r\n"
-      "    Example: 'Time 2024-09-02 14:30:00' sets the date and time.\r\n",
+      "    Example: 'Time 2024-09-02 14:30:00' sets the date and time.",
 
       "Temperature: Manage temperature sensors.\r\n"
       "  - Use 'Temperature' to get readings from all sensors.\r\n"
@@ -194,7 +276,7 @@ void handle_help(const char *args) {
       "  - Use 'Temperature Internal' to get the internal sensor's temperature "
       "and humidity.\r\n"
       "  - Use 'Temperature External' to get the external I2C sensor's "
-      "temperature and humidity.\r\n",
+      "temperature and humidity.",
 
       "Buzzer: Control the buzzer functionality.\r\n"
       "  - Use 'Buzzer <enable|disable>' to enable or disable the buzzer.\r\n"
@@ -202,7 +284,64 @@ void handle_help(const char *args) {
       "beep.\r\n"
       "  - Use 'Buzzer error <on|off>' to enable/disable sounding the buzzer "
       "on "
-      "errors.\r\n",
+      "errors.",
+
+      "Log: Manage log output.\r\n"
+      "  - Use 'Log <enable|disable>' to enable or disable log output.\r\n"
+      "  - Use 'Log <clear>' to clear the log.\r\n"
+      "  NOTE: This command is not implemented in this version of the "
+      "Firmware.\r\n"
+      "        Update the firmware to get this feature.",
+
+      "I2C: Manage I2C devices.\r\n"
+      "  - Use 'I2C' to display the status of all I2C devices.\r\n"
+      "  - Use 'I2C <n>' where <n> is the I2C device address to get details "
+      "about "
+      "a specific device.\r\n"
+      "  - Use 'I2C <n> <enable|disable>' to enable or disable a specific I2C "
+      "device.\r\n"
+      "  NOTE: This command is not implemented in this version of the "
+      "Firmware.\r\n"
+      "        Update the firmware to get this feature.",
+
+      "SPI: Manage SPI devices.\r\n"
+      "  - Use 'SPI' to display the status of all SPI devices.\r\n"
+      "  - USe 'SPI <enable|disable>' to enable or disable the SPI "
+      "interface.\r\n"
+      "  NOTE: This command is not implemented in this version of the "
+      "Firmware.\r\n"
+      "        Update the firmware to get this feature.",
+
+      "Display: Manage display devices.\r\n"
+      "  - Use 'Display' to display the status of the display device.\r\n"
+      "  - Use 'Display <enable|disable>' to enable or disable the display.\r\n"
+      "  - Use 'Display <type>' to set the type of the display.\r\n"
+      "  - Use 'Display <brightness> <value>' to set the brightness of the "
+      "display.\r\n"
+      "  NOTE: This command is not implemented in this version of the "
+      "Firmware.",
+
+      "TTL: Manage TTL interface.\r\n"
+      "  - Use 'TTL' to get the status of the TTL interface.\r\n"
+      "  - Use 'TTL <enable|disable>' to enable or disable the TTL "
+      "interface.\r\n"
+      "  - Use 'TTL baud' to get current Baud rate for the TTL interface.\r\n"
+      "  - Use 'TTL baud <baud_rate>' to set the Baud rate.\r\n",
+
+      "TNC: Manage TNC.\r\n"
+      "  - Use 'TNC' to get the status of the TNC interface.\r\n"
+      "  - Use 'TNC <enable|disable>' to enable or disable the TNC "
+      "interface.\r\n"
+      "  - Use 'TNC callsign' to get current callsign.\r\n"
+      "  - Use 'TNC callsign <new_callsign>' to set the callsign.\r\n"
+      "  - Use 'TNC baud' to get current Baud rate for the TNC interface.\r\n"
+      "  - Use 'TNC baud <baud_rate>' to set the Baud rate.\r\n"
+      "    Available rates: 300, 600, 1200, 4800, 9600, 19200, 57600, "
+      "115200.\r\n"
+      "  - Use 'TNC message <n>' to get a message. <n> is between 0 to 9.\r\n"
+      "  - Use 'TNC message <n> <message>' to set a message.\r\n"
+      "  - Use 'TNC path <n>' to get a path. <n> is between 0 to 4.\r\n"
+      "  - Use 'TNC path <n> <path>' to set a path.",
 
       "AV: Manage AV peripherals.\r\n"
       "  - Use 'AV' to show statuses of all AVs.\r\n"
@@ -215,19 +354,16 @@ void handle_help(const char *args) {
       "rules.\r\n"
       "  - Use 'AV <n> <slow|fast|on> <min> <max>' to set min and max values "
       "for "
-      "blinking rules.\r\n",
+      "blinking rules.",
 
-      "TNC: Manage TNC.\r\n"
-      "  - Use 'TNC callsign' to get current callsign.\r\n"
-      "  - Use 'TNC callsign <new_callsign>' to set the callsign.\r\n"
-      "  - Use 'TNC baud' to get current Baud rate for the TNC interface.\r\n"
-      "  - Use 'TNC baud <baud_rate>' to set the Baud rate.\r\n"
-      "    Available rates: 300, 600, 1200, 4800, 9600, 19200, 57600, "
-      "115200.\r\n"
-      "  - Use 'TNC message <n>' to get a message. <n> is between 0 to 9.\r\n"
-      "  - Use 'TNC message <n> <message>' to set a message.\r\n"
-      "  - Use 'TNC path <n>' to get a path. <n> is between 0 to 4.\r\n"
-      "  - Use 'TNC path <n> <path>' to set a path.\r\n",
+      "Act: Manage actuators.\r\n"
+      "  - Use 'Act' to display configurations of the Actuators module.\r\n"
+      "  - Use 'Act <enable|disable>' to enable or disable all actuators.\r\n"
+      "  - Use 'Act indicator <enable|disable>' to enable or disable the "
+      "actuators indicators.\r\n"
+      "  NOTE: This command is not implemented in this version of the "
+      "Firmware.\r\n"
+      "        Update the firmware to get this feature.",
 
       "PWM: Control PWM channels.\r\n"
       "  - Use 'PWM' to display the status of both PWM channels.\r\n"
@@ -236,7 +372,25 @@ void handle_help(const char *args) {
       "  - Use 'PWM <n> <enable|disable>' to enable or "
       "disable a specific PWM channel. <n> should be 1 or 2.\r\n"
       "  - Use 'PWM <n> <value> to set the default value "
-      "for the PWM channel. <value> should be between 0 and 999.\r\n",
+      "for the PWM channel. <value> should be between 0 and 999.",
+
+      "Trigger: Manage triggers.\r\n"
+      "  - Use 'Trigger' to display the status of all triggers.\r\n"
+      "  - Use 'Trigger <n>' where <n> is between 1 and 25 to get details "
+      "about a specific trigger.\r\n"
+      "  - Use 'Trigger <n> <enable|disable>' to enable or disable a specific "
+      "trigger.\r\n"
+      "  - Use 'Trigger <n> <from> <to>' to set the range for a specific "
+      "trigger.\r\n"
+      "  - Use 'Trigger <n> <act|output|pwm|tnc> <enable|disable>' to "
+      "enable/disable the action for a specific trigger.\r\n"
+      "  - Use 'Trigger <n> <act|output|pwm|tnc> <value>' to set the value for "
+      "a specific trigger.\r\n"
+      "  NOTE: This command is not implemented in this version of the "
+      "Firmware.\r\n"
+      "        Update the firmware to get this feature.",
+
+      "Save: Save the current configuration to EEPROM.",
 
       "Help: Shows the list of available commands or help for a specific "
       "command.\r\n"
@@ -246,22 +400,21 @@ void handle_help(const char *args) {
 
   // Check if args is empty
   if (strlen(args) == 0) {
-    sprintf(serialTxBuffer, "\r\nAvailable commands:\r\n");
+    sprintf(serialTxBuffer, "Available commands:\r\n");
     for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
       sprintf(serialTxBuffer + strlen(serialTxBuffer), "  - %s\r\n",
               commands[i].command_name);
     }
     sprintf(serialTxBuffer + strlen(serialTxBuffer),
-            "\r\nUse 'help <command>' for more information.\r\n");
-    sprintf(serialTxBuffer + strlen(serialTxBuffer), "\r\nOk!\r\n");
+            "Use 'help <command>' for more information.%s", ok);
   } else {
     // Search for the command in the commands array
     uint8_t found = 0;
     for (uint8_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
       if (strcasecmp(args, commands[i].command_name) == 0) {
         // Found the command, provide detailed help
-        sprintf(serialTxBuffer, "\r\nHelp for '%s':\r\n%s\r\n",
-                commands[i].command_name, command_help[i]);
+        sprintf(serialTxBuffer, "Help for '%s':\r\n%s%s",
+                commands[i].command_name, command_help[i], ok);
         found = 1;
         break;
       }
@@ -269,8 +422,8 @@ void handle_help(const char *args) {
     if (found == 0) {
       // Command not found
       sprintf(serialTxBuffer,
-              "Unknown command '%s'. Use 'help' to list all commands.\r\n",
-              args);
+              "Unknown command '%s'. Use 'help' to list all commands.%s", args,
+              no);
     }
   }
 }

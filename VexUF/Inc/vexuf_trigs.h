@@ -51,7 +51,6 @@ typedef struct {
   uint16_t tnc2Message : 4;
 } TriggerConfiguration;
 
-UF_STATUS TRIGS_Init(void);
 UF_STATUS TRIGS_runAll(void);
 UF_STATUS TRIGS_runTrigger(uint8_t idx);
 

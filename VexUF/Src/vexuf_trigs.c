@@ -43,12 +43,6 @@ UF_STATUS TRIGS_compare(uint32_t ref, TrigCompareTest test, uint32_t fromValue,
                         uint32_t toValue);
 
 /* Code ----------------------------------------------------------------------*/
-UF_STATUS TRIGS_Init(void) {
-  for (uint8_t i = 0; i < NUMBER_OF_TRIGGERS; i++) {
-    if (CONFIG_getTrigConf(&triggers[i], i) != UF_OK) return UF_ERROR;
-  }
-  return UF_OK;
-}
 
 UF_STATUS TRIGS_runAll(void) {
   for (int i = 0; i < NUMBER_OF_TRIGGERS; i++) {
