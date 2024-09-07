@@ -39,7 +39,7 @@ extern uint16_t configVersion, configCount;
 /* Variables -----------------------------------------------------------------*/
 static const char *major = "0";
 static const char *minor = "8";
-static const char *patch = "7";
+static const char *patch = "9";
 
 static const char custom_base32_alphabet[] = "23456789ABCDEFGHJKLMNPQRTUVWXYZ";
 char regNumber[REGISTRATION_NUMBER_LENGTH];

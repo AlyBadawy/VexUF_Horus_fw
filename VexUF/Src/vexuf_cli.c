@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "aht20.h"
+#include "usbd_cdc_if.h"
 #include "vexuf_avs.h"
 #include "vexuf_buzzer.h"
 #include "vexuf_config.h"
@@ -48,10 +49,12 @@ typedef struct {
 /* Macros --------------------------------------------------------------------*/
 
 /* Extern Variables ----------------------------------------------------------*/
-extern char ttlRxData[SERIAL_BUFFER_SIZE];
-extern char tncRxData[SERIAL_BUFFER_SIZE];
-extern uint16_t ttlRxIdx;
-extern uint16_t tncRxIdx;
+extern unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t ttlRxIdx;
+extern unsigned char tncRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t tncRxIdx;
+extern unsigned char cdcRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t cdcRxIdx;
 extern SerialConfiguration serialConf;
 extern OutputConfiguration outputConfig;
 extern IndConfiguration indConf;
@@ -125,9 +128,9 @@ UF_STATUS CLI_init(void) {
 }
 
 UF_STATUS CLI_handleCommand(const SerialInterface interface) {
-  char command[SERIAL_BUFFER_SIZE];
-  char *rxData;
-  uint16_t *rxIdx;
+  unsigned char command[SERIAL_BUFFER_SIZE];
+  unsigned char *rxData;
+  uint32_t *rxIdx;
   UART_HandleTypeDef *uartHandle;
 
   switch (interface) {
@@ -140,6 +143,10 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
       if (serialConf.tnc_enabled != 1) return UF_DISABLED;
       rxData = tncRxData;
       rxIdx = &tncRxIdx;
+      break;
+    case CDC:
+      rxData = cdcRxData;
+      rxIdx = &cdcRxIdx;
       break;
     default:
       return UF_ERROR;
@@ -177,25 +184,41 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
     case TTL:
       uartHandle = ttlUart;
       memset(ttlRxData, 0, sizeof(ttlRxData));
+      ttlRxIdx = 0;
       break;
     case TNC:
       uartHandle = tncUart;
       memset(tncRxData, 0, sizeof(tncRxData));
+      tncRxIdx = 0;
+      break;
+    case CDC:
+      memset(cdcRxData, 0, sizeof(cdcRxData));
+      cdcRxIdx = 0;
       break;
     default:
       return UF_ERROR;
   }
 
   if (strlen(serialTxBuffer) > 0) {
-    if (HAL_UART_Transmit(uartHandle, (uint8_t *)serialTxBuffer,
-                          strlen(serialTxBuffer), 200) != HAL_OK)
-      Error_Handler();
+    if (interface == CDC) {
+      CDC_Transmit_FS((uint8_t *)serialTxBuffer, strlen(serialTxBuffer));
+    } else {
+      if (HAL_UART_Transmit(uartHandle, (uint8_t *)serialTxBuffer,
+                            strlen(serialTxBuffer), 200) != HAL_OK)
+        Error_Handler();
 
-    HAL_Delay(100);
+      HAL_Delay(100);
+    }
+  }
+
+  if (interface == CDC) {
+    CDC_Transmit_FS((uint8_t *)prompt, strlen(prompt));
+    return UF_OK;
   }
   if (HAL_UART_Transmit(uartHandle, (uint8_t *)prompt, strlen(prompt), 200) !=
       HAL_OK)
     Error_Handler();
+
   return UF_OK;
 }
 

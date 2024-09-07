@@ -142,6 +142,10 @@ void ERROR_ConfigLoop() {
       CLI_handleCommand(TTL);
       vexufStatus.ttlBuffered = 0;
     }
+    if (vexufStatus.cdcBuffered == 1) {
+      CLI_handleCommand(CDC);
+      vexufStatus.cdcBuffered = 0;
+    }
   }
 }
 

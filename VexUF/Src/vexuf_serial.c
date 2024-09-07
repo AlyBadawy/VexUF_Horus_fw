@@ -32,13 +32,15 @@ UART_HandleTypeDef *tncUart;
 
 /* Extern Variables ----------------------------------------------------------*/
 extern VexufStatus vexufStatus;
+extern unsigned char cdcRxData[SERIAL_BUFFER_SIZE];
+extern uint32_t cdcRxIdx;
 
 /* Variables -----------------------------------------------------------------*/
 SerialConfiguration serialConf;
 unsigned char ttlRxData[SERIAL_BUFFER_SIZE];
 unsigned char tncRxData[SERIAL_BUFFER_SIZE];
-uint16_t ttlRxIdx;
-uint16_t tncRxIdx;
+uint32_t ttlRxIdx;
+uint32_t tncRxIdx;
 
 /* Prototypes ----------------------------------------------------------------*/
 
@@ -147,7 +149,7 @@ UF_STATUS SERIAL_baudToInt(SerialBaudRate baud, uint32_t *baudInt) {
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size) {
   uint8_t *rxData;
-  uint16_t *rxIdx;
+  uint32_t *rxIdx;
 
   if (huart == ttlUart) {
     rxData = ttlRxData;

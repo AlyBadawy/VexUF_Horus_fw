@@ -31,10 +31,11 @@ UF_STATUS LCD_Init(void) {
       HD44780_Init(&hi2c1, 4);
       break;
     case LCD1602:
+      return UF_NOT_CONFIGURED;  // TODO: Implement this case
       HD44780_Init(&hi2c1, 2);
       break;
     default:
-      return UF_DISABLED;  // TODO: use error when default case is implemented
+      return UF_ERROR;
   }
 
   if (lcdConf.lcdType == NoLCD) return UF_DISABLED;

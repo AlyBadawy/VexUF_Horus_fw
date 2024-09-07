@@ -137,15 +137,13 @@ int main(void) {
   MX_TIM11_Init();
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
-  // TODO: Enable before release
-  // MX_USB_DEVICE_Init();
+  MX_USB_DEVICE_Init();
 
   HAL_GPIO_WritePin(WarnInd_GPIO_Port, WarnInd_Pin, GPIO_PIN_SET);
   EEPROM_93C86_init(&hspi1, EEPROM_CS_GPIO_Port, EEPROM_CS_Pin);
 
   TIMERS_init(&TIMER_10HZ_HANDLER, &TIMER_1HZ_HANDLER, &TIMER_0D1HZ_HANDLER);
   TIMERS_Start();
-
   PWM_init(&TIMER_PWM1_HANDLER, &TIMER_PWM2_HANDLER);
 
   if (CONFIG_IsConfigured() != UF_OK) {
@@ -182,13 +180,19 @@ int main(void) {
       if (CLI_handleCommand(TTL) == UF_ERROR) {
         // todo: handle error
       }
-
       vexufStatus.ttlBuffered = 0;
     }
 
     if (vexufStatus.tncBuffered == 1) {
       // TODO: handle TNC buffer
       vexufStatus.ttlBuffered = 0;
+    }
+
+    if (vexufStatus.cdcBuffered == 1) {
+      if (CLI_handleCommand(CDC) == UF_ERROR) {
+        // TODO: handle error
+      }
+      vexufStatus.cdcBuffered = 0;
     }
 
     // Run this routine every 100ms
