@@ -201,6 +201,7 @@ UF_STATUS CLI_handleCommand(const SerialInterface interface) {
 
   if (strlen(serialTxBuffer) > 0) {
     if (interface == CDC) {
+      CDC_Transmit_FS((uint8_t *)"\r\n", 2);
       CDC_Transmit_FS((uint8_t *)serialTxBuffer, strlen(serialTxBuffer));
     } else {
       if (HAL_UART_Transmit(uartHandle, (uint8_t *)serialTxBuffer,
@@ -242,7 +243,7 @@ void handle_buzzer(const char *args) { BUZZ_handleCli(args, serialTxBuffer); }
 void handle_log(const char *args) { handle_unsupported(args); }
 void handle_i2c(const char *args) { handle_unsupported(args); }
 void handle_spi(const char *args) { handle_unsupported(args); }
-void handle_display(const char *args) { handle_unsupported(args); }
+void handle_display(const char *args) { LCD_handleCli(args, serialTxBuffer); }
 void handle_ttl(const char *args) { TTL_handleCli(args, serialTxBuffer); }
 void handle_tnc(const char *args) { TNC_handleCli(args, serialTxBuffer); }
 void handle_avs(const char *args) { AVS_handleCli(args, serialTxBuffer); }

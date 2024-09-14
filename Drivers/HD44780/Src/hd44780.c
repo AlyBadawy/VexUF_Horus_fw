@@ -75,6 +75,7 @@ uint8_t dpControl;
 uint8_t dpMode;
 uint8_t dpRows;
 uint8_t dpBacklight;
+uint8_t dpAddress;
 
 /* Prototypes ----------------------------------------------------------------*/
 static void SendCommand(uint8_t);
@@ -87,9 +88,10 @@ static void DelayInit(void);
 static void DelayUS(uint32_t);
 /* Code ----------------------------------------------------------------------*/
 
-void HD44780_Init(I2C_HandleTypeDef *i2c, uint8_t rows) {
+void HD44780_Init(I2C_HandleTypeDef *i2c, uint8_t rows, uint8_t address) {
   hi2c = *i2c;
   dpRows = rows;
+  dpAddress = 0x27;
   dpBacklight = HD44780_BACKLIGHT;
   dpFunction = HD44780_4BIT_MODE | HD44780_1LINE | HD44780_5x8DOTS;
 

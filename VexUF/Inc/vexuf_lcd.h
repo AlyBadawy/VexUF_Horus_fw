@@ -19,5 +19,6 @@ typedef struct {
 } LcdConfiguration;
 
 UF_STATUS LCD_Init(void);
+void LCD_handleCli(const char *args, char *responseBuffer);
 
 #endif  // INC_VEXUF_LCD_H

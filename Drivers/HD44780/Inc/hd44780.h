@@ -10,7 +10,7 @@
 
 #include "main.h"
 
-void HD44780_Init(I2C_HandleTypeDef *i2c, uint8_t rows);
+void HD44780_Init(I2C_HandleTypeDef *i2c, uint8_t rows, uint8_t address);
 void HD44780_Clear(void);
 void HD44780_Home(void);
 void HD44780_MoveCursor(uint8_t row, uint8_t col);
