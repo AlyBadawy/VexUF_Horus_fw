@@ -37,7 +37,8 @@ typedef struct {
   uint16_t ttlBuffered : 1;
   uint16_t tncBuffered : 1;
   uint16_t cdcBuffered : 1;
-  uint16_t reserved : 4;
+  uint16_t tampered : 1;
+  uint16_t reserved : 3;
 } VexufStatus;
 
 #define SERIAL_NUMBER_LENGTH 24

@@ -98,4 +98,13 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SDIO_DET_GPIO_Port, &GPIO_InitStruct);
+
+  // Configure PC13 as an alternate function for RTC tamper (Tamper pin
+  // configuration)
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;  // Alternate function, tamper
+  GPIO_InitStruct.Pull = GPIO_PULLUP;      // Pull-up enabled
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF0_RTC_50Hz;  // RTC alternate function
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }

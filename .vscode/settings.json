@@ -70,6 +70,7 @@
     "fatent",
     "FATFS",
     "FIFOMODE",
+    "FRESULT",
     "getfree",
     "getlabel",
     "GPIO",

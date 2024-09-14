@@ -8,4 +8,3 @@ extern RTC_HandleTypeDef hrtc;
 void MX_RTC_Init(void);
 
 #endif /* __RTC_H__ */
-
