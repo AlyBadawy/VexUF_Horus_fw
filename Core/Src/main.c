@@ -115,6 +115,9 @@ int main(void) {
   indConf.sdCardIndicatorEnabled = 1;
   outputConf.haltOnSdCardErrors = 1;
 
+  // Set the SD card as ejected to force a check
+  vexufStatus.sdCardEjected = 1;
+
   HAL_Init();
 
   SystemClock_Config();
@@ -175,6 +178,11 @@ int main(void) {
   while (1) {
     SDCard_checkCard();
     ERROR_handleSdError();
+
+    if (vexufStatus.tampered == 1) {
+      // TODO: handle tamper event
+      vexufStatus.tampered = 0;
+    }
 
     if (vexufStatus.ttlBuffered == 1) {
       if (CLI_handleCommand(TTL) == UF_ERROR) {

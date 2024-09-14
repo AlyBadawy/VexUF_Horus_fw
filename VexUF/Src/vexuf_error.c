@@ -97,18 +97,8 @@ void ERROR_handleSdError(void) {
     return;
   }
 
-  // Handle SD card ejection
-  if (vexufStatus.sdCardEjected == 1) {
-    if (outputConf.haltOnSdCardErrors == 1) {
-      ERROR_SdCardLoop(300);
-      return;
-    }
-    IND_setLevel(IndSdio, IndFAST);
-    return;
-  }
-
-  // Handle general SD card error
-  if (vexufStatus.sdCardError == 1) {
+  // Handle SD card ejection or general SD card error
+  if (vexufStatus.sdCardEjected == 1 || vexufStatus.sdCardError == 1) {
     if (outputConf.haltOnSdCardErrors == 1) {
       ERROR_SdCardLoop(300);
       return;
@@ -159,7 +149,6 @@ void ERROR_SdCardLoop(uint16_t delay) {
   vexufStatus.sdCardMounted = 0;
 
   while (status != UF_OK) {
-    HAL_IWDG_Refresh(&hiwdg);
     while (HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) ==
                GPIO_PIN_RESET &&
            vexufStatus.sdCardMounted == 0) {
@@ -179,14 +168,27 @@ void ERROR_SdCardLoop(uint16_t delay) {
 
     if (!vexufStatus.sdCardEjected &&
         HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) == GPIO_PIN_SET) {
+      // SD card marked as inserted and is now ejected
       vexufStatus.sdCardEjected = 1;
     }
+
+    if (vexufStatus.sdCardEjected &&
+        HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) == GPIO_PIN_SET) {
+      // SD card marked as ejected and is still ejected
+      HAL_IWDG_Refresh(&hiwdg);
+    }
+
     if (vexufStatus.sdCardEjected &&
         HAL_GPIO_ReadPin(SDIO_DET_GPIO_Port, SDIO_DET_Pin) == GPIO_PIN_RESET) {
-      status = UF_OK;
+      // SD card marked as ejected and is now inserted
+      // Attempt to mount the SD card
+      status = SDCard_MountFS();
+      if (status != UF_OK) {
+        while (1);
+      }
     }
   }
-  printf("SD card error resolved\n");
+
   IND_setLevel(IndError, IndOFF);
   IND_setLevel(IndSdio, IndOFF);
   IND_setLevel(IndBuzzer, IndOFF);

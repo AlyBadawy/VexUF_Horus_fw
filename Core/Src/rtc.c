@@ -28,7 +28,6 @@ RTC_HandleTypeDef hrtc;
 // Define macro functions here
 
 /* Extern Variables ----------------------------------------------------------*/
-// Declare external variables here
 
 /* Variables -----------------------------------------------------------------*/
 // Declare static or global variables here
@@ -42,8 +41,9 @@ void MX_RTC_Init(void) {
   RTC_TimeTypeDef sTime = {0};
   RTC_DateTypeDef sDate = {0};
   RTC_AlarmTypeDef sAlarm = {0};
-  RTC_TamperTypeDef sTamper = {0};
 #endif
+
+  RTC_TamperTypeDef sTamper = {0};
 
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -90,7 +90,7 @@ void MX_RTC_Init(void) {
   if (HAL_RTCEx_SetWakeUpTimer(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) !=
       HAL_OK)
     Error_Handler();
-
+#endif
   sTamper.Tamper = RTC_TAMPER_1;
   sTamper.PinSelection = RTC_TAMPERPIN_DEFAULT;
   sTamper.Trigger = RTC_TAMPERTRIGGER_RISINGEDGE;
@@ -99,8 +99,8 @@ void MX_RTC_Init(void) {
   sTamper.PrechargeDuration = RTC_TAMPERPRECHARGEDURATION_1RTCCLK;
   sTamper.TamperPullUp = RTC_TAMPER_PULLUP_ENABLE;
   sTamper.TimeStampOnTamperDetection = RTC_TIMESTAMPONTAMPERDETECTION_ENABLE;
-  if (HAL_RTCEx_SetTamper_IT(&hrtc, &sTamper) != HAL_OK) Error_Handler();
-#endif
+  HAL_StatusTypeDef status = HAL_RTCEx_SetTamper_IT(&hrtc, &sTamper);
+  if (status != HAL_OK) Error_Handler();
 }
 
 void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle) {

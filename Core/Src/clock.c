@@ -71,4 +71,12 @@ void SystemClock_Config(void) {
   HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
 
   HAL_RCC_EnableCSS();
+
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  HAL_RCCEx_GetPeriphCLKConfig(&PeriphClkInitStruct);
+  if (PeriphClkInitStruct.RTCClockSelection != RCC_RTCCLKSOURCE_LSE) {
+    printf("RTC Clock Source is not LSE!\n");
+  } else {
+    printf("RTC Clock Source is correctly set to LSE.\n");
+  }
 }
