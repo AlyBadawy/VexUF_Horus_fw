@@ -1,10 +1,10 @@
 # VexUF-Horus
 
 ## Overview
-
 **Status: Active**
 
-<img src="https://github.com/user-attachments/assets/47a59025-102a-46c4-bdac-d45394d3b694" width="400" align="right" />
+![untitled](https://github.com/user-attachments/assets/134034c5-d0d4-4617-a2f4-635593967e34)
+
 
 The "Horus" device is designed to support both Emergency Operations Centers (EOCs) and amateur radio operators in monitoring and managing various power sources and environmental conditions. It is engineered to enhance operational capabilities by ensuring real-time monitoring of critical parameters.
 
