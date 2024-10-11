@@ -3,7 +3,8 @@
 ## Overview
 **Status: Active**
 
-![untitled](https://github.com/user-attachments/assets/134034c5-d0d4-4617-a2f4-635593967e34)
+![1](https://github.com/user-attachments/assets/f18d01c0-2853-42cb-aa1f-25632997cb6b)
+
 
 
 The "Horus" device is designed to support both Emergency Operations Centers (EOCs) and amateur radio operators in monitoring and managing various power sources and environmental conditions. It is engineered to enhance operational capabilities by ensuring real-time monitoring of critical parameters.
